@@ -17,16 +17,14 @@ const HomeStack = createStackNavigator({
 
 HomeStack.navigationOptions = {
   tabBarLabel: 'Home',
-  tabBarIcon: (args: { focused: boolean }) => (
+  tabBarIcon: (args: { focused: boolean }) =>
     <TabBarIcon
       focused={args.focused}
       name={
         Platform.OS === 'ios'
           ? `ios-information-circle${args.focused ? '' : '-outline'}`
           : 'md-information-circle'
-      }
-    />
-  ),
+      } />,
 }
 
 const LinksStack = createStackNavigator({
@@ -38,12 +36,11 @@ const LinksStack = createStackNavigator({
 
 LinksStack.navigationOptions = {
   tabBarLabel: 'Links',
-  tabBarIcon: (args: { focused: boolean }) => (
+  tabBarIcon: (args: { focused: boolean }) =>
     <TabBarIcon
       focused={args.focused}
       name={Platform.OS === 'ios' ? `ios-link${args.focused ? '' : '-outline'}` : 'md-link'}
-    />
-  ),
+    />,
 }
 
 const SettingsStack = createStackNavigator({
@@ -55,12 +52,12 @@ const SettingsStack = createStackNavigator({
 
 SettingsStack.navigationOptions = {
   tabBarLabel: 'Settings',
-  tabBarIcon: (args: { focused: boolean }) => (
+  tabBarIcon: (args: { focused: boolean }) =>
     <TabBarIcon
       focused={args.focused}
-      name={Platform.OS === 'ios' ? `ios-options${args.focused ? '' : '-outline'}` : 'md-options'}
-    />
-  ),
+      name={Platform.OS === 'ios' ?
+        `ios-options${args.focused ? '' : '-outline'}` :
+        'md-options'} />,
 }
 
 export default createBottomTabNavigator({
