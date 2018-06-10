@@ -7,13 +7,14 @@
 * Run Expo app on iPhone, login to Expo account, and choose project
 
 # To test in iOS simulator
-`nvm use 8.11.2 && node_modules/.bin/exp ios`
+- Run in another tab: `nvm use 8.11.2 && node_modules/.bin/exp start`
+- `nvm use 8.11.2 && node_modules/.bin/exp ios`
 
 # To run eslint
-`node_modules/.bin/eslint App.js __tests__ api components constants navigation screens`
+`nvm use 8.11.2 && node_modules/.bin/eslint App.js __tests__ api components constants navigation screens`
 
 # To run static type checking
-`node_modules/.bin/flow`
+`nvm use 8.11.2 && node_modules/.bin/flow`
 
 # To run automated tests
-`node_modules/.bin/jest`
+`nvm use 8.11.2 && node_modules/.bin/jest`
