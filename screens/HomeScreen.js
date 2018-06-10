@@ -1,6 +1,7 @@
-import { WebBrowser } from 'expo'
+import { SQLite, WebBrowser } from 'expo'
 import React from 'react'
 import {
+  Button,
   Image,
   Platform,
   ScrollView,
@@ -9,6 +10,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+
+const db = SQLite.openDatabase('db.db')
 
 const styles = StyleSheet.create({
   container: {
@@ -100,7 +103,34 @@ const styles = StyleSheet.create({
   },
 })
 
-export default class HomeScreen extends React.PureComponent<{}> {
+type Props = {
+
+}
+
+type State = {
+  items: any
+}
+
+export default class HomeScreen extends React.PureComponent<Props, State> {
+  componentDidMount() {
+    db.transaction(tx => {
+      tx.executeSql('create table if not exists items (id integer primary key not null, done int, value text);')
+    })
+  }
+
+  pressButton = () => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'insert into items (done, value) values (0, ?)',
+        ['text'])
+      tx.executeSql(
+        'select * from items',
+        [],
+        (tx, { rows: { _array } }) => this.setState({ items: _array }))
+    },
+    (e: Error) => console.error('Error from db.transaction', e.message))
+  }
+
   render() {
     return <View style={styles.container}>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -114,6 +144,9 @@ export default class HomeScreen extends React.PureComponent<{}> {
             style={styles.welcomeImage}
           />
         </View>
+
+        <Text>items: {JSON.stringify(this.state)}</Text>
+        <Button onPress={this.pressButton} title="Set items" />
 
         <View style={styles.getStartedContainer}>
           {this._maybeRenderDevelopmentModeWarning()}
