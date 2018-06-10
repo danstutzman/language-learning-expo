@@ -25,13 +25,13 @@ export default class DbModel {
     })
   }
 
-  addNoun(): Promise<Array<Noun>> {
+  addNoun(noun: Noun): Promise<Array<Noun>> {
     return new Promise((resolve, reject) =>
       this.createNounsTable.then(() => {
         this.db.transaction(tx => {
           tx.executeSql(
             'INSERT INTO nouns (en, es) VALUES (?, ?);',
-            ['envalue', 'esvalue'])
+            [noun.en, noun.es])
           tx.executeSql(
             'SELECT id, en, es FROM nouns',
             [],

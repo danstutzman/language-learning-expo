@@ -2,6 +2,7 @@ import React from 'react'
 import { Platform } from 'react-native'
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation'
 
+import AddNounScreen from '../screens/AddNounScreen'
 import TabBarIcon from '../components/TabBarIcon'
 import HomeScreen from '../screens/HomeScreen'
 import LinksScreen from '../screens/LinksScreen'
@@ -10,19 +11,41 @@ import SettingsScreen from '../screens/SettingsScreen'
 import type { Noun } from '../model/Noun'
 
 type ScreenProps = {
-  addNoun: () => void,
   nouns: Array<Noun>,
+  addNoun: () => void,
 }
 
 const ListStack = createStackNavigator({
-  List: {
-    header: null,
-    screen: (args: {screenProps: ScreenProps }) =>
-      <ListScreen
+  AddNounScreen: {
+    screen: (args: {navigation: any, screenProps: ScreenProps }) =>
+      <AddNounScreen
         addNoun={args.screenProps.addNoun}
         nouns={args.screenProps.nouns} />,
-    title: 'List',
+    navigationOptions: () => ({
+      title: 'Add Noun',
+    }),
+  },
+  ListNouns: {
+    header: null,
+    screen: (args: {navigation: any, screenProps: ScreenProps }) =>
+      <ListScreen
+        showAddNounScreen={() => { args.navigation.navigate('AddNounScreen') }}
+        nouns={args.screenProps.nouns} />,
+    navigationOptions: () => ({
+      title: 'List Nouns',
+    }),
   }
+}, {
+  initialRouteName: 'ListNouns',
+  navigationOptions: {
+    headerStyle: {
+      backgroundColor: '#fff',
+    },
+    headerTintColor: 'black',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  },
 })
 
 ListStack.navigationOptions = {

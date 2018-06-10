@@ -49,7 +49,7 @@ export default class App extends React.PureComponent<Props, State> {
       return <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <RootNavigation
-          addNoun={() => this.model.addNoun().then(nouns => this.setState({ nouns }))}
+          addNoun={(noun: Noun) => this.model.addNoun(noun).then(nouns => this.setState({ nouns }))}
           nouns={this.state.nouns} />
       </View>
     }
