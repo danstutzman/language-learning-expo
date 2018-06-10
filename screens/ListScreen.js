@@ -22,6 +22,9 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingTop: 30,
   },
+  idColumn: {
+    width: 20,
+  },
   englishColumn: {
     flex: 1,
   },
@@ -43,12 +46,14 @@ export default class HomeScreen extends React.PureComponent<Props> {
         <Button onPress={this.props.showAddNounScreen} title="Add noun" />
 
         <View style={styles.row}>
+          <Text style={[styles.idColumn, styles.columnHeader]}>ID</Text>
           <Text style={[styles.englishColumn, styles.columnHeader]}>English</Text>
           <Text style={[styles.spanishColumn, styles.columnHeader]}>Spanish</Text>
         </View>
 
         {this.props.nouns.map(noun => {
           return <View key={noun.id} style={styles.row}>
+            <Text style={styles.idColumn}>{noun.id}</Text>
             <Text style={styles.englishColumn}>{noun.en}</Text>
             <Text style={styles.spanishColumn}>{noun.es}</Text>
           </View>
