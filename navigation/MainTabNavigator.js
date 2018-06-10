@@ -6,11 +6,11 @@ import TabBarIcon from '../components/TabBarIcon'
 import HomeScreen from '../screens/HomeScreen'
 import LinksScreen from '../screens/LinksScreen'
 import SettingsScreen from '../screens/SettingsScreen'
-import type { Item } from '../model/Item'
+import type { Noun } from '../model/Noun'
 
 type ScreenProps = {
-  addItem: () => void,
-  items: Array<Item>,
+  addNoun: () => void,
+  nouns: Array<Noun>,
 }
 
 const HomeStack = createStackNavigator({
@@ -18,8 +18,8 @@ const HomeStack = createStackNavigator({
     header: null,
     screen: (args: { screenProps: ScreenProps }) =>
       <HomeScreen
-        addItem={args.screenProps.addItem}
-        items={args.screenProps.items} />,
+        addNoun={args.screenProps.addNoun}
+        nouns={args.screenProps.nouns} />,
     title: 'Home',
   }
 })

@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons'
 
 import RootNavigation from './navigation/RootNavigation'
 import DbModel from './model/DbModel'
-import type { Item } from './model/Item'
+import type { Noun } from './model/Noun'
 
 const styles = StyleSheet.create({
   container: {
@@ -20,7 +20,7 @@ type Props = {
 
 type State = {
   isLoadingComplete: boolean,
-  items: Array<Item>,
+  nouns: Array<Noun>,
 }
 
 export default class App extends React.PureComponent<Props, State> {
@@ -31,12 +31,12 @@ export default class App extends React.PureComponent<Props, State> {
     this.model = new DbModel()
     this.state = {
       isLoadingComplete: false,
-      items: [],
+      nouns: [],
     }
   }
 
   componentDidMount() {
-    this.model.loadItems().then(items => this.setState({ items }))
+    this.model.loadNouns().then(nouns => this.setState({ nouns }))
   }
 
   render() {
@@ -49,8 +49,8 @@ export default class App extends React.PureComponent<Props, State> {
       return <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <RootNavigation
-          addItem={() => this.model.addItem().then(items => this.setState({ items }))}
-          items={this.state.items} />
+          addNoun={() => this.model.addNoun().then(nouns => this.setState({ nouns }))}
+          nouns={this.state.nouns} />
       </View>
     }
   }

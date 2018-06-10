@@ -11,11 +11,11 @@ import {
   View,
 } from 'react-native'
 
-import type { Item } from '../model/Item'
+import type { Noun } from '../model/Noun'
 
 type Props = {|
-  addItem: () => void,
-  items: Array<Item>,
+  addNoun: () => void,
+  nouns: Array<Noun>,
 |}
 
 const styles = StyleSheet.create({
@@ -124,7 +124,7 @@ export default class HomeScreen extends React.PureComponent<Props> {
         </View>
 
         <Text>props: {JSON.stringify(this.props)}</Text>
-        <Button onPress={this.props.addItem} title="Set items" />
+        <Button onPress={this.props.addNoun} title="Add noun" />
 
         <View style={styles.getStartedContainer}>
           {this._maybeRenderDevelopmentModeWarning()}
