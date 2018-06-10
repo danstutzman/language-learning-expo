@@ -38,6 +38,19 @@ export default class DbModel {
     )
   }
 
+  deleteNoun = (noun: Noun): Promise<Array<Noun>> => {
+    return new Promise((resolve, reject) =>
+      this.createNounsTable.then(() => {
+        this.db.transaction(tx =>
+          tx.executeSql(
+            'DELETE FROM nouns WHERE ID=?;',
+            [noun.id]),
+        (e: Error) => reject(e))
+      }).then(this.loadNouns)
+        .then(nouns => resolve(nouns))
+    )
+  }
+
   editNoun = (noun: Noun): Promise<Array<Noun>> => {
     return new Promise((resolve, reject) =>
       this.createNounsTable.then(() => {

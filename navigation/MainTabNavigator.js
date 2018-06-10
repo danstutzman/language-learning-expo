@@ -13,6 +13,7 @@ import type { Noun } from '../model/Noun'
 type ScreenProps = {
   nouns: Array<Noun>,
   addNoun: (noun: Noun) => void,
+  deleteNoun: (noun: Noun) => void,
   editNoun: (noun: Noun) => void,
 }
 
@@ -24,6 +25,7 @@ const ListStack = createStackNavigator({
         { id: -1, en: '', es: '' }
       return <EditNounScreen
         addNoun={args.screenProps.addNoun}
+        deleteNoun={args.screenProps.deleteNoun}
         editNoun={args.screenProps.editNoun}
         initialNoun={initialNoun} />
     },

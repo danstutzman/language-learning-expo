@@ -12,10 +12,12 @@ const AppNavigator = createSwitchNavigator({
   Main: MainTabNavigator,
 })
 
-type Props = {
+type Props = {|
   addNoun: (noun: Noun) => Promise<Array<Noun>>,
+  deleteNoun: (noun: Noun) => Promise<Array<Noun>>,
+  editNoun: (noun: Noun) => Promise<Array<Noun>>,
   nouns: Array<Noun>,
-}
+|}
 
 export default class RootNavigation extends React.PureComponent<Props> {
   _notificationSubscription: any

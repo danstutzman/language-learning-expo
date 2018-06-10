@@ -11,6 +11,7 @@ import type { Noun } from '../model/Noun'
 
 type Props = {|
   addNoun: (noun: Noun) => void,
+  deleteNoun: (noun: Noun) => void,
   editNoun: (noun: Noun) => void,
   initialNoun: Noun,
 |}
@@ -48,6 +49,17 @@ export default class EditNounScreen extends React.PureComponent<Props, State> {
     })
   }
 
+  onPressDelete = () => {
+    this.props.deleteNoun(this.state.noun)
+    this.setState({
+      noun: {
+        id: -1,
+        en: '',
+        es: '',
+      }
+    })
+  }
+
   onPressEdit = () => {
     this.props.editNoun(this.state.noun)
     this.setState({
@@ -76,7 +88,10 @@ export default class EditNounScreen extends React.PureComponent<Props, State> {
 
       {this.state.noun.id === -1 ?
         <Button onPress={this.onPressAdd} title='Add' /> :
-        <Button onPress={this.onPressEdit} title='Edit' />}
+        <View>
+          <Button onPress={this.onPressEdit} title='Edit' />
+          <Button onPress={this.onPressDelete} title='Delete' />
+        </View>}
     </View>
   }
 }

@@ -53,6 +53,10 @@ export default class App extends React.PureComponent<Props, State> {
             this.model.addNoun(noun)
               .then(nouns => this.setState({ nouns }))
           }
+          deleteNoun={(noun: Noun) =>
+            this.model.deleteNoun(noun)
+              .then(nouns => this.setState({ nouns }))
+          }
           editNoun={(noun: Noun) =>
             this.model.editNoun(noun)
               .then(nouns => this.setState({ nouns }))
