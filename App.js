@@ -4,7 +4,7 @@ import { AppLoading, Asset, Font, SQLite } from 'expo'
 import { Ionicons } from '@expo/vector-icons'
 
 import RootNavigation from './navigation/RootNavigation'
-import type { Item } from './types/Item'
+import type { Item } from './model/Item'
 
 const db = SQLite.openDatabase('db.db')
 db.transaction(tx => {

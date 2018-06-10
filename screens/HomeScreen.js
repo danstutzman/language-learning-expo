@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native'
 
-import type { Item } from '../types/Item'
+import type { Item } from '../model/Item'
 
 type Props = {|
   addItem: () => void,

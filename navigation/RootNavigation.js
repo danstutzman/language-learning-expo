@@ -4,7 +4,7 @@ import { createSwitchNavigator } from 'react-navigation'
 
 import MainTabNavigator from './MainTabNavigator'
 import registerForPushNotificationsAsync from '../api/registerForPushNotificationsAsync'
-import type { Item } from '../types/Item'
+import type { Item } from '../model/Item'
 
 const AppNavigator = createSwitchNavigator({
   // You could add another route here for authentication.
