@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   Image,
   Platform,
@@ -7,16 +7,10 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { WebBrowser } from 'expo';
+} from 'react-native'
+import { WebBrowser } from 'expo'
 
-import { MonoText } from '../components/StyledText';
-
-export default class HomeScreen extends React.Component {
-  static navigationOptions = {
-    header: null,
-  };
-
+export default class HomeScreen extends React.PureComponent<{}> {
   render() {
     return (
       <View style={styles.container}>
@@ -38,7 +32,7 @@ export default class HomeScreen extends React.Component {
             <Text style={styles.getStartedText}>Get started by opening</Text>
 
             <View style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-              <MonoText style={styles.codeHighlightText}>screens/HomeScreen.js</MonoText>
+              <Text style={styles.codeHighlightText}>screens/HomeScreen.js</Text>
             </View>
 
             <Text style={styles.getStartedText}>
@@ -57,11 +51,11 @@ export default class HomeScreen extends React.Component {
           <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
 
           <View style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-            <MonoText style={styles.codeHighlightText}>navigation/MainTabNavigator.js</MonoText>
+            <Text style={styles.codeHighlightText}>navigation/MainTabNavigator.js</Text>
           </View>
         </View>
       </View>
-    );
+    )
   }
 
   _maybeRenderDevelopmentModeWarning() {
@@ -70,32 +64,32 @@ export default class HomeScreen extends React.Component {
         <Text onPress={this._handleLearnMorePress} style={styles.helpLinkText}>
           Learn more
         </Text>
-      );
+      )
 
       return (
         <Text style={styles.developmentModeText}>
           Development mode is enabled, your app will be slower but you can use useful development
           tools. {learnMoreButton}
         </Text>
-      );
+      )
     } else {
       return (
         <Text style={styles.developmentModeText}>
           You are not in development mode, your app will run at full speed.
         </Text>
-      );
+      )
     }
   }
 
   _handleLearnMorePress = () => {
-    WebBrowser.openBrowserAsync('https://docs.expo.io/versions/latest/guides/development-mode');
-  };
+    WebBrowser.openBrowserAsync('https://docs.expo.io/versions/latest/guides/development-mode')
+  }
 
   _handleHelpPress = () => {
     WebBrowser.openBrowserAsync(
       'https://docs.expo.io/versions/latest/guides/up-and-running.html#can-t-see-your-changes'
-    );
-  };
+    )
+  }
 }
 
 const styles = StyleSheet.create({
@@ -134,6 +128,7 @@ const styles = StyleSheet.create({
   },
   codeHighlightText: {
     color: 'rgba(96,100,109, 0.8)',
+    fontFamily: 'space-mono',
   },
   codeHighlightContainer: {
     backgroundColor: 'rgba(0,0,0,0.05)',
@@ -185,4 +180,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#2e78b7',
   },
-});
+})

@@ -11,3 +11,9 @@
 
 # To run eslint
 `node_modules/.bin/eslint App.js __tests__ api components constants navigation screens`
+
+# To run static type checking
+`node_modules/.bin/flow`
+
+# To run automated tests
+`node_modules/.bin/jest`
