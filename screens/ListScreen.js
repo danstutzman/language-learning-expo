@@ -12,6 +12,7 @@ import type { Noun } from '../model/Noun'
 type Props = {|
   nouns: Array<Noun>,
   showAddNounScreen: () => void,
+  showEditNounScreen: (nounId: number) => void,
 |}
 
 const styles = StyleSheet.create({
@@ -31,6 +32,9 @@ const styles = StyleSheet.create({
   spanishColumn: {
     flex: 1,
   },
+  editColumn: {
+    width: 20,
+  },
   row: {
     flexDirection: 'row',
   },
@@ -49,6 +53,7 @@ export default class HomeScreen extends React.PureComponent<Props> {
           <Text style={[styles.idColumn, styles.columnHeader]}>ID</Text>
           <Text style={[styles.englishColumn, styles.columnHeader]}>English</Text>
           <Text style={[styles.spanishColumn, styles.columnHeader]}>Spanish</Text>
+          <Text style={[styles.editColumn, styles.columnHeader]}></Text>
         </View>
 
         {this.props.nouns.map(noun => {
@@ -56,6 +61,10 @@ export default class HomeScreen extends React.PureComponent<Props> {
             <Text style={styles.idColumn}>{noun.id}</Text>
             <Text style={styles.englishColumn}>{noun.en}</Text>
             <Text style={styles.spanishColumn}>{noun.es}</Text>
+            <Button
+              onPress={() => this.props.showEditNounScreen(noun.id)}
+              style={styles.editColumn}
+              title="Edit" />
           </View>
         })}
       </ScrollView>

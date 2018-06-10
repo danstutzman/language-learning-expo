@@ -13,7 +13,7 @@ const AppNavigator = createSwitchNavigator({
 })
 
 type Props = {
-  addNoun: () => Promise<void>,
+  addNoun: (noun: Noun) => Promise<Array<Noun>>,
   nouns: Array<Noun>,
 }
 

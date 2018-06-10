@@ -2,7 +2,7 @@ import React from 'react'
 import { Platform } from 'react-native'
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation'
 
-import AddNounScreen from '../screens/AddNounScreen'
+import EditNounScreen from '../screens/EditNounScreen'
 import TabBarIcon from '../components/TabBarIcon'
 import HomeScreen from '../screens/HomeScreen'
 import LinksScreen from '../screens/LinksScreen'
@@ -12,24 +12,34 @@ import type { Noun } from '../model/Noun'
 
 type ScreenProps = {
   nouns: Array<Noun>,
-  addNoun: () => void,
+  addNoun: (noun: Noun) => void,
+  editNoun: (noun: Noun) => void,
 }
 
 const ListStack = createStackNavigator({
-  AddNounScreen: {
-    screen: (args: {navigation: any, screenProps: ScreenProps }) =>
-      <AddNounScreen
+  EditNounScreen: {
+    screen: (args: {navigation: any, screenProps: ScreenProps }) => {
+      const { nounId } = args.navigation.state.params || { nounId: undefined }
+      const initialNoun = args.screenProps.nouns.find(noun => noun.id === nounId) ||
+        { id: -1, en: '', es: '' }
+      return <EditNounScreen
         addNoun={args.screenProps.addNoun}
-        nouns={args.screenProps.nouns} />,
-    navigationOptions: () => ({
-      title: 'Add Noun',
-    }),
+        editNoun={args.screenProps.editNoun}
+        initialNoun={initialNoun} />
+    },
+    navigationOptions: (args: {navigation: any}) => {
+      const { nounId } = args.navigation.state.params || { nounId: undefined }
+      return { title: (nounId === undefined) ? 'Add Noun' : 'Edit Noun' }
+    },
   },
   ListNouns: {
     header: null,
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
       <ListScreen
-        showAddNounScreen={() => { args.navigation.navigate('AddNounScreen') }}
+        showAddNounScreen={() => { args.navigation.navigate('EditNounScreen') }}
+        showEditNounScreen={(nounId: number) => {
+          args.navigation.navigate('EditNounScreen', { nounId })
+        }}
         nouns={args.screenProps.nouns} />,
     navigationOptions: () => ({
       title: 'List Nouns',
@@ -65,7 +75,6 @@ const HomeStack = createStackNavigator({
     header: null,
     screen: (args: { screenProps: ScreenProps }) =>
       <HomeScreen
-        addNoun={args.screenProps.addNoun}
         nouns={args.screenProps.nouns} />,
     title: 'Home',
   }
