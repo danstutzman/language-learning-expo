@@ -6,11 +6,20 @@ import TabBarIcon from '../components/TabBarIcon'
 import HomeScreen from '../screens/HomeScreen'
 import LinksScreen from '../screens/LinksScreen'
 import SettingsScreen from '../screens/SettingsScreen'
+import type { Item } from '../types/Item'
+
+type ScreenProps = {
+  addItem: () => void,
+  items: Array<Item>,
+}
 
 const HomeStack = createStackNavigator({
   Home: {
     header: null,
-    screen: HomeScreen,
+    screen: (args: { screenProps: ScreenProps }) =>
+      <HomeScreen
+        addItem={args.screenProps.addItem}
+        items={args.screenProps.items} />,
     title: 'Home',
   }
 })

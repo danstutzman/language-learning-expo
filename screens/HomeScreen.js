@@ -1,4 +1,4 @@
-import { SQLite, WebBrowser } from 'expo'
+import { WebBrowser } from 'expo'
 import React from 'react'
 import {
   Button,
@@ -11,7 +11,12 @@ import {
   View,
 } from 'react-native'
 
-const db = SQLite.openDatabase('db.db')
+import type { Item } from '../types/Item'
+
+type Props = {|
+  addItem: () => void,
+  items: Array<Item>,
+|}
 
 const styles = StyleSheet.create({
   container: {
@@ -103,34 +108,7 @@ const styles = StyleSheet.create({
   },
 })
 
-type Props = {
-
-}
-
-type State = {
-  items: any
-}
-
-export default class HomeScreen extends React.PureComponent<Props, State> {
-  componentDidMount() {
-    db.transaction(tx => {
-      tx.executeSql('create table if not exists items (id integer primary key not null, done int, value text);')
-    })
-  }
-
-  pressButton = () => {
-    db.transaction(tx => {
-      tx.executeSql(
-        'insert into items (done, value) values (0, ?)',
-        ['text'])
-      tx.executeSql(
-        'select * from items',
-        [],
-        (tx, { rows: { _array } }) => this.setState({ items: _array }))
-    },
-    (e: Error) => console.error('Error from db.transaction', e.message))
-  }
-
+export default class HomeScreen extends React.PureComponent<Props> {
   render() {
     return <View style={styles.container}>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -145,8 +123,8 @@ export default class HomeScreen extends React.PureComponent<Props, State> {
           />
         </View>
 
-        <Text>items: {JSON.stringify(this.state)}</Text>
-        <Button onPress={this.pressButton} title="Set items" />
+        <Text>props: {JSON.stringify(this.props)}</Text>
+        <Button onPress={this.props.addItem} title="Set items" />
 
         <View style={styles.getStartedContainer}>
           {this._maybeRenderDevelopmentModeWarning()}

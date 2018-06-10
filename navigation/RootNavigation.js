@@ -1,9 +1,10 @@
-import React from 'react'
 import { Notifications } from 'expo'
+import React from 'react'
 import { createSwitchNavigator } from 'react-navigation'
 
 import MainTabNavigator from './MainTabNavigator'
 import registerForPushNotificationsAsync from '../api/registerForPushNotificationsAsync'
+import type { Item } from '../types/Item'
 
 const AppNavigator = createSwitchNavigator({
   // You could add another route here for authentication.
@@ -11,7 +12,11 @@ const AppNavigator = createSwitchNavigator({
   Main: MainTabNavigator,
 })
 
-export default class RootNavigation extends React.Component<{}> {
+type Props = {
+  items: Array<Item>,  
+}
+
+export default class RootNavigation extends React.PureComponent<Props> {
   _notificationSubscription: any
 
   componentDidMount() {
@@ -23,7 +28,7 @@ export default class RootNavigation extends React.Component<{}> {
   }
 
   render() {
-    return <AppNavigator />
+    return <AppNavigator screenProps={this.props} />
   }
 
   _registerForPushNotifications() {
