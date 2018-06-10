@@ -11,7 +11,7 @@
 - `nvm use 8.11.2 && node_modules/.bin/exp ios`
 
 # To run eslint
-`nvm use 8.11.2 && node_modules/.bin/eslint App.js __tests__ api components constants navigation screens`
+`nvm use 8.11.2 && node_modules/.bin/eslint App.js __tests__ api components constants model navigation screens`
 
 # To run static type checking
 `nvm use 8.11.2 && node_modules/.bin/flow`

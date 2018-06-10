@@ -1,15 +1,11 @@
 import React from 'react'
 import { Platform, StatusBar, StyleSheet, View } from 'react-native'
-import { AppLoading, Asset, Font, SQLite } from 'expo'
+import { AppLoading, Asset, Font } from 'expo'
 import { Ionicons } from '@expo/vector-icons'
 
 import RootNavigation from './navigation/RootNavigation'
+import DbModel from './model/DbModel'
 import type { Item } from './model/Item'
-
-const db = SQLite.openDatabase('db.db')
-db.transaction(tx => {
-  tx.executeSql('create table if not exists items (id integer primary key not null, done int, value text);')
-})
 
 const styles = StyleSheet.create({
   container: {
@@ -17,32 +13,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 })
-
-function addItem(): Promise<Array<Item>> {
-  return new Promise((resolve, reject) =>
-    db.transaction(tx => {
-      tx.executeSql(
-        'insert into items (done, value) values (0, ?)',
-        ['text'])
-      tx.executeSql(
-        'select * from items',
-        [],
-        (tx, { rows: { _array } }) => resolve(_array))
-    },
-    (e: Error) => reject(e))
-  )
-}
-
-function loadItems(): Promise<Array<Item>> {
-  return new Promise((resolve, reject) =>
-    db.transaction(tx =>
-      tx.executeSql(
-        'select * from items',
-        [],
-        (tx, { rows: { _array } }) => resolve(_array)),
-    (e: Error) => reject(e))
-  )
-}
 
 type Props = {
   skipLoadingScreen: boolean,
@@ -53,14 +23,20 @@ type State = {
   items: Array<Item>,
 }
 
-export default class App extends React.Component<Props, State> {
-  state = {
-    isLoadingComplete: false,
-    items: [],
+export default class App extends React.PureComponent<Props, State> {
+  model: DbModel
+
+  constructor() {
+    super()
+    this.model = new DbModel()
+    this.state = {
+      isLoadingComplete: false,
+      items: [],
+    }
   }
 
   componentDidMount() {
-    loadItems().then(items => this.setState({ items }))
+    this.model.loadItems().then(items => this.setState({ items }))
   }
 
   render() {
@@ -73,7 +49,7 @@ export default class App extends React.Component<Props, State> {
       return <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <RootNavigation
-          addItem={() => addItem().then(items => this.setState({ items }))}
+          addItem={() => this.model.addItem().then(items => this.setState({ items }))}
           items={this.state.items} />
       </View>
     }
