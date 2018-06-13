@@ -3,9 +3,9 @@ import { Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { AppLoading, Asset, Font } from 'expo'
 import { Ionicons } from '@expo/vector-icons'
 
-import RootNavigation from './navigation/RootNavigation'
-import DbModel from './model/DbModel'
-import type { Card } from './model/Card'
+import RootNavigation from './src/navigation/RootNavigation'
+import DbModel from './src/model/DbModel'
+import type { Card } from './src/model/Card'
 
 const styles = StyleSheet.create({
   container: {
