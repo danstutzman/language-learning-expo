@@ -10,10 +10,10 @@ import {
   View,
 } from 'react-native'
 
-import type { Noun } from '../model/Noun'
+import type { Card } from '../model/Card'
 
 type Props = {|
-  nouns: Array<Noun>,
+  cards: Array<Card>,
 |}
 
 const styles = StyleSheet.create({

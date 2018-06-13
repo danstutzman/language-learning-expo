@@ -7,12 +7,12 @@ import {
   View,
 } from 'react-native'
 
-import type { Noun } from '../model/Noun'
+import type { Card } from '../model/Card'
 
 type Props = {|
-  nouns: Array<Noun>,
-  showAddNounScreen: () => void,
-  showEditNounScreen: (nounId: number) => void,
+  cards: Array<Card>,
+  showAddCardScreen: () => void,
+  showEditCardScreen: (cardId: number) => void,
 |}
 
 const styles = StyleSheet.create({
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingTop: 30,
   },
-  idColumn: {
+  cardIdColumn: {
     width: 20,
   },
   englishColumn: {
@@ -31,6 +31,9 @@ const styles = StyleSheet.create({
   },
   spanishColumn: {
     flex: 1,
+  },
+  typeColumn: {
+    width: 40,
   },
   editColumn: {
     width: 20,
@@ -47,22 +50,24 @@ export default class HomeScreen extends React.PureComponent<Props> {
   render() {
     return <View style={styles.container}>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <Button onPress={this.props.showAddNounScreen} title="Add noun" />
+        <Button onPress={this.props.showAddCardScreen} title="Add card" />
 
         <View style={styles.row}>
-          <Text style={[styles.idColumn, styles.columnHeader]}>ID</Text>
+          <Text style={[styles.cardIdColumn, styles.columnHeader]}>ID</Text>
+          <Text style={[styles.typeColumn, styles.columnHeader]}>Type</Text>
           <Text style={[styles.englishColumn, styles.columnHeader]}>English</Text>
           <Text style={[styles.spanishColumn, styles.columnHeader]}>Spanish</Text>
           <Text style={[styles.editColumn, styles.columnHeader]}></Text>
         </View>
 
-        {this.props.nouns.map(noun => {
-          return <View key={noun.id} style={styles.row}>
-            <Text style={styles.idColumn}>{noun.id}</Text>
-            <Text style={styles.englishColumn}>{noun.en}</Text>
-            <Text style={styles.spanishColumn}>{noun.es}</Text>
+        {this.props.cards.map(card => {
+          return <View key={card.cardId} style={styles.row}>
+            <Text style={styles.cardIdColumn}>{card.cardId}</Text>
+            <Text style={styles.typeColumn}>{card.type}</Text>
+            <Text style={styles.englishColumn}>{card.en}</Text>
+            <Text style={styles.spanishColumn}>{card.es}</Text>
             <Button
-              onPress={() => this.props.showEditNounScreen(noun.id)}
+              onPress={() => this.props.showEditCardScreen(card.cardId)}
               style={styles.editColumn}
               title="Edit" />
           </View>

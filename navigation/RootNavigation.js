@@ -4,7 +4,7 @@ import { createSwitchNavigator } from 'react-navigation'
 
 import MainTabNavigator from './MainTabNavigator'
 import registerForPushNotificationsAsync from '../api/registerForPushNotificationsAsync'
-import type { Noun } from '../model/Noun'
+import type { Card } from '../model/Card'
 
 const AppNavigator = createSwitchNavigator({
   // You could add another route here for authentication.
@@ -13,10 +13,10 @@ const AppNavigator = createSwitchNavigator({
 })
 
 type Props = {|
-  addNoun: (noun: Noun) => Promise<Array<Noun>>,
-  deleteNoun: (noun: Noun) => Promise<Array<Noun>>,
-  editNoun: (noun: Noun) => Promise<Array<Noun>>,
-  nouns: Array<Noun>,
+  addCard: (card: Card) => Promise<Array<Card>>,
+  deleteCard: (card: Card) => Promise<Array<Card>>,
+  editCard: (card: Card) => Promise<Array<Card>>,
+  cards: Array<Card>,
 |}
 
 export default class RootNavigation extends React.PureComponent<Props> {

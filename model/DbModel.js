@@ -1,75 +1,81 @@
 import { SQLite } from 'expo'
 
-import type { Noun } from './Noun'
+import type { Card } from './Card'
 
 export default class DbModel {
-  createNounsTable: Promise<void>
+  createCardsTable: Promise<void>
   db: any
 
   constructor() {
     this.db = SQLite.openDatabase('db.db')
-    this.createNounsTable = this.initDb()
+    this.createCardsTable = this.initDb()
   }
 
   initDb = (): Promise<void> => {
     return new Promise((resolve, reject) => {
       this.db.transaction(tx => {
-        tx.executeSql(`CREATE TABLE IF NOT EXISTS nouns (
-          id INTEGER PRIMARY KEY NOT NULL,
-          en TEXT,
-          es TEXT);
-        `)
+        tx.executeSql(`CREATE TABLE IF NOT EXISTS cards (
+          cardId INTEGER PRIMARY KEY NOT NULL,
+          en TEXT NOT NULL,
+          es TEXT NOT NULL,
+          gender TEXT NOT NULL,
+          mnemonic TEXT NOT NULL,
+          type TEXT NOT NULL
+        );`)
         resolve()
       }, 
       (e: Error) => reject(e))
     })
   }
 
-  addNoun = (noun: Noun): Promise<Array<Noun>> => {
+  addCard = (card: Card): Promise<Array<Card>> => {
     return new Promise((resolve, reject) =>
-      this.createNounsTable.then(() => {
+      this.createCardsTable.then(() => {
         this.db.transaction(tx =>
           tx.executeSql(
-            'INSERT INTO nouns (en, es) VALUES (?, ?);',
-            [noun.en, noun.es]),
+            `INSERT INTO cards (en, es, gender, mnemonic, type)
+              VALUES (?, ?, ?, ?, ?);`,
+            [card.en, card.es, card.gender, card.mnemonic, card.type]),
         (e: Error) => reject(e))
-      }).then(this.loadNouns)
-        .then(nouns => resolve(nouns))
+      }).then(this.loadCards)
+        .then(cards => resolve(cards))
     )
   }
 
-  deleteNoun = (noun: Noun): Promise<Array<Noun>> => {
+  deleteCard = (card: Card): Promise<Array<Card>> => {
     return new Promise((resolve, reject) =>
-      this.createNounsTable.then(() => {
+      this.createCardsTable.then(() => {
         this.db.transaction(tx =>
           tx.executeSql(
-            'DELETE FROM nouns WHERE ID=?;',
-            [noun.id]),
+            'DELETE FROM cards WHERE cardId=?;',
+            [card.cardId]),
         (e: Error) => reject(e))
-      }).then(this.loadNouns)
-        .then(nouns => resolve(nouns))
+      }).then(this.loadCards)
+        .then(cards => resolve(cards))
     )
   }
 
-  editNoun = (noun: Noun): Promise<Array<Noun>> => {
+  editCard = (card: Card): Promise<Array<Card>> => {
     return new Promise((resolve, reject) =>
-      this.createNounsTable.then(() => {
+      this.createCardsTable.then(() => {
         this.db.transaction(tx =>
           tx.executeSql(
-            'UPDATE nouns SET en=?, es=? WHERE ID=?;',
-            [noun.en, noun.es, noun.id]),
+            `UPDATE cards SET en=?, es=?, gender=?, mnemonic=?, type=?
+              WHERE cardId=?;`,
+            [card.en, card.es, card.mnemonic, card.gender, card.type,
+              card.cardId]),
         (e: Error) => reject(e))
-      }).then(this.loadNouns)
-        .then(nouns => resolve(nouns))
+      }).then(this.loadCards)
+        .then(cards => resolve(cards))
     )
   }
 
-  loadNouns = (): Promise<Array<Noun>> => {
+  loadCards = (): Promise<Array<Card>> => {
     return new Promise((resolve, reject) =>
-      this.createNounsTable.then(() => {
+      this.createCardsTable.then(() => {
         this.db.transaction(tx =>
           tx.executeSql(
-            'SELECT id, en, es FROM nouns',
+            'SELECT cardId, en, es, gender, mnemonic, type FROM cards',
             [],
             (tx, { rows: { _array } }) => resolve(_array)),
         (e: Error) => reject(e))

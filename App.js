@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons'
 
 import RootNavigation from './navigation/RootNavigation'
 import DbModel from './model/DbModel'
-import type { Noun } from './model/Noun'
+import type { Card } from './model/Card'
 
 const styles = StyleSheet.create({
   container: {
@@ -20,7 +20,7 @@ type Props = {
 
 type State = {
   isLoadingComplete: boolean,
-  nouns: Array<Noun>,
+  cards: Array<Card>,
 }
 
 export default class App extends React.PureComponent<Props, State> {
@@ -31,12 +31,12 @@ export default class App extends React.PureComponent<Props, State> {
     this.model = new DbModel()
     this.state = {
       isLoadingComplete: false,
-      nouns: [],
+      cards: [],
     }
   }
 
   componentDidMount() {
-    this.model.loadNouns().then(nouns => this.setState({ nouns }))
+    this.model.loadCards().then(cards => this.setState({ cards }))
   }
 
   render() {
@@ -49,19 +49,19 @@ export default class App extends React.PureComponent<Props, State> {
       return <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <RootNavigation
-          addNoun={(noun: Noun) =>
-            this.model.addNoun(noun)
-              .then(nouns => this.setState({ nouns }))
+          addCard={(card: Card) =>
+            this.model.addCard(card)
+              .then(cards => this.setState({ cards }))
           }
-          deleteNoun={(noun: Noun) =>
-            this.model.deleteNoun(noun)
-              .then(nouns => this.setState({ nouns }))
+          deleteCard={(card: Card) =>
+            this.model.deleteCard(card)
+              .then(cards => this.setState({ cards }))
           }
-          editNoun={(noun: Noun) =>
-            this.model.editNoun(noun)
-              .then(nouns => this.setState({ nouns }))
+          editCard={(card: Card) =>
+            this.model.editCard(card)
+              .then(cards => this.setState({ cards }))
           }
-          nouns={this.state.nouns} />
+          cards={this.state.cards} />
       </View>
     }
   }

@@ -2,53 +2,54 @@ import React from 'react'
 import { Platform } from 'react-native'
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation'
 
-import EditNounScreen from '../screens/EditNounScreen'
+import { BLANK_CARD } from '../model/Card'
+import EditCardScreen from '../screens/EditCardScreen'
 import TabBarIcon from '../components/TabBarIcon'
 import HomeScreen from '../screens/HomeScreen'
 import LinksScreen from '../screens/LinksScreen'
 import ListScreen from '../screens/ListScreen'
 import SettingsScreen from '../screens/SettingsScreen'
-import type { Noun } from '../model/Noun'
+import type { Card } from '../model/Card'
 
 type ScreenProps = {
-  nouns: Array<Noun>,
-  addNoun: (noun: Noun) => void,
-  deleteNoun: (noun: Noun) => void,
-  editNoun: (noun: Noun) => void,
+  cards: Array<Card>,
+  addCard: (card: Card) => void,
+  deleteCard: (card: Card) => void,
+  editCard: (card: Card) => void,
 }
 
 const ListStack = createStackNavigator({
-  EditNounScreen: {
+  EditCardScreen: {
     screen: (args: {navigation: any, screenProps: ScreenProps }) => {
-      const { nounId } = args.navigation.state.params || { nounId: undefined }
-      const initialNoun = args.screenProps.nouns.find(noun => noun.id === nounId) ||
-        { id: -1, en: '', es: '' }
-      return <EditNounScreen
-        addNoun={args.screenProps.addNoun}
-        deleteNoun={args.screenProps.deleteNoun}
-        editNoun={args.screenProps.editNoun}
-        initialNoun={initialNoun} />
+      const { cardId } = args.navigation.state.params || { cardId: undefined }
+      const initialCard = args.screenProps.cards.find(card =>
+        card.cardId === cardId) || BLANK_CARD
+      return <EditCardScreen
+        addCard={args.screenProps.addCard}
+        deleteCard={args.screenProps.deleteCard}
+        editCard={args.screenProps.editCard}
+        initialCard={initialCard} />
     },
     navigationOptions: (args: {navigation: any}) => {
-      const { nounId } = args.navigation.state.params || { nounId: undefined }
-      return { title: (nounId === undefined) ? 'Add Noun' : 'Edit Noun' }
+      const { cardId } = args.navigation.state.params || { cardId: undefined }
+      return { title: (cardId === undefined) ? 'Add Card' : 'Edit Card' }
     },
   },
-  ListNouns: {
+  ListCards: {
     header: null,
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
       <ListScreen
-        showAddNounScreen={() => { args.navigation.navigate('EditNounScreen') }}
-        showEditNounScreen={(nounId: number) => {
-          args.navigation.navigate('EditNounScreen', { nounId })
+        showAddCardScreen={() => { args.navigation.navigate('EditCardScreen') }}
+        showEditCardScreen={(cardId: number) => {
+          args.navigation.navigate('EditCardScreen', { cardId })
         }}
-        nouns={args.screenProps.nouns} />,
+        cards={args.screenProps.cards} />,
     navigationOptions: () => ({
-      title: 'List Nouns',
+      title: 'List Cards',
     }),
   }
 }, {
-  initialRouteName: 'ListNouns',
+  initialRouteName: 'ListCards',
   navigationOptions: {
     headerStyle: {
       backgroundColor: '#fff',
@@ -77,7 +78,7 @@ const HomeStack = createStackNavigator({
     header: null,
     screen: (args: { screenProps: ScreenProps }) =>
       <HomeScreen
-        nouns={args.screenProps.nouns} />,
+        cards={args.screenProps.cards} />,
     title: 'Home',
   }
 })
