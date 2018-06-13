@@ -1,6 +1,9 @@
 import { SQLite } from 'expo'
 
 import type { Card } from './Card'
+import seedCards from './seedCards'
+
+const RESEED_CARDS_TABLE = false
 
 export default class DbModel {
   createCardsTable: Promise<void>
@@ -14,17 +17,62 @@ export default class DbModel {
   initDb = (): Promise<void> => {
     return new Promise((resolve, reject) => {
       this.db.transaction(tx => {
-        tx.executeSql(`CREATE TABLE IF NOT EXISTS cards (
-          cardId INTEGER PRIMARY KEY NOT NULL,
-          en TEXT NOT NULL,
-          es TEXT NOT NULL,
-          gender TEXT NOT NULL,
-          mnemonic TEXT NOT NULL,
-          type TEXT NOT NULL
-        );`)
-        resolve()
+        tx.executeSql(
+          `SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?;`,
+          ['cards'],
+          (tx, { rows: { _array } }) => {
+            const exists = (_array[0]['COUNT(*)'] == 1)
+            if (exists) {
+              if (RESEED_CARDS_TABLE) {
+                tx.executeSql(`DROP TABLE cards`, [], () =>
+                  tx.executeSql(`CREATE TABLE cards (
+                    cardId INTEGER PRIMARY KEY NOT NULL,
+                    en TEXT NOT NULL,
+                    es TEXT NOT NULL,
+                    gender TEXT NOT NULL,
+                    mnemonic TEXT NOT NULL,
+                    type TEXT NOT NULL
+                  );`, [], () => this.seedCardsTable(tx).then(resolve)))
+              } else {
+                resolve()
+              }
+            } else {
+              tx.executeSql(`CREATE TABLE cards (
+                cardId INTEGER PRIMARY KEY NOT NULL,
+                en TEXT NOT NULL,
+                es TEXT NOT NULL,
+                gender TEXT NOT NULL,
+                mnemonic TEXT NOT NULL,
+                type TEXT NOT NULL
+              );`, [], () => this.seedCardsTable(tx).then(resolve))
+            }
+          })
       }, 
       (e: Error) => reject(e))
+    })
+  }
+
+  seedCardsTable = (tx: any): Promise<void> => {
+    return new Promise(resolve => {
+      let sql = `INSERT INTO cards
+        (cardId, en, es, gender, mnemonic, type)
+        VALUES `
+      const values = []
+      for (let i = 0; i < seedCards.length; i++) {
+        const card = seedCards[i]
+        if (i > 0) {
+          sql += ', '
+        }
+        sql += '(?, ?, ?, ?, ?, ?)'
+        values.push(card.cardId)
+        values.push(card.en)
+        values.push(card.es)
+        values.push(card.gender)
+        values.push(card.mnemonic)
+        values.push(card.type)
+      }
+      sql += ';'
+      tx.executeSql(sql, values, resolve)
     })
   }
 

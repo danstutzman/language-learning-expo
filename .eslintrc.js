@@ -29,7 +29,7 @@ module.exports = {
     indent: ['error', 2],
     'linebreak-style': ['error', 'unix'],
     'no-console': 'off',
-    quotes: ['error', 'single'],
+    quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
     'react/display-name': 'off',
     semi: ['error', 'never']
   }
