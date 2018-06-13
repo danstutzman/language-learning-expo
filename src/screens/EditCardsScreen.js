@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   },
 })
 
-export default class HomeScreen extends React.PureComponent<Props> {
+export default class EditCardsScreen extends React.PureComponent<Props> {
   render() {
     return <View style={styles.container}>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>

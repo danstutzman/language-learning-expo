@@ -3,13 +3,13 @@ import { Platform } from 'react-native'
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation'
 
 import { BLANK_CARD } from '../model/Card'
-import EditCardScreen from '../screens/EditCardScreen'
-import TabBarIcon from '../components/TabBarIcon'
-import HomeScreen from '../screens/HomeScreen'
-import LinksScreen from '../screens/LinksScreen'
-import ListScreen from '../screens/ListScreen'
-import SettingsScreen from '../screens/SettingsScreen'
 import type { Card } from '../model/Card'
+import EditCardScreen from '../screens/EditCardScreen'
+import EditCardsScreen from '../screens/EditCardsScreen'
+import HomeScreen from '../screens/HomeScreen'
+import TabBarIcon from '../components/TabBarIcon'
+import LinksScreen from '../screens/LinksScreen'
+import SettingsScreen from '../screens/SettingsScreen'
 
 type ScreenProps = {
   cards: Array<Card>,
@@ -18,7 +18,7 @@ type ScreenProps = {
   editCard: (card: Card) => void,
 }
 
-const ListStack = createStackNavigator({
+const EditStack = createStackNavigator({
   EditCardScreen: {
     screen: (args: {navigation: any, screenProps: ScreenProps }) => {
       const { cardId } = args.navigation.state.params || { cardId: undefined }
@@ -35,21 +35,21 @@ const ListStack = createStackNavigator({
       return { title: (cardId === undefined) ? 'Add Card' : 'Edit Card' }
     },
   },
-  ListCards: {
+  EditCards: {
     header: null,
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
-      <ListScreen
+      <EditCardsScreen
         showAddCardScreen={() => { args.navigation.navigate('EditCardScreen') }}
         showEditCardScreen={(cardId: number) => {
           args.navigation.navigate('EditCardScreen', { cardId })
         }}
         cards={args.screenProps.cards} />,
     navigationOptions: () => ({
-      title: 'List Cards',
+      title: 'Edit Cards',
     }),
   }
 }, {
-  initialRouteName: 'ListCards',
+  initialRouteName: 'EditCards',
   navigationOptions: {
     headerStyle: {
       backgroundColor: '#fff',
@@ -61,8 +61,8 @@ const ListStack = createStackNavigator({
   },
 })
 
-ListStack.navigationOptions = {
-  tabBarLabel: 'List',
+EditStack.navigationOptions = {
+  tabBarLabel: 'Edit',
   tabBarIcon: (args: { focused: boolean }) =>
     <TabBarIcon
       focused={args.focused}
@@ -129,7 +129,7 @@ SettingsStack.navigationOptions = {
 }
 
 export default createBottomTabNavigator({
-  ListStack,
+  EditStack,
   HomeStack,
   LinksStack,
   SettingsStack,
