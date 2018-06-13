@@ -6,6 +6,7 @@ import { BLANK_CARD } from '../model/Card'
 import type { Card } from '../model/Card'
 import EditCardScreen from '../screens/EditCardScreen'
 import EditCardsScreen from '../screens/EditCardsScreen'
+import type { Exposure } from '../model/Exposure'
 import TabBarIcon from '../components/TabBarIcon'
 import LinksScreen from '../screens/LinksScreen'
 import SettingsScreen from '../screens/SettingsScreen'
@@ -15,6 +16,7 @@ import SpeakQuizScreen from '../screens/SpeakQuizScreen'
 type ScreenProps = {
   cards: Array<Card>,
   addCard: (card: Card) => void,
+  addExposure: (exposure: Exposure) => void,
   deleteCard: (card: Card) => void,
   editCard: (card: Card) => void,
 }
@@ -89,7 +91,15 @@ const SpeakStack = createStackNavigator({
     header: null,
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
       <SpeakQuizScreen
-        topCard={args.screenProps.cards[0]} />,
+        card={args.screenProps.cards[0]}
+        exposeCard={(remembered: boolean) =>
+          args.screenProps.addExposure({
+            exposureId: 0,
+            cardId: args.screenProps.cards[0].cardId,
+            remembered,
+            createdAtSeconds: new Date().getTime() / 1000,
+          })
+        } />,
     title: 'Speak',
   }
 })

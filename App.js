@@ -3,9 +3,10 @@ import { Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { AppLoading, Asset, Font } from 'expo'
 import { Ionicons } from '@expo/vector-icons'
 
-import RootNavigation from './src/navigation/RootNavigation'
-import DbModel from './src/model/DbModel'
 import type { Card } from './src/model/Card'
+import DbModel from './src/model/DbModel'
+import type { Exposure } from './src/model/Exposure'
+import RootNavigation from './src/navigation/RootNavigation'
 
 const styles = StyleSheet.create({
   container: {
@@ -47,6 +48,11 @@ export default class App extends React.PureComponent<Props, State> {
         <RootNavigation
           addCard={(card: Card) =>
             this.model.addCard(card)
+              .then(this.model.loadCards)
+              .then(cards => this.setState({ cards }))
+          }
+          addExposure={(exposure: Exposure) =>
+            this.model.addExposure(exposure)
               .then(this.model.loadCards)
               .then(cards => this.setState({ cards }))
           }

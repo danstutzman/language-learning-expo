@@ -1,17 +1,6 @@
 import type { Card } from './Card'
+import type { Db } from './Db'
 import seedCards from './seedCards'
-
-type Tx = {
-  executeSql: (
-    string,
-    Array<any>,
-    (tx: Tx, { rows: { _array: Array<any> } }) => any
-  ) => void,
-}
-
-type Db = {
-  transaction: ((tx: Tx) => void, Error => void) => void,
-}
 
 export function checkExists(db: Db): Promise<boolean> {
   return new Promise((resolve, reject) =>
