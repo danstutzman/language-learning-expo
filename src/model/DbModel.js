@@ -47,7 +47,7 @@ export default class DbModel {
               );`, [], () => this.seedCardsTable(tx).then(resolve))
             }
           })
-      }, 
+      },
       (e: Error) => reject(e))
     })
   }
