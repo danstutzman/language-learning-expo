@@ -19,8 +19,8 @@ type Props = {
 }
 
 type State = {
-  isLoadingComplete: boolean,
   cards: Array<Card>,
+  isLoadingComplete: boolean,
 }
 
 export default class App extends React.PureComponent<Props, State> {
@@ -30,17 +30,13 @@ export default class App extends React.PureComponent<Props, State> {
     super()
     this.model = new DbModel()
     this.state = {
-      isLoadingComplete: false,
       cards: [],
+      isLoadingComplete: false,
     }
   }
 
-  componentDidMount() {
-    this.model.loadCards().then(cards => this.setState({ cards }))
-  }
-
   render() {
-    if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
+    if (!this.state.isLoadingComplete) { //} && !this.props.skipLoadingScreen) {
       return <AppLoading
         startAsync={this._loadResourcesAsync}
         onError={this._handleLoadingError}
@@ -51,14 +47,17 @@ export default class App extends React.PureComponent<Props, State> {
         <RootNavigation
           addCard={(card: Card) =>
             this.model.addCard(card)
+              .then(this.model.loadCards)
               .then(cards => this.setState({ cards }))
           }
           deleteCard={(card: Card) =>
             this.model.deleteCard(card)
+              .then(this.model.loadCards)
               .then(cards => this.setState({ cards }))
           }
           editCard={(card: Card) =>
             this.model.editCard(card)
+              .then(this.model.loadCards)
               .then(cards => this.setState({ cards }))
           }
           cards={this.state.cards} />
@@ -79,6 +78,9 @@ export default class App extends React.PureComponent<Props, State> {
         // to remove this if you are not using it in your app
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
+      this.model.initDb()
+        .then(this.model.loadCards)
+        .then(cards => this.setState({ cards })),
     ])
   }
 
@@ -92,4 +94,3 @@ export default class App extends React.PureComponent<Props, State> {
     this.setState({ isLoadingComplete: true })
   }
 }
-
