@@ -1,5 +1,3 @@
-import type { CardGender } from './CardGender'
-
 export const BLANK_CARD: Card = {
   cardId: 0,
   gender: '',
