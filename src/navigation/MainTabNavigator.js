@@ -6,10 +6,11 @@ import { BLANK_CARD } from '../model/Card'
 import type { Card } from '../model/Card'
 import EditCardScreen from '../screens/EditCardScreen'
 import EditCardsScreen from '../screens/EditCardsScreen'
-import HomeScreen from '../screens/HomeScreen'
 import TabBarIcon from '../components/TabBarIcon'
 import LinksScreen from '../screens/LinksScreen'
 import SettingsScreen from '../screens/SettingsScreen'
+import SpeakSummaryScreen from '../screens/SpeakSummaryScreen'
+import SpeakQuizScreen from '../screens/SpeakQuizScreen'
 
 type ScreenProps = {
   cards: Array<Card>,
@@ -73,18 +74,28 @@ EditStack.navigationOptions = {
       } />,
 }
 
-const HomeStack = createStackNavigator({
-  Home: {
+const SpeakStack = createStackNavigator({
+  Speak: {
     header: null,
-    screen: (args: { screenProps: ScreenProps }) =>
-      <HomeScreen
-        cards={args.screenProps.cards} />,
-    title: 'Home',
+    screen: (args: {navigation: any, screenProps: ScreenProps }) =>
+      <SpeakSummaryScreen
+        cards={args.screenProps.cards}
+        startSpeakQuiz={() => {
+          args.navigation.navigate('SpeakQuiz')
+        }} />,
+    title: 'Speak',
+  },
+  SpeakQuiz: {
+    header: null,
+    screen: (args: {navigation: any, screenProps: ScreenProps }) =>
+      <SpeakQuizScreen
+        topCard={args.screenProps.cards[0]} />,
+    title: 'Speak',
   }
 })
 
-HomeStack.navigationOptions = {
-  tabBarLabel: 'Home',
+SpeakStack.navigationOptions = {
+  tabBarLabel: 'Speak',
   tabBarIcon: (args: { focused: boolean }) =>
     <TabBarIcon
       focused={args.focused}
@@ -130,7 +141,7 @@ SettingsStack.navigationOptions = {
 
 export default createBottomTabNavigator({
   EditStack,
-  HomeStack,
+  SpeakStack,
   LinksStack,
   SettingsStack,
 })
