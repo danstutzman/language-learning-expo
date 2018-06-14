@@ -2,10 +2,9 @@ import { Notifications } from 'expo'
 import React from 'react'
 import { createSwitchNavigator } from 'react-navigation'
 
-import type { Card } from '../model/Card'
-import type { Exposure } from '../model/Exposure'
 import MainTabNavigator from './MainTabNavigator'
 import registerForPushNotificationsAsync from '../api/registerForPushNotificationsAsync'
+import type { ScreenProps } from './ScreenProps'
 
 const AppNavigator = createSwitchNavigator({
   // You could add another route here for authentication.
@@ -13,15 +12,7 @@ const AppNavigator = createSwitchNavigator({
   Main: MainTabNavigator,
 })
 
-type Props = {|
-  addCard: (card: Card) => Promise<Array<Card>>,
-  addExposure: (exposure: Exposure) => Promise<void>,
-  deleteCard: (card: Card) => Promise<Array<Card>>,
-  editCard: (card: Card) => Promise<Array<Card>>,
-  cards: Array<Card>,
-|}
-
-export default class RootNavigation extends React.PureComponent<Props> {
+export default class RootNavigation extends React.PureComponent<ScreenProps> {
   _notificationSubscription: any
 
   componentDidMount() {

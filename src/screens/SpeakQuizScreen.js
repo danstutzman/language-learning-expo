@@ -11,6 +11,7 @@ import type { Card } from '../model/Card'
 type Props = {|
   card: Card,
   exposeCard: (remembered: boolean) => void,
+  suspendCard: () => void,
 |}
 
 type State = {|
@@ -43,6 +44,9 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
     this.props.exposeCard(false)
   }
 
+  onSuspend = () =>
+    this.props.suspendCard()
+
   _renderForgotOrMnemonic() {
     if (this.state.showMnemonic) {
       return <View>
@@ -62,6 +66,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
       <Button onPress={this.onRemembered} title='Remembered' />
       {this._renderForgotOrMnemonic()}
+      <Button onPress={this.onSuspend} title='Suspend' />
     </View>
   }
 }

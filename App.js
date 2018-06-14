@@ -20,8 +20,9 @@ type Props = {
 }
 
 type State = {
-  cards: Array<Card>,
+  allCards: Array<Card>,
   isLoadingComplete: boolean,
+  speakCards: Array<Card>,
 }
 
 export default class App extends React.PureComponent<Props, State> {
@@ -31,8 +32,9 @@ export default class App extends React.PureComponent<Props, State> {
     super()
     this.model = new DbModel()
     this.state = {
-      cards: [],
+      allCards: [],
       isLoadingComplete: false,
+      speakCards: [],
     }
   }
 
@@ -46,27 +48,32 @@ export default class App extends React.PureComponent<Props, State> {
       return <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <RootNavigation
-          addCard={(card: Card) =>
+          addCard={(card: Card) => {
             this.model.addCard(card)
               .then(this.model.loadCards)
-              .then(cards => this.setState({ cards }))
-          }
-          addExposure={(exposure: Exposure) =>
+              .then((pair: [Array<Card>, Array<Card>]) =>
+                this.setState({ allCards: pair[0], speakCards: pair[1] }))
+          }}
+          addExposure={(exposure: Exposure) => {
             this.model.addExposure(exposure)
               .then(this.model.loadCards)
-              .then(cards => this.setState({ cards }))
-          }
-          deleteCard={(card: Card) =>
+              .then((pair: [Array<Card>, Array<Card>]) =>
+                this.setState({ allCards: pair[0], speakCards: pair[1] }))
+          }}
+          deleteCard={(card: Card) => {
             this.model.deleteCard(card)
               .then(this.model.loadCards)
-              .then(cards => this.setState({ cards }))
-          }
-          editCard={(card: Card) =>
+              .then((pair: [Array<Card>, Array<Card>]) =>
+                this.setState({ allCards: pair[0], speakCards: pair[1] }))
+          }}
+          editCard={(card: Card) => {
             this.model.editCard(card)
               .then(this.model.loadCards)
-              .then(cards => this.setState({ cards }))
-          }
-          cards={this.state.cards} />
+              .then((pair: [Array<Card>, Array<Card>]) =>
+                this.setState({ allCards: pair[0], speakCards: pair[1] }))
+          }}
+          allCards={this.state.allCards}
+          speakCards={this.state.speakCards} />
       </View>
     }
   }
@@ -86,7 +93,8 @@ export default class App extends React.PureComponent<Props, State> {
       }),
       this.model.initDb()
         .then(this.model.loadCards)
-        .then(cards => this.setState({ cards })),
+        .then((pair: [Array<Card>, Array<Card>]) =>
+          this.setState({ allCards: pair[0], speakCards: pair[1] }))
     ])
   }
 

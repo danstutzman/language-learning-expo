@@ -25,6 +25,7 @@ export function create(db: Db): Promise<void> {
           es TEXT NOT NULL,
           gender TEXT NOT NULL,
           mnemonic TEXT NOT NULL,
+          suspended BOOLEAN NOT NULL,
           type TEXT NOT NULL
         );`,
         [],
@@ -49,7 +50,7 @@ export function seed(db: Db): Promise<void> {
     db.transaction(
       tx => {
         let sql = `INSERT INTO cards
-          (cardId, en, es, gender, mnemonic, type)
+          (cardId, en, es, gender, mnemonic, suspended, type)
           VALUES `
         const values = []
         for (let i = 0; i < seedCards.length; i++) {
@@ -57,12 +58,13 @@ export function seed(db: Db): Promise<void> {
           if (i > 0) {
             sql += ', '
           }
-          sql += '(?, ?, ?, ?, ?, ?)'
+          sql += '(?, ?, ?, ?, ?, ?, ?)'
           values.push(card.cardId)
           values.push(card.en)
           values.push(card.es)
           values.push(card.gender)
           values.push(card.mnemonic)
+          values.push(card.suspended)
           values.push(card.type)
         }
         sql += ';'
@@ -77,9 +79,10 @@ export function insertRow(db: Db, card: Card): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `INSERT INTO cards (en, es, gender, mnemonic, type)
-        VALUES (?, ?, ?, ?, ?);`,
-        [card.en, card.es, card.gender, card.mnemonic, card.type],
+        `INSERT INTO cards (en, es, gender, mnemonic, suspended, type)
+        VALUES (?, ?, ?, ?, ?, ?);`,
+        [card.en, card.es, card.gender, card.mnemonic, card.suspended,
+          card.type],
         () => resolve()
       ),
       (e: Error) => reject(e)
@@ -104,9 +107,10 @@ export function updateRow(db: Db, card: Card): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `UPDATE cards SET en=?, es=?, gender=?, mnemonic=?, type=?
+        `UPDATE cards SET en=?, es=?, gender=?, mnemonic=?, suspended=?, type=?
           WHERE cardId=?;`,
-        [card.en, card.es, card.mnemonic, card.gender, card.type, card.cardId],
+        [card.en, card.es, card.mnemonic, card.gender, card.suspended,
+          card.type, card.cardId],
         () => resolve()
       ),
       (e: Error) => reject(e)
@@ -118,9 +122,12 @@ export function selectAll(db: Db): Promise<Array<Card>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        'SELECT cardId, en, es, gender, mnemonic, type FROM cards',
+        'SELECT cardId, en, es, gender, mnemonic, suspended, type FROM cards',
         [],
-        (tx, { rows: { _array } }) => resolve(_array)
+        (tx, { rows: { _array } }) => resolve(_array.map(row => ({
+          ...row,
+          suspended: row.suspended === 1,
+        })))
       ),
       (e: Error) => reject(e)
     )

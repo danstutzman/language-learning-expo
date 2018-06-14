@@ -4,6 +4,7 @@ export const BLANK_CARD: Card = {
   en: '',
   es: '',
   mnemonic: '',
+  suspended: false,
   type: '',
 }
 
@@ -12,6 +13,7 @@ export type Card = {|
   en: string,
   es: string,
   gender: string,
-  type: string,
   mnemonic: string,
+  suspended: boolean,
+  type: string,
 |}

@@ -133,4 +133,7 @@ export default ([
   {'type':'EsD', 'cardId':44,
     'en':'three', 'es':'tres', 'gender':'',
     'mnemonic':''}
-]: Array<Card>)
+].map(cardWithoutSuspended => ({
+  ...cardWithoutSuspended,
+  suspended: false,
+})): Array<Card>)

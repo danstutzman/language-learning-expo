@@ -54,12 +54,13 @@ export default class DbModel {
   editCard = (card: Card): Promise<void> =>
     cardsTable.updateRow(this.db, card)
 
-  loadCards = (): Promise<Array<Card>> => {
+  loadCards = (): Promise<[Array<Card>, Array<Card>]> => {
     return Promise.all([
       cardsTable.selectAll(this.db),
       exposuresTable.selectAll(this.db),
     ]).then((results: [Array<Card>, Array<Exposure>]) => {
-      const cards = results[0]
+      const allCards = results[0]
+
       const exposures = results[1]
       const cardIdToLastExposure: {[number]: Exposure} = {}
       for (const exposure of exposures) {
@@ -71,14 +72,15 @@ export default class DbModel {
       }
 
       // Sort non-exposed and earlier-exposed cards first
-      cards.sort((c1: Card, c2: Card) => {
+      const speakCards = allCards.filter((card: Card) => !card.suspended)
+      speakCards.sort((c1: Card, c2: Card) => {
         const e1 = cardIdToLastExposure[c1.cardId]
         const e2 = cardIdToLastExposure[c2.cardId]
         if (e1 === undefined) { return -1 }
         if (e2 === undefined) { return 1 }
         return e1.createdAtSeconds < e2.createdAtSeconds ? -1 : 1
       })
-      return cards
+      return [allCards, speakCards]
     })
   }
 

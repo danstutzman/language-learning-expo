@@ -10,7 +10,7 @@ import {
 import type { Card } from '../model/Card'
 
 type Props = {|
-  cards: Array<Card>,
+  allCards: Array<Card>,
   showAddCardScreen: () => void,
   showEditCardScreen: (cardId: number) => void,
 |}
@@ -60,7 +60,7 @@ export default class EditCardsScreen extends React.PureComponent<Props> {
           <Text style={[styles.editColumn, styles.columnHeader]}></Text>
         </View>
 
-        {this.props.cards.map(card => {
+        {this.props.allCards.map(card => {
           return <View key={card.cardId} style={styles.row}>
             <Text style={styles.cardIdColumn}>{card.cardId}</Text>
             <Text style={styles.typeColumn}>{card.type}</Text>
