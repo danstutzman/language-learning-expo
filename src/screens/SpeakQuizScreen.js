@@ -1,4 +1,5 @@
 import React from 'react'
+import { Speech } from 'expo'
 import {
   Button,
   StyleSheet,
@@ -113,12 +114,12 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
     if (this.countdown !== null) {
       this.countdown = setInterval(() =>
         this.setState(prevState => {
-          if (prevState.secondsLeft === 0) {
+          if (prevState.secondsLeft === 1) {
             clearInterval(this.countdown)
+            this.speakSpanish()
+            return { secondsLeft: 0 }
           } else {
-            return {
-              secondsLeft: prevState.secondsLeft - 1,
-            }
+            return { secondsLeft: prevState.secondsLeft - 1 }
           }
         }),
         1000
@@ -128,6 +129,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
   pressGlossTableRow = () => {
     clearInterval(this.countdown)
+    this.speakSpanish()
     this.setState(prevState => ({
       remembered: !prevState.remembered,
       secondsLeft: 0,
@@ -139,6 +141,9 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
   onSuspend = () =>
     this.props.suspendCard()
+
+  speakSpanish = () =>
+    Speech.speak(this.props.card.es, { language: 'es', rate: 0.5 })
 
   render() {
     return <View style={styles.container}>
