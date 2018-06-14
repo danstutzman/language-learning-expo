@@ -69,17 +69,17 @@ EditStack.navigationOptions = {
 
 const SpeakStack = createStackNavigator({
   Speak: {
-    header: null,
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
       <SpeakSummaryScreen
         cards={args.screenProps.speakCards}
         startSpeakQuiz={() => {
           args.navigation.navigate('SpeakQuiz')
         }} />,
-    title: 'Speak',
+    navigationOptions: () => ({
+      title: 'Speak in Spanish',
+    }),
   },
   SpeakQuiz: {
-    header: null,
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
       <SpeakQuizScreen
         card={args.screenProps.speakCards[0]}
@@ -96,7 +96,9 @@ const SpeakStack = createStackNavigator({
             ...args.screenProps.speakCards[0],
             suspended: true,
           })} />,
-    title: 'Speak',
+    navigationOptions: () => ({
+      title: 'Speak in Spanish',
+    }),
   }
 })
 

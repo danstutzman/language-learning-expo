@@ -3,9 +3,12 @@ import {
   Button,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native'
+import FontAwesome from '@expo/vector-icons/FontAwesome'
 
+import Colors from '../constants/Colors'
 import type { Card } from '../model/Card'
 
 type Props = {|
@@ -15,17 +18,69 @@ type Props = {|
 |}
 
 type State = {|
+  remembered: boolean,
   secondsLeft: number,
   showMnemonic: boolean,
 |}
+
+const SECONDS_LEFT_TO_ICON = {
+  3: 'hourglass-start',
+  2: 'hourglass-half',
+  1: 'hourglass-end',
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    alignItems: 'stretch',
   },
-  contentContainer: {
-    paddingTop: 30,
+  question: {
+    flex: 1,
+    justifyContent: 'center', // center vertically
+    alignItems: 'center', // center horizontally
+  },
+  instructions: {
+    marginTop: 10,
+    textAlign: 'center',
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  hourglass: {
+    marginRight: 10,
+    marginTop: 10,
+    textAlign: 'right',
+  },
+  englishToTranslate: {
+    fontVariant: ['small-caps'],
+    fontSize: 40,
+  },
+  gloss_table: {
+    flex: 1,
+    justifyContent: 'center', // center vertically
+  },
+  gloss_table_row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  gloss_table_english: {
+    fontVariant: ['small-caps'],
+    fontSize: 40,
+    marginLeft: 10,
+    flex: 1,
+  },
+  gloss_table_spanish: {
+    flex: 1,
+    fontSize: 40,
+    fontStyle: 'italic',
+    textAlign: 'right',
+    marginRight: 10,
+  },
+  forgotten: {
+    color: 'red',
+  },
+  remembered: {
+    color: 'green',
   },
 })
 
@@ -35,6 +90,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
+      remembered: false,
       secondsLeft: 3,
       showMnemonic: false,
     }
@@ -47,6 +103,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
   componentWillReceiveProps() {
     this.setState({
+      remembered: false,
       secondsLeft: 3,
       showMnemonic: false,
     }, this.setInterval)
@@ -69,28 +126,44 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
     }
   }
 
-  onRemembered = () =>
-    this.props.exposeCard(true)
+  pressGlossTableRow = () => {
+    clearInterval(this.countdown)
+    this.setState(prevState => ({
+      remembered: !prevState.remembered,
+      secondsLeft: 0,
+    }))
+  }
 
-  onForgot = () =>
-    this.props.exposeCard(false)
+  onNext = () =>
+    this.props.exposeCard(this.state.remembered)
 
   onSuspend = () =>
     this.props.suspendCard()
 
   render() {
     return <View style={styles.container}>
-      <Text>Speak the Spanish for:</Text>
-      <Text>{this.props.card.en}</Text>
-      <Text>secondsLeft: {this.state.secondsLeft}</Text>
+      <Text style={styles.instructions}>Tap word when you remember</Text>
+      <View style={styles.gloss_table}>
+        <TouchableOpacity onPress={this.pressGlossTableRow}>
+          <View style={styles.gloss_table_row}>
+            <Text style={styles.gloss_table_english}>{this.props.card.en}</Text>
+            {this.state.secondsLeft > 0 ?
+              <FontAwesome
+                style={styles.hourglass}
+                name={SECONDS_LEFT_TO_ICON[this.state.secondsLeft]}
+                size={26}
+                color="#ddd" /> :
+              <Text style={[
+                styles.gloss_table_spanish,
+                this.state.remembered ? styles.remembered : styles.forgotten,
+              ]}>
+                {this.props.card.es}
+              </Text>}
+          </View>
+        </TouchableOpacity>
+      </View>
 
-      {this.state.secondsLeft === 0 && <View>
-        <Text>{this.props.card.mnemonic}</Text>
-        <Text>{this.props.card.es}</Text>
-      </View>}
-
-      <Button onPress={this.onRemembered} title='Remembered' />
-      <Button onPress={this.onForgot} title='Forgot' />
+      <Button onPress={this.onNext} title='Next' />
       <Button onPress={this.onSuspend} title='Suspend' />
     </View>
   }
