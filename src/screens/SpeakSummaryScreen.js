@@ -74,7 +74,7 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
       return <View key={category} style={styles.listItem}>
         <Text style={[styles.listItemCategory, styles.listItemDisabled]}>
           {category}
-         </Text>
+        </Text>
         <Text style={[styles.listItemNumCards, styles.listItemDisabled]}>
           {numCards}
         </Text>
