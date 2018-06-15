@@ -6,7 +6,7 @@ import type { Leaf } from './Leaf'
 import * as leafsTable from './leafsTable'
 import * as exposuresTable from './exposuresTable'
 import type { Model } from './Model'
-
+import seedDeterminers from './seedDeterminers'
 
 export default class DbModel {
   db: any
@@ -61,27 +61,21 @@ export default class DbModel {
       }
     }
 
-    const byExposureCreatedAt = (leaf1: Leaf, leaf2: Leaf) => {
-      const e1 = leafIdToLastExposure[leaf1.leafId]
-      const e2 = leafIdToLastExposure[leaf2.leafId]
-      if (e1 === undefined) { return -1 }
-      if (e2 === undefined) { return 1 }
-      return e1.createdAtSeconds < e2.createdAtSeconds ? -1 : 1
-    }
     const isLeafReady = (leaf: Leaf) => {
       const lastExposure =
         leafIdToLastExposure[leaf.leafId] || { remembered: true }
       return !leaf.suspended && lastExposure.remembered
     }
 
-    const determiners = this.allLeafs
-      .filter((leaf: Leaf) => leaf.type === 'EsD')
-      .filter(isLeafReady)
-    determiners.sort(byExposureCreatedAt)
+    // const determiners = this.allLeafs
+    //   .filter((leaf: Leaf) => leaf.type === 'EsD')
+    //   .filter(isLeafReady)
+    // determiners.sort(byExposureCreatedAt)
+    const determiners = seedDeterminers(
+      this.allLeafs.filter((leaf: Leaf) => leaf.type === 'EsDMorpheme'))
     const nouns = this.allLeafs
       .filter((leaf: Leaf) => leaf.type === 'EsN')
       .filter(isLeafReady)
-    nouns.sort(byExposureCreatedAt)
 
     const speakCards: Array<Card> = []
     for (const determiner of determiners) {
@@ -89,11 +83,29 @@ export default class DbModel {
         if (determiner.gender === noun.gender ||
           determiner.gender === '') {
           speakCards.push({
-            leafs: [determiner, noun],
+            leafs: determiner.leafs.concat([noun]),
+            gender: determiner.gender,
           })
         }
       }
     }
+
+    const earliestExposureCreatedAt = (card: Card) => {
+      let earliest: number = 999999999999
+      for (const leaf of card.leafs) {
+        const lastExposure = leafIdToLastExposure[leaf.leafId]
+        if (lastExposure === undefined) {
+          earliest = 0
+        } else if (lastExposure.createdAtSeconds < earliest) {
+          earliest = lastExposure.createdAtSeconds
+        }
+      }
+      return earliest
+    }
+    const byEarliestExposureCreatedAt = (card1: Card, card2: Card) =>
+      earliestExposureCreatedAt(card1) < earliestExposureCreatedAt(card2) ?
+        -1 : 1
+    speakCards.sort(byEarliestExposureCreatedAt)
 
     return { allLeafs: this.allLeafs, speakCards }
   }

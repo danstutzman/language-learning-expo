@@ -50,7 +50,7 @@ export function seed(db: Db): Promise<void> {
     db.transaction(
       tx => {
         let sql = `INSERT INTO leafs
-          (leafId, en, es, gender, mnemonic, suspended, type)
+          (en, es, gender, mnemonic, suspended, type)
           VALUES `
         const values = []
         for (let i = 0; i < seedLeafs.length; i++) {
@@ -58,8 +58,7 @@ export function seed(db: Db): Promise<void> {
           if (i > 0) {
             sql += ', '
           }
-          sql += '(?, ?, ?, ?, ?, ?, ?)'
-          values.push(leaf.leafId)
+          sql += '(?, ?, ?, ?, ?, ?)'
           values.push(leaf.en)
           values.push(leaf.es)
           values.push(leaf.gender)

@@ -147,7 +147,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   speakSpanish = (leafs: Array<Leaf>) => {
-    const es = leafs.map(leaf => leaf.es).join(' ')
+    const es = leafs.map(leaf => leaf.es).join(' ').replace(/- -/g, '')
     Speech.speak(es, { language: 'es', rate: 0.5 })
   }
 
@@ -160,7 +160,10 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
             key={leaf.leafId}
             onPress={() => this.pressGlossTableRow(leaf)}>
             <View style={styles.gloss_table_row}>
-              <Text style={styles.gloss_table_english}>{leaf.en}</Text>
+              <Text style={styles.gloss_table_english}>
+                {this.state.secondsLeft > 0 && leaf.en.startsWith('(') ?
+                  '' : leaf.en}
+              </Text>
               {this.state.secondsLeft > 0 ?
                 <FontAwesome
                   style={styles.hourglass}
