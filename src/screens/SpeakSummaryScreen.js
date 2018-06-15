@@ -30,6 +30,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  listItemDisabled: {
+    color: 'gray',
+  },
   listItemCategory: {
     fontSize: 24,
     paddingLeft: 10,
@@ -65,14 +68,27 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
     }))
   }
 
-  renderListItem = (item: { item: CategoryAndNumCards }) =>
-    <TouchableOpacity
-      key={item.item.category}
-      style={styles.listItem}
-      onPress={() => this.props.startSpeakQuiz(item.item.category)}>
-      <Text style={styles.listItemCategory}>{item.item.category}</Text>
-      <Text style={styles.listItemNumCards}>{item.item.numCards}</Text>
-    </TouchableOpacity>
+  renderListItem = (item: { item: CategoryAndNumCards }) => {
+    const { category, numCards } = item.item
+    if (numCards === 0) {
+      return <View key={category} style={styles.listItem}>
+        <Text style={[styles.listItemCategory, styles.listItemDisabled]}>
+          {category}
+         </Text>
+        <Text style={[styles.listItemNumCards, styles.listItemDisabled]}>
+          {numCards}
+        </Text>
+      </View>
+    } else {
+      return <TouchableOpacity
+        key={category}
+        style={styles.listItem}
+        onPress={() => this.props.startSpeakQuiz(category)}>
+        <Text style={styles.listItemCategory}>{category}</Text>
+        <Text style={styles.listItemNumCards}>{numCards}</Text>
+      </TouchableOpacity>
+    }
+  }
 
   render() {
     return <View style={styles.container}>

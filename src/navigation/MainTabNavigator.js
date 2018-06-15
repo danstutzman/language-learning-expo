@@ -1,5 +1,5 @@
 import React from 'react'
-import { Platform } from 'react-native'
+import { Platform, Text } from 'react-native'
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation'
 
 import { BLANK_CARD } from '../model/Card'
@@ -85,18 +85,22 @@ const SpeakStack = createStackNavigator({
       const { cardIdToCategory, speakCards } = args.screenProps.model
       const topCard = speakCards.filter(card =>
         cardIdToCategory[card.cardId] === category)[0]
-      return <SpeakQuizScreen
-        card={topCard}
-        exposeCard={(remembered: boolean) =>
-          args.screenProps.addExposure({
-            exposureId: 0,
-            cardId: topCard.cardId,
-            remembered,
-            createdAtSeconds: new Date().getTime() / 1000,
-          })
-        }
-        suspendCard={() =>
-          args.screenProps.editCard({ ...topCard, suspended: true })} />
+      if (topCard === undefined) {
+        return <Text>no cards in this category</Text>
+      } else {
+        return <SpeakQuizScreen
+          card={topCard}
+          exposeCard={(remembered: boolean) =>
+            args.screenProps.addExposure({
+              exposureId: 0,
+              cardId: topCard.cardId,
+              remembered,
+              createdAtSeconds: new Date().getTime() / 1000,
+            })
+          }
+          suspendCard={() =>
+            args.screenProps.editCard({ ...topCard, suspended: true })} />
+      }
     },
     navigationOptions: () => ({
       title: 'Speak in Spanish',
