@@ -60,14 +60,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  listItemEn: {
-    fontSize: 24,
-    fontVariant: ['small-caps'],
-    paddingLeft: 10,
-  },
   listItemEs: {
     fontSize: 24,
     fontStyle: 'italic',
+    paddingLeft: 10,
+  },
+  listItemEn: {
+    fontSize: 24,
+    fontVariant: ['small-caps'],
     paddingRight: 10,
   },
 })
@@ -100,6 +100,8 @@ export default class EditCardsScreen extends React.PureComponent<Props, State> {
       const cards = cardsByType[type]
       if (cards !== undefined) {
         const sectionTitle = CARD_TYPE_TO_SECTION_TITLE[type]
+        cards.sort((card1: Card, card2: Card) =>
+          card1.es.localeCompare(card2.es))
         sections.push({ title: sectionTitle, data: cards })
       }
     }
@@ -115,16 +117,16 @@ export default class EditCardsScreen extends React.PureComponent<Props, State> {
 
   renderSectionHeader= (section: { section: any }) =>
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionHeaderEnglish}>English</Text>
-      <Text style={styles.sectionHeaderTitle}>{section.section.title}</Text>
       <Text style={styles.sectionHeaderSpanish}>Spanish</Text>
+      <Text style={styles.sectionHeaderTitle}>{section.section.title}</Text>
+      <Text style={styles.sectionHeaderEnglish}>English</Text>
     </View>
 
   renderListItem = (item: { item: Card }) =>
     <TouchableOpacity onPress={() => this.onPressListItem(item.item)}>
       <View style={styles.listItem}>
-        <Text style={styles.listItemEn}>{item.item.en}</Text>
         <Text style={styles.listItemEs}>{item.item.es}</Text>
+        <Text style={styles.listItemEn}>{item.item.en}</Text>
       </View>
     </TouchableOpacity>
 

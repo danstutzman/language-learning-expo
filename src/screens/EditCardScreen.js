@@ -64,19 +64,19 @@ export default class EditCardScreen extends React.PureComponent<Props, State> {
           this.setState({ card: { ...this.state.card, type } })}
         value={this.state.card.type} />
 
-      <Text>English</Text>
-      <TextInput
-        style={styles.textInput}
-        onChangeText={(en: string) =>
-          this.setState({ card: { ...this.state.card, en } })}
-        value={this.state.card.en} />
-
       <Text>Spanish</Text>
       <TextInput
         style={styles.textInput}
         onChangeText={(es: string) =>
           this.setState({ card: { ...this.state.card, es } })}
         value={this.state.card.es} />
+
+      <Text>English</Text>
+      <TextInput
+        style={styles.textInput}
+        onChangeText={(en: string) =>
+          this.setState({ card: { ...this.state.card, en } })}
+        value={this.state.card.en} />
 
       <Text>Gender</Text>
       <TextInput
