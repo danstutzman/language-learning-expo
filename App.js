@@ -46,8 +46,8 @@ export default class App extends React.PureComponent<Props, State> {
     if (!this.state.isLoadingComplete) { //} && !this.props.skipLoadingScreen) {
       return <AppLoading
         startAsync={this._loadResourcesAsync}
-        onError={this._handleLoadingError}
-        onFinish={this._handleFinishLoading} />
+        onError={(e: Error) => console.warn(e)}
+        onFinish={() => this.setState({ isLoadingComplete: true })} />
     } else {
       return <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
@@ -101,15 +101,5 @@ export default class App extends React.PureComponent<Props, State> {
       this.dbModel.init()
         .then((model: Model) => this.setState({ model }))
     ])
-  }
-
-  _handleLoadingError = (error: any) => {
-    // In this case, you might want to report the error to your error
-    // reporting service, for example Sentry
-    console.warn(error)
-  }
-
-  _handleFinishLoading = () => {
-    this.setState({ isLoadingComplete: true })
   }
 }

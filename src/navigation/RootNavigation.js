@@ -39,6 +39,7 @@ export default class RootNavigation extends React.PureComponent<ScreenProps> {
   }
 
   _handleNotification = (args: { origin: string, data: any }) => {
-    console.log(`Push notification ${args.origin} with data: ${JSON.stringify(args.data)}`)
+    console.warn(`Push notification ${args.origin} with data: ${
+      JSON.stringify(args.data)}`)
   }
 }
