@@ -7,7 +7,6 @@ import type { LeafIdRememberedPair } from './LeafIdRememberedPair'
 import * as leafsTable from './leafsTable'
 import * as exposuresTable from './exposuresTable'
 import type { Model } from './Model'
-import seedDeterminers from './seedDeterminers'
 
 export default class DbModel {
   db: any
@@ -68,12 +67,9 @@ export default class DbModel {
       return !leaf.suspended && lastExposure.remembered
     }
 
-    // const determiners = this.allLeafs
-    //   .filter((leaf: Leaf) => leaf.type === 'EsD')
-    //   .filter(isLeafReady)
-    // determiners.sort(byExposureCreatedAt)
-    const determiners = seedDeterminers(
-      this.allLeafs.filter((leaf: Leaf) => leaf.type === 'EsDMorpheme'))
+    const determiners = this.allLeafs
+      .filter((leaf: Leaf) => leaf.type === 'EsD')
+      .filter(isLeafReady)
     const nouns = this.allLeafs
       .filter((leaf: Leaf) => leaf.type === 'EsN')
       .filter(isLeafReady)
@@ -84,8 +80,7 @@ export default class DbModel {
         if (determiner.gender === noun.gender ||
           determiner.gender === '') {
           speakCards.push({
-            leafs: determiner.leafs.concat([noun]),
-            gender: determiner.gender,
+            leafs: [determiner, noun],
           })
         }
       }
