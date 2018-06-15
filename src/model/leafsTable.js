@@ -31,7 +31,7 @@ export function create(db: Db): Promise<void> {
         [],
         () => resolve()
       ),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from CREATE TABLE leafs: ${e.message}`)
     )
   })
 }
@@ -40,7 +40,7 @@ export function drop(db: Db): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(`DROP TABLE leafs`, [], () => resolve()),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from DROP TABLE leafs: ${e.message}`)
     )
   )
 }
@@ -70,7 +70,7 @@ export function seed(db: Db): Promise<void> {
         sql += ';'
         tx.executeSql(sql, values, () => resolve())
       },
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from INSERT into leafs: ${e.message}`)
     )
   )
 }
@@ -86,7 +86,7 @@ export function insertRow(db: Db, leaf: Leaf): Promise<Leaf> {
           leaf.type],
         (tx: any, result: any) => resolve({ ...leaf, leafId: result.insertId })
       ),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from INSERT into leafs: ${e.message}`)
     )
   )
 }
@@ -105,7 +105,7 @@ export function deleteRow(db: Db, leaf: Leaf): Promise<void> {
           }
         }
       ),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from DELETE FROM leafs: ${e.message}`)
     )
   )
 }
@@ -126,7 +126,7 @@ export function updateRow(db: Db, leaf: Leaf): Promise<void> {
           }
         }
       ),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from UPDATE leafs: ${e.message}`)
     )
   )
 }
@@ -142,7 +142,7 @@ export function selectAll(db: Db): Promise<Array<Leaf>> {
           suspended: row.suspended === 1,
         })))
       ),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from SELECT FROM leafs: ${e.message}`)
     )
   )
 }

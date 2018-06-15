@@ -12,7 +12,7 @@ export function checkExists(db: Db): Promise<boolean> {
         ['exposures'],
         (tx, { rows: { _array } }) => resolve(_array[0]['COUNT(*)'] === 1)
       ),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from check exists exposures: ${e.message}`)
     )
   )
 }
@@ -30,7 +30,7 @@ export function create(db: Db): Promise<void> {
         [],
         () => resolve()
       ),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from CREATE TABLE exposures: ${e.message}`)
     )
   })
 }
@@ -39,7 +39,7 @@ export function drop(db: Db): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(`DROP TABLE exposures`, [], () => resolve()),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from DROP TABLE exposures: ${e.message}`)
     )
   )
 }
@@ -55,7 +55,7 @@ export function insertRow(db: Db, exposure: Exposure): Promise<Exposure> {
         (tx: any, result: any) =>
           resolve({ ...exposure, exposureId: result.insertId })
       ),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from INSERT INTO exposures: ${e.message}`)
     )
   )
 }
@@ -74,7 +74,7 @@ export function selectAll(db: Db): Promise<Array<Exposure>> {
           resolve(_array)
         }
       ),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from SELECT FROM exposures: ${e.message}`)
     )
   )
 }
@@ -115,7 +115,7 @@ export function seed(db: Db, allLeafs: Array<Leaf>): Promise<void> {
         sql += ';'
         tx.executeSql(sql, values, () => resolve())
       },
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from INSERT INTO exposures: ${e.message}`)
     )
   )
 }
