@@ -74,7 +74,7 @@ export default class DbModel {
 
     // Sort non-exposed and earlier-exposed cards first
     const speakCards = this.allCards.filter((card: Card) =>
-      !card.suspended && card.type == 'EsN')
+      !card.suspended && card.type === 'EsN')
     speakCards.sort((c1: Card, c2: Card) => {
       const e1 = cardIdToLastExposure[c1.cardId]
       const e2 = cardIdToLastExposure[c2.cardId]

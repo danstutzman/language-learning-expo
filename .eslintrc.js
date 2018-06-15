@@ -27,6 +27,7 @@ module.exports = {
     'react'
   ],
   rules: {
+    eqeqeq: ['error'],
     indent: ['error', 2],
     'linebreak-style': ['error', 'unix'],
     'no-console': 'off',

@@ -7,7 +7,7 @@ export function checkExists(db: Db): Promise<boolean> {
       tx => tx.executeSql(
         `SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?;`,
         ['exposures'],
-        (tx, { rows: { _array } }) => resolve(_array[0]['COUNT(*)'] == 1)
+        (tx, { rows: { _array } }) => resolve(_array[0]['COUNT(*)'] === 1)
       ),
       (e: Error) => reject(e)
     )
