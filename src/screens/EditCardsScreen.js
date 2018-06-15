@@ -24,6 +24,10 @@ type State = {|
   searchText: string,
 |}
 
+const CARD_TYPE_TO_SECTION_TITLE = {
+  EsN: 'Nouns',
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -93,9 +97,14 @@ export default class EditCardsScreen extends React.PureComponent<Props, State> {
     }
 
     const sections = []
-    for (const type of Object.keys(cardsByType)) {
-      sections.push({ title: type, data: cardsByType[type] })
+    for (const type of Object.keys(CARD_TYPE_TO_SECTION_TITLE)) {
+      const cards = cardsByType[type]
+      if (cards !== undefined) {
+        const sectionTitle = CARD_TYPE_TO_SECTION_TITLE[type]
+        sections.push({ title: sectionTitle, data: cards })
+      }
     }
+
     return sections
   }
 
