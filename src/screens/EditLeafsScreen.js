@@ -11,22 +11,22 @@ import {
 } from 'react-native'
 import { SearchBar } from 'react-native-elements'
 
-import type { Card } from '../model/Card'
+import type { Leaf } from '../model/Leaf'
 import Colors from '../constants/Colors'
 
 type Props = {|
-  allCards: Array<Card>,
+  allLeafs: Array<Leaf>,
   exportDatabase: () => void,
   reseedDatabase: () => Promise<void>,
-  showAddCardScreen: () => void,
-  showEditCardScreen: (cardId: number) => void,
+  showAddLeafScreen: () => void,
+  showEditLeafScreen: (leafId: number) => void,
 |}
 
 type State = {|
   searchText: string,
 |}
 
-const CARD_TYPE_TO_SECTION_TITLE = {
+const LEAF_TYPE_TO_SECTION_TITLE = {
   EsD: 'Determiners',
   EsN: 'Nouns',
 }
@@ -75,37 +75,37 @@ const styles = StyleSheet.create({
   },
 })
 
-export default class EditCardsScreen extends React.PureComponent<Props, State> {
+export default class EditLeafsScreen extends React.PureComponent<Props, State> {
   searchBar: number
 
   state = {
     searchText: '',
   }
 
-  filterCardBySearch = (card: Card): boolean => {
+  filterLeafBySearch = (leaf: Leaf): boolean => {
     const needle = this.state.searchText.toLowerCase()
     return needle === '' ||
-      card.en.toLowerCase().indexOf(needle) !== -1 ||
-      card.es.toLowerCase().indexOf(needle) !== -1
+      leaf.en.toLowerCase().indexOf(needle) !== -1 ||
+      leaf.es.toLowerCase().indexOf(needle) !== -1
   }
 
-  groupCardsIntoSections = () => {
-    const cardsByType: {[string]: Array<Card>} = {}
-    for (const card of this.props.allCards.filter(this.filterCardBySearch)) {
-      if (cardsByType[card.type] === undefined) {
-        cardsByType[card.type] = []
+  groupLeafsIntoSections = () => {
+    const leafsByType: {[string]: Array<Leaf>} = {}
+    for (const leaf of this.props.allLeafs.filter(this.filterLeafBySearch)) {
+      if (leafsByType[leaf.type] === undefined) {
+        leafsByType[leaf.type] = []
       }
-      cardsByType[card.type].push(card)
+      leafsByType[leaf.type].push(leaf)
     }
 
     const sections = []
-    for (const type of Object.keys(CARD_TYPE_TO_SECTION_TITLE)) {
-      const cards = cardsByType[type]
-      if (cards !== undefined) {
-        const sectionTitle = CARD_TYPE_TO_SECTION_TITLE[type]
-        cards.sort((card1: Card, card2: Card) =>
-          card1.es.localeCompare(card2.es))
-        sections.push({ title: sectionTitle, data: cards })
+    for (const type of Object.keys(LEAF_TYPE_TO_SECTION_TITLE)) {
+      const leafs = leafsByType[type]
+      if (leafs !== undefined) {
+        const sectionTitle = LEAF_TYPE_TO_SECTION_TITLE[type]
+        leafs.sort((leaf1: Leaf, leaf2: Leaf) =>
+          leaf1.es.localeCompare(leaf2.es))
+        sections.push({ title: sectionTitle, data: leafs })
       }
     }
 
@@ -115,8 +115,8 @@ export default class EditCardsScreen extends React.PureComponent<Props, State> {
   onChangeSearchText = (searchText: string) =>
     this.setState({ searchText })
 
-  onPressListItem = (card: Card) =>
-    this.props.showEditCardScreen(card.cardId)
+  onPressListItem = (leaf: Leaf) =>
+    this.props.showEditLeafScreen(leaf.leafId)
 
   renderSectionHeader= (section: { section: any }) =>
     <View style={styles.sectionHeader}>
@@ -125,7 +125,7 @@ export default class EditCardsScreen extends React.PureComponent<Props, State> {
       <Text style={styles.sectionHeaderEnglish}>English</Text>
     </View>
 
-  renderListItem = (item: { item: Card }) =>
+  renderListItem = (item: { item: Leaf }) =>
     <TouchableOpacity onPress={() => this.onPressListItem(item.item)}>
       <View style={styles.listItem}>
         <Text style={styles.listItemEs}>{item.item.es}</Text>
@@ -145,17 +145,17 @@ export default class EditCardsScreen extends React.PureComponent<Props, State> {
 
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <SectionList
-          sections={this.groupCardsIntoSections()}
+          sections={this.groupLeafsIntoSections()}
           renderItem={this.renderListItem}
           renderSectionHeader={this.renderSectionHeader}
-          keyExtractor={item => item.cardId} />
+          keyExtractor={item => item.leafId} />
         <Button title='Export database' onPress={this.props.exportDatabase} />
         <Button title='Reseed database' onPress={this.props.reseedDatabase} />
       </ScrollView>
 
       <ActionButton
         buttonColor={Colors.tintColor}
-        onPress={this.props.showAddCardScreen} />
+        onPress={this.props.showAddLeafScreen} />
     </View>
   }
 }

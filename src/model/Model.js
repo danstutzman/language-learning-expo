@@ -1,7 +1,7 @@
-import type { Card } from './Card'
+import type { Leaf } from './Leaf'
 
 export type Model = {|
-  allCards: Array<Card>,
-  cardIdToCategory: {[number]: string},
-  speakCards: Array<Card>,
+  allLeafs: Array<Leaf>,
+  leafIdToCategory: {[number]: string},
+  speakLeafs: Array<Leaf>,
 |}

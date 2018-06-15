@@ -1,5 +1,5 @@
-export const BLANK_CARD: Card = {
-  cardId: 0,
+export const BLANK_LEAF: Leaf = {
+  leafId: 0,
   gender: '',
   en: '',
   es: '',
@@ -8,8 +8,8 @@ export const BLANK_CARD: Card = {
   type: '',
 }
 
-export type Card = {|
-  cardId: number,
+export type Leaf = {|
+  leafId: number,
   en: string,
   es: string,
   gender: string,

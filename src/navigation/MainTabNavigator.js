@@ -2,9 +2,9 @@ import React from 'react'
 import { Platform, Text } from 'react-native'
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation'
 
-import { BLANK_CARD } from '../model/Card'
-import EditCardScreen from '../screens/EditCardScreen'
-import EditCardsScreen from '../screens/EditCardsScreen'
+import { BLANK_LEAF } from '../model/Leaf'
+import EditLeafScreen from '../screens/EditLeafScreen'
+import EditLeafsScreen from '../screens/EditLeafsScreen'
 import TabBarIcon from '../components/TabBarIcon'
 import LinksScreen from '../screens/LinksScreen'
 import type { ScreenProps } from './ScreenProps'
@@ -13,39 +13,39 @@ import SpeakSummaryScreen from '../screens/SpeakSummaryScreen'
 import SpeakQuizScreen from '../screens/SpeakQuizScreen'
 
 const EditStack = createStackNavigator({
-  EditCardScreen: {
+  EditLeafScreen: {
     screen: (args: {navigation: any, screenProps: ScreenProps }) => {
-      const { cardId } = args.navigation.state.params || { cardId: undefined }
-      const initialCard = args.screenProps.model.allCards.find(card =>
-        card.cardId === cardId) || BLANK_CARD
-      return <EditCardScreen
-        addCard={args.screenProps.addCard}
-        deleteCard={args.screenProps.deleteCard}
-        editCard={args.screenProps.editCard}
-        initialCard={initialCard} />
+      const { leafId } = args.navigation.state.params || { leafId: undefined }
+      const initialLeaf = args.screenProps.model.allLeafs.find(leaf =>
+        leaf.leafId === leafId) || BLANK_LEAF
+      return <EditLeafScreen
+        addLeaf={args.screenProps.addLeaf}
+        deleteLeaf={args.screenProps.deleteLeaf}
+        editLeaf={args.screenProps.editLeaf}
+        initialLeaf={initialLeaf} />
     },
     navigationOptions: (args: {navigation: any}) => {
-      const { cardId } = args.navigation.state.params || { cardId: undefined }
-      return { title: (cardId === undefined) ? 'Add Card' : 'Edit Card' }
+      const { leafId } = args.navigation.state.params || { leafId: undefined }
+      return { title: (leafId === undefined) ? 'Add Leaf' : 'Edit Leaf' }
     },
   },
-  EditCards: {
+  EditLeafs: {
     header: null,
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
-      <EditCardsScreen
+      <EditLeafsScreen
         exportDatabase={args.screenProps.exportDatabase}
         reseedDatabase={args.screenProps.reseedDatabase}
-        showAddCardScreen={() => { args.navigation.navigate('EditCardScreen') }}
-        showEditCardScreen={(cardId: number) => {
-          args.navigation.navigate('EditCardScreen', { cardId })
+        showAddLeafScreen={() => { args.navigation.navigate('EditLeafScreen') }}
+        showEditLeafScreen={(leafId: number) => {
+          args.navigation.navigate('EditLeafScreen', { leafId })
         }}
-        allCards={args.screenProps.model.allCards} />,
+        allLeafs={args.screenProps.model.allLeafs} />,
     navigationOptions: () => ({
-      title: 'Edit Cards',
+      title: 'Edit Leafs',
     }),
   }
 }, {
-  initialRouteName: 'EditCards',
+  initialRouteName: 'EditLeafs',
   navigationOptions: {
     headerStyle: {
       backgroundColor: '#fff',
@@ -84,24 +84,24 @@ const SpeakStack = createStackNavigator({
   SpeakQuiz: {
     screen: (args: {navigation: any, screenProps: ScreenProps }) => {
       const { category } = args.navigation.state.params
-      const { cardIdToCategory, speakCards } = args.screenProps.model
-      const topCard = speakCards.filter(card =>
-        cardIdToCategory[card.cardId] === category)[0]
-      if (topCard === undefined) {
-        return <Text>no cards in this category</Text>
+      const { leafIdToCategory, speakLeafs } = args.screenProps.model
+      const topLeaf = speakLeafs.filter(leaf =>
+        leafIdToCategory[leaf.leafId] === category)[0]
+      if (topLeaf === undefined) {
+        return <Text>no leafs in this category</Text>
       } else {
         return <SpeakQuizScreen
-          card={topCard}
-          exposeCard={(remembered: boolean) =>
+          leaf={topLeaf}
+          exposeLeaf={(remembered: boolean) =>
             args.screenProps.addExposure({
               exposureId: 0,
-              cardId: topCard.cardId,
+              leafId: topLeaf.leafId,
               remembered,
               createdAtSeconds: new Date().getTime() / 1000,
             })
           }
-          suspendCard={() =>
-            args.screenProps.editCard({ ...topCard, suspended: true })} />
+          suspendLeaf={() =>
+            args.screenProps.editLeaf({ ...topLeaf, suspended: true })} />
       }
     },
     navigationOptions: () => ({

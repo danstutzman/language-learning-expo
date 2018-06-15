@@ -1,14 +1,14 @@
 import { SQLite } from 'expo'
 
-import type { Card } from './Card'
-import * as cardsTable from './cardsTable'
+import type { Leaf } from './Leaf'
+import * as leafsTable from './leafsTable'
 import type { Exposure } from './Exposure'
 import * as exposuresTable from './exposuresTable'
 import type { Model } from './Model'
 
 export default class DbModel {
   db: any
-  allCards: Array<Card>
+  allLeafs: Array<Leaf>
   allExposures: Array<Exposure>
 
   constructor() {
@@ -16,17 +16,17 @@ export default class DbModel {
   }
 
   init = (): Promise<Model> =>
-    this._initCardsTable()
+    this._initLeafsTable()
       .then(this._initExposuresTable)
       .then(this._loadFromTables)
       .then(this._recomputeModel)
 
-  _initCardsTable = (): Promise<void> =>
-    cardsTable.checkExists(this.db)
+  _initLeafsTable = (): Promise<void> =>
+    leafsTable.checkExists(this.db)
       .then((exists: boolean) => {
         if (!exists) {
-          return cardsTable.create(this.db)
-            .then(() => cardsTable.seed(this.db))
+          return leafsTable.create(this.db)
+            .then(() => leafsTable.seed(this.db))
         }
       })
 
@@ -40,39 +40,39 @@ export default class DbModel {
 
   _loadFromTables = (): Promise<void> => {
     return Promise.all([
-      cardsTable.selectAll(this.db),
+      leafsTable.selectAll(this.db),
       exposuresTable.selectAll(this.db),
-    ]).then((results: [Array<Card>, Array<Exposure>]) => {
-      this.allCards = results[0]
+    ]).then((results: [Array<Leaf>, Array<Exposure>]) => {
+      this.allLeafs = results[0]
       this.allExposures = results[1]
     })
   }
 
-  // Reads in this.allCards and this.allExposures
+  // Reads in this.allLeafs and this.allExposures
   _recomputeModel = (): Model => {
-    const cardIdToLastExposure: {[number]: Exposure} = {}
+    const leafIdToLastExposure: {[number]: Exposure} = {}
     for (const exposure of this.allExposures) {
-      const lastExposure = cardIdToLastExposure[exposure.cardId]
+      const lastExposure = leafIdToLastExposure[exposure.leafId]
       if (lastExposure === undefined ||
           exposure.createdAtSeconds > lastExposure.createdAtSeconds) {
-        cardIdToLastExposure[exposure.cardId] = exposure
+        leafIdToLastExposure[exposure.leafId] = exposure
       }
     }
 
-    // Sort non-exposed and earlier-exposed cards first
-    const speakCards = this.allCards.filter((card: Card) =>
-      !card.suspended && card.type === 'EsN')
-    speakCards.sort((c1: Card, c2: Card) => {
-      const e1 = cardIdToLastExposure[c1.cardId]
-      const e2 = cardIdToLastExposure[c2.cardId]
+    // Sort non-exposed and earlier-exposed leafs first
+    const speakLeafs = this.allLeafs.filter((leaf: Leaf) =>
+      !leaf.suspended && leaf.type === 'EsN')
+    speakLeafs.sort((c1: Leaf, c2: Leaf) => {
+      const e1 = leafIdToLastExposure[c1.leafId]
+      const e2 = leafIdToLastExposure[c2.leafId]
       if (e1 === undefined) { return -1 }
       if (e2 === undefined) { return 1 }
       return e1.createdAtSeconds < e2.createdAtSeconds ? -1 : 1
     })
 
-    const cardIdToCategory: {[number]: string} = {}
-    for (const card of this.allCards) {
-      const exposure = cardIdToLastExposure[card.cardId]
+    const leafIdToCategory: {[number]: string} = {}
+    for (const leaf of this.allLeafs) {
+      const exposure = leafIdToLastExposure[leaf.leafId]
 
       let category: string
       if (exposure === undefined) {
@@ -84,32 +84,32 @@ export default class DbModel {
           category = 'BROKEN'
         }
       }
-      cardIdToCategory[card.cardId] = category
+      leafIdToCategory[leaf.leafId] = category
     }
 
-    return { allCards: this.allCards, speakCards, cardIdToCategory }
+    return { allLeafs: this.allLeafs, speakLeafs, leafIdToCategory }
   }
 
-  addCard = (cardWithoutCardId: Card): Promise<Model> =>
-    cardsTable.insertRow(this.db, cardWithoutCardId)
-      .then((cardWithCardId: Card) => {
-        this.allCards.push(cardWithCardId)
+  addLeaf = (leafWithoutLeafId: Leaf): Promise<Model> =>
+    leafsTable.insertRow(this.db, leafWithoutLeafId)
+      .then((leafWithLeafId: Leaf) => {
+        this.allLeafs.push(leafWithLeafId)
         return this._recomputeModel()
       })
 
-  deleteCard = (cardToDelete: Card): Promise<Model> =>
-    cardsTable.deleteRow(this.db, cardToDelete)
+  deleteLeaf = (leafToDelete: Leaf): Promise<Model> =>
+    leafsTable.deleteRow(this.db, leafToDelete)
       .then(() => {
-        this.allCards = this.allCards.filter(card =>
-          card.cardId !== cardToDelete.cardId)
+        this.allLeafs = this.allLeafs.filter(leaf =>
+          leaf.leafId !== leafToDelete.leafId)
         return this._recomputeModel()
       })
 
-  editCard = (updatedCard: Card): Promise<Model> =>
-    cardsTable.updateRow(this.db, updatedCard)
+  editLeaf = (updatedLeaf: Leaf): Promise<Model> =>
+    leafsTable.updateRow(this.db, updatedLeaf)
       .then(() => {
-        this.allCards = this.allCards.map(card =>
-          card.cardId === updatedCard.cardId ? updatedCard : card)
+        this.allLeafs = this.allLeafs.map(leaf =>
+          leaf.leafId === updatedLeaf.leafId ? updatedLeaf : leaf)
         return this._recomputeModel()
       })
 
@@ -121,26 +121,26 @@ export default class DbModel {
       })
 
   serializeForEmail(): string {
-    const cardIdToEs: {[number]: string} = {}
-    for (const card of this.allCards) {
-      cardIdToEs[card.cardId] = card.es
+    const leafIdToEs: {[number]: string} = {}
+    for (const leaf of this.allLeafs) {
+      leafIdToEs[leaf.leafId] = leaf.es
     }
 
     return JSON.stringify(this.allExposures.map(exposure => ({
-      cardEs: cardIdToEs[exposure.cardId],
+      leafEs: leafIdToEs[exposure.leafId],
       remembered: exposure.remembered,
       createdAtSeconds: exposure.createdAtSeconds,
     })))
   }
 
   reseedDatabase = (): Promise<Model> =>
-    cardsTable.drop(this.db)
-      .then(() => cardsTable.create(this.db))
-      .then(() => cardsTable.seed(this.db))
+    leafsTable.drop(this.db)
+      .then(() => leafsTable.create(this.db))
+      .then(() => leafsTable.seed(this.db))
       .then(() => exposuresTable.drop(this.db))
       .then(() => exposuresTable.create(this.db))
-      .then(() => cardsTable.selectAll(this.db))
-      .then((allCards: Array<Card>) => exposuresTable.seed(this.db, allCards))
+      .then(() => leafsTable.selectAll(this.db))
+      .then((allLeafs: Array<Leaf>) => exposuresTable.seed(this.db, allLeafs))
       .then(this._loadFromTables)
       .then(this._recomputeModel)
 }

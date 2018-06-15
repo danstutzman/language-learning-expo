@@ -8,18 +8,18 @@ import {
   View,
 } from 'react-native'
 
-import type { Card } from '../model/Card'
-import { BLANK_CARD } from '../model/Card'
+import type { Leaf } from '../model/Leaf'
+import { BLANK_LEAF } from '../model/Leaf'
 
 type Props = {|
-  addCard: (card: Card) => void,
-  deleteCard: (card: Card) => void,
-  editCard: (card: Card) => void,
-  initialCard: Card,
+  addLeaf: (leaf: Leaf) => void,
+  deleteLeaf: (leaf: Leaf) => void,
+  editLeaf: (leaf: Leaf) => void,
+  initialLeaf: Leaf,
 |}
 
 type State = {|
-  card: Card,
+  leaf: Leaf,
 |}
 
 const styles = StyleSheet.create({
@@ -32,26 +32,26 @@ const styles = StyleSheet.create({
   },
 })
 
-export default class EditCardScreen extends React.PureComponent<Props, State> {
+export default class EditLeafScreen extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = { card: this.props.initialCard }
+    this.state = { leaf: this.props.initialLeaf }
   }
 
   componentWillUnmount() {
-    if (this.state.card.cardId !== 0) {
-      this.props.editCard(this.state.card)
+    if (this.state.leaf.leafId !== 0) {
+      this.props.editLeaf(this.state.leaf)
     }
   }
 
   onPressAdd = () => {
-    this.props.addCard(this.state.card)
-    this.setState({ card: BLANK_CARD })
+    this.props.addLeaf(this.state.leaf)
+    this.setState({ leaf: BLANK_LEAF })
   }
 
   onPressDelete = () => {
-    this.props.deleteCard(this.state.card)
-    this.setState({ card: BLANK_CARD })
+    this.props.deleteLeaf(this.state.leaf)
+    this.setState({ leaf: BLANK_LEAF })
   }
 
   render() {
@@ -61,45 +61,45 @@ export default class EditCardScreen extends React.PureComponent<Props, State> {
       <TextInput
         style={styles.textInput}
         onChangeText={(type: string) =>
-          this.setState({ card: { ...this.state.card, type } })}
-        value={this.state.card.type} />
+          this.setState({ leaf: { ...this.state.leaf, type } })}
+        value={this.state.leaf.type} />
 
       <Text>Spanish</Text>
       <TextInput
         style={styles.textInput}
         onChangeText={(es: string) =>
-          this.setState({ card: { ...this.state.card, es } })}
-        value={this.state.card.es} />
+          this.setState({ leaf: { ...this.state.leaf, es } })}
+        value={this.state.leaf.es} />
 
       <Text>English</Text>
       <TextInput
         style={styles.textInput}
         onChangeText={(en: string) =>
-          this.setState({ card: { ...this.state.card, en } })}
-        value={this.state.card.en} />
+          this.setState({ leaf: { ...this.state.leaf, en } })}
+        value={this.state.leaf.en} />
 
       <Text>Gender</Text>
       <TextInput
         style={styles.textInput}
         onChangeText={(gender: string) =>
-          this.setState({ card: { ...this.state.card, gender } })}
-        value={this.state.card.gender} />
+          this.setState({ leaf: { ...this.state.leaf, gender } })}
+        value={this.state.leaf.gender} />
 
       <Text>Mnemonic</Text>
       <TextInput
         style={styles.textInput}
         onChangeText={(mnemonic: string) =>
-          this.setState({ card: { ...this.state.card, mnemonic } })}
-        value={this.state.card.mnemonic} />
+          this.setState({ leaf: { ...this.state.leaf, mnemonic } })}
+        value={this.state.leaf.mnemonic} />
 
       <Text>Suspended</Text>
       <Switch
         title='Suspended'
         onValueChange={(suspended: boolean) =>
-          this.setState({ card: { ...this.state.card, suspended } })}
-        value={this.state.card.suspended} />
+          this.setState({ leaf: { ...this.state.leaf, suspended } })}
+        value={this.state.leaf.suspended} />
 
-      {this.state.card.cardId === 0 ?
+      {this.state.leaf.leafId === 0 ?
         <Button onPress={this.onPressAdd} title='Add' /> :
         <Button onPress={this.onPressDelete} title='Delete' />}
     </View>

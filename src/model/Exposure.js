@@ -1,6 +1,6 @@
 export type Exposure = {|
   exposureId: number,
-  cardId: number,
+  leafId: number,
   remembered: boolean,
   createdAtSeconds: number,
 |}

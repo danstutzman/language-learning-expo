@@ -1,12 +1,12 @@
-import type { Card } from '../model/Card'
+import type { Leaf } from '../model/Leaf'
 import type { Exposure } from '../model/Exposure'
 import type { Model } from '../model/Model'
 
 export type ScreenProps = {|
-  addCard: (card: Card) => void,
+  addLeaf: (leaf: Leaf) => void,
   addExposure: (exposure: Exposure) => void,
-  deleteCard: (card: Card) => void,
-  editCard: (card: Card) => void,
+  deleteLeaf: (leaf: Leaf) => void,
+  editLeaf: (leaf: Leaf) => void,
   exportDatabase: () => void,
   reseedDatabase: () => Promise<void>,
   model: Model,

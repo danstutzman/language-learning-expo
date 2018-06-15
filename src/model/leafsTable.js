@@ -1,16 +1,16 @@
-import type { Card } from './Card'
+import type { Leaf } from './Leaf'
 import type { Db } from './Db'
-import seedCards from './seedCards'
+import seedLeafs from './seedLeafs'
 
 export function checkExists(db: Db): Promise<boolean> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
         `SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?;`,
-        ['cards'],
+        ['leafs'],
         (tx, { rows: { _array } }) => resolve(_array[0]['COUNT(*)'] === 1)
       ),
-      (e: Error) => reject(e)
+      (e: Error) => reject(`Error from check exists leafs: ${e.message}`)
     )
   )
 }
@@ -19,8 +19,8 @@ export function create(db: Db): Promise<void> {
   return new Promise((resolve, reject) => {
     db.transaction(
       tx => tx.executeSql(
-        `CREATE TABLE cards (
-          cardId INTEGER PRIMARY KEY NOT NULL,
+        `CREATE TABLE leafs (
+          leafId INTEGER PRIMARY KEY NOT NULL,
           en TEXT NOT NULL,
           es TEXT NOT NULL,
           gender TEXT NOT NULL,
@@ -39,7 +39,7 @@ export function create(db: Db): Promise<void> {
 export function drop(db: Db): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
-      tx => tx.executeSql(`DROP TABLE cards`, [], () => resolve()),
+      tx => tx.executeSql(`DROP TABLE leafs`, [], () => resolve()),
       (e: Error) => reject(e)
     )
   )
@@ -49,23 +49,23 @@ export function seed(db: Db): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => {
-        let sql = `INSERT INTO cards
-          (cardId, en, es, gender, mnemonic, suspended, type)
+        let sql = `INSERT INTO leafs
+          (leafId, en, es, gender, mnemonic, suspended, type)
           VALUES `
         const values = []
-        for (let i = 0; i < seedCards.length; i++) {
-          const card = seedCards[i]
+        for (let i = 0; i < seedLeafs.length; i++) {
+          const leaf = seedLeafs[i]
           if (i > 0) {
             sql += ', '
           }
           sql += '(?, ?, ?, ?, ?, ?, ?)'
-          values.push(card.cardId)
-          values.push(card.en)
-          values.push(card.es)
-          values.push(card.gender)
-          values.push(card.mnemonic)
-          values.push(card.suspended)
-          values.push(card.type)
+          values.push(leaf.leafId)
+          values.push(leaf.en)
+          values.push(leaf.es)
+          values.push(leaf.gender)
+          values.push(leaf.mnemonic)
+          values.push(leaf.suspended)
+          values.push(leaf.type)
         }
         sql += ';'
         tx.executeSql(sql, values, () => resolve())
@@ -75,31 +75,31 @@ export function seed(db: Db): Promise<void> {
   )
 }
 
-// Returns Promise with Card with cardId set
-export function insertRow(db: Db, card: Card): Promise<Card> {
+// Returns Promise with Leaf with leafId set
+export function insertRow(db: Db, leaf: Leaf): Promise<Leaf> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `INSERT INTO cards (en, es, gender, mnemonic, suspended, type)
+        `INSERT INTO leafs (en, es, gender, mnemonic, suspended, type)
         VALUES (?, ?, ?, ?, ?, ?);`,
-        [card.en, card.es, card.gender, card.mnemonic, card.suspended,
-          card.type],
-        (tx: any, result: any) => resolve({ ...card, cardId: result.insertId })
+        [leaf.en, leaf.es, leaf.gender, leaf.mnemonic, leaf.suspended,
+          leaf.type],
+        (tx: any, result: any) => resolve({ ...leaf, leafId: result.insertId })
       ),
       (e: Error) => reject(e)
     )
   )
 }
 
-export function deleteRow(db: Db, card: Card): Promise<void> {
+export function deleteRow(db: Db, leaf: Leaf): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        'DELETE FROM cards WHERE cardId=?;',
-        [card.cardId],
+        'DELETE FROM leafs WHERE leafId=?;',
+        [leaf.leafId],
         (tx: any, result: any) => {
           if (result.rowsAffected !== 1) {
-            reject(`rowsAffected=${result.rowsAffected} from DELETE FROM cards`)
+            reject(`rowsAffected=${result.rowsAffected} from DELETE FROM leafs`)
           } else {
             resolve()
           }
@@ -110,17 +110,17 @@ export function deleteRow(db: Db, card: Card): Promise<void> {
   )
 }
 
-export function updateRow(db: Db, card: Card): Promise<void> {
+export function updateRow(db: Db, leaf: Leaf): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `UPDATE cards SET en=?, es=?, gender=?, mnemonic=?, suspended=?, type=?
-          WHERE cardId=?;`,
-        [card.en, card.es, card.mnemonic, card.gender, card.suspended,
-          card.type, card.cardId],
+        `UPDATE leafs SET en=?, es=?, gender=?, mnemonic=?, suspended=?, type=?
+          WHERE leafId=?;`,
+        [leaf.en, leaf.es, leaf.mnemonic, leaf.gender, leaf.suspended,
+          leaf.type, leaf.leafId],
         (tx: any, result: any) => {
           if (result.rowsAffected !== 1) {
-            reject(`rowsAffected=${result.rowsAffected} from UPDATE cards`)
+            reject(`rowsAffected=${result.rowsAffected} from UPDATE leafs`)
           } else {
             resolve()
           }
@@ -131,11 +131,11 @@ export function updateRow(db: Db, card: Card): Promise<void> {
   )
 }
 
-export function selectAll(db: Db): Promise<Array<Card>> {
+export function selectAll(db: Db): Promise<Array<Leaf>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        'SELECT cardId, en, es, gender, mnemonic, suspended, type FROM cards',
+        'SELECT leafId, en, es, gender, mnemonic, suspended, type FROM leafs',
         [],
         (tx, { rows: { _array } }) => resolve(_array.map(row => ({
           ...row,

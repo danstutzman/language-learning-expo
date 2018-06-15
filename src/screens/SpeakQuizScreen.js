@@ -9,12 +9,12 @@ import {
 } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
 
-import type { Card } from '../model/Card'
+import type { Leaf } from '../model/Leaf'
 
 type Props = {|
-  card: Card,
-  exposeCard: (remembered: boolean) => void,
-  suspendCard: () => void,
+  leaf: Leaf,
+  exposeLeaf: (remembered: boolean) => void,
+  suspendLeaf: () => void,
 |}
 
 type State = {|
@@ -101,7 +101,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (this.props.card.cardId !== prevProps.card.cardId) {
+    if (this.props.leaf.leafId !== prevProps.leaf.leafId) {
       this.setState({
         remembered: false,
         secondsLeft: 3,
@@ -136,13 +136,13 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   onNext = () =>
-    this.props.exposeCard(this.state.remembered)
+    this.props.exposeLeaf(this.state.remembered)
 
   onSuspend = () =>
-    this.props.suspendCard()
+    this.props.suspendLeaf()
 
   speakSpanish = () =>
-    Speech.speak(this.props.card.es, { language: 'es', rate: 0.5 })
+    Speech.speak(this.props.leaf.es, { language: 'es', rate: 0.5 })
 
   render() {
     return <View style={styles.container}>
@@ -150,7 +150,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
       <View style={styles.gloss_table}>
         <TouchableOpacity onPress={this.pressGlossTableRow}>
           <View style={styles.gloss_table_row}>
-            <Text style={styles.gloss_table_english}>{this.props.card.en}</Text>
+            <Text style={styles.gloss_table_english}>{this.props.leaf.en}</Text>
             {this.state.secondsLeft > 0 ?
               <FontAwesome
                 style={styles.hourglass}
@@ -161,7 +161,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
                 styles.gloss_table_spanish,
                 this.state.remembered ? styles.remembered : styles.forgotten,
               ]}>
-                {this.props.card.es}
+                {this.props.leaf.es}
               </Text>}
           </View>
         </TouchableOpacity>

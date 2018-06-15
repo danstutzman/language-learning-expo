@@ -4,7 +4,7 @@ import React from 'react'
 import { Alert, Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { email } from 'react-native-communications'
 
-import type { Card } from './src/model/Card'
+import type { Leaf } from './src/model/Leaf'
 import DbModel from './src/model/DbModel'
 import type { Exposure } from './src/model/Exposure'
 import type { Model } from './src/model/Model'
@@ -35,9 +35,9 @@ export default class App extends React.PureComponent<Props, State> {
     this.state = {
       isLoadingComplete: false,
       model: {
-        allCards: [],
-        cardIdToCategory: {},
-        speakCards: [],
+        allLeafs: [],
+        leafIdToCategory: {},
+        speakLeafs: [],
       }
     }
   }
@@ -52,20 +52,20 @@ export default class App extends React.PureComponent<Props, State> {
       return <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <RootNavigation
-          addCard={(card: Card) => {
-            this.dbModel.addCard(card)
+          addLeaf={(card: Leaf) => {
+            this.dbModel.addLeaf(card)
               .then(model => this.setState({ model }))
           }}
           addExposure={(exposure: Exposure) => {
             this.dbModel.addExposure(exposure)
               .then(model => this.setState({ model }))
           }}
-          deleteCard={(card: Card) => {
-            this.dbModel.deleteCard(card)
+          deleteLeaf={(card: Leaf) => {
+            this.dbModel.deleteLeaf(card)
               .then(model => this.setState({ model }))
           }}
-          editCard={(card: Card) => {
-            this.dbModel.editCard(card)
+          editLeaf={(card: Leaf) => {
+            this.dbModel.editLeaf(card)
               .then(model => this.setState({ model }))
           }}
           exportDatabase={() =>

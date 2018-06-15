@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     paddingLeft: 10,
   },
-  listItemNumCards: {
+  listItemNumLeafs: {
     fontSize: 24,
     paddingRight: 10,
   },
@@ -45,38 +45,38 @@ const styles = StyleSheet.create({
 
 const CATEGORIES = ['BROKEN', 'FIRST_TIME', 'SUCCEEDED']
 
-type CategoryAndNumCards = {
+type CategoryAndNumLeafs = {
   category: string,
-  numCards: number,
+  numLeafs: number,
 }
 
 export default class SpeakSummaryScreen extends React.PureComponent<Props> {
-  summarizeCategories(): Array<CategoryAndNumCards> {
-    const categoryToNumCards: {[string]: number} = {}
-    const { speakCards, cardIdToCategory } = this.props.model
-    for (const card of speakCards) {
-      const category = cardIdToCategory[card.cardId]
-      if (categoryToNumCards[category] === undefined) {
-        categoryToNumCards[category] = 0
+  summarizeCategories(): Array<CategoryAndNumLeafs> {
+    const categoryToNumLeafs: {[string]: number} = {}
+    const { speakLeafs, leafIdToCategory } = this.props.model
+    for (const leaf of speakLeafs) {
+      const category = leafIdToCategory[leaf.leafId]
+      if (categoryToNumLeafs[category] === undefined) {
+        categoryToNumLeafs[category] = 0
       }
-      categoryToNumCards[category] += 1
+      categoryToNumLeafs[category] += 1
     }
 
     return CATEGORIES.map(category => ({
       category,
-      numCards: categoryToNumCards[category] || 0,
+      numLeafs: categoryToNumLeafs[category] || 0,
     }))
   }
 
-  renderListItem = (item: { item: CategoryAndNumCards }) => {
-    const { category, numCards } = item.item
-    if (numCards === 0) {
+  renderListItem = (item: { item: CategoryAndNumLeafs }) => {
+    const { category, numLeafs } = item.item
+    if (numLeafs === 0) {
       return <View key={category} style={styles.listItem}>
         <Text style={[styles.listItemCategory, styles.listItemDisabled]}>
           {category}
         </Text>
-        <Text style={[styles.listItemNumCards, styles.listItemDisabled]}>
-          {numCards}
+        <Text style={[styles.listItemNumLeafs, styles.listItemDisabled]}>
+          {numLeafs}
         </Text>
       </View>
     } else {
@@ -85,7 +85,7 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
         style={styles.listItem}
         onPress={() => this.props.startSpeakQuiz(category)}>
         <Text style={styles.listItemCategory}>{category}</Text>
-        <Text style={styles.listItemNumCards}>{numCards}</Text>
+        <Text style={styles.listItemNumLeafs}>{numLeafs}</Text>
       </TouchableOpacity>
     }
   }

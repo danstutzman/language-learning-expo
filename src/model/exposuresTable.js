@@ -1,4 +1,4 @@
-import type { Card } from './Card'
+import type { Leaf } from './Leaf'
 import type { Db } from './Db'
 import type { Exposure } from './Exposure'
 import type { ExposureExport } from './exposuresExport'
@@ -23,7 +23,7 @@ export function create(db: Db): Promise<void> {
       tx => tx.executeSql(
         `CREATE TABLE exposures (
           exposureId INTEGER PRIMARY KEY NOT NULL,
-          cardId INTEGER NOT NULL,
+          leafId INTEGER NOT NULL,
           remembered BOOLEAN NOT NULL,
           createdAtSeconds REAL NOT NULL
         );`,
@@ -49,9 +49,9 @@ export function insertRow(db: Db, exposure: Exposure): Promise<Exposure> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `INSERT INTO exposures (cardId, remembered, createdAtSeconds)
+        `INSERT INTO exposures (leafId, remembered, createdAtSeconds)
         VALUES (?, ?, ?);`,
-        [exposure.cardId, exposure.remembered, exposure.createdAtSeconds],
+        [exposure.leafId, exposure.remembered, exposure.createdAtSeconds],
         (tx: any, result: any) =>
           resolve({ ...exposure, exposureId: result.insertId })
       ),
@@ -64,7 +64,7 @@ export function selectAll(db: Db): Promise<Array<Exposure>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `SELECT exposureId, cardId, remembered, createdAtSeconds
+        `SELECT exposureId, leafId, remembered, createdAtSeconds
           FROM exposures`,
         [],
         (tx, { rows: { _array } }) => {
@@ -79,36 +79,36 @@ export function selectAll(db: Db): Promise<Array<Exposure>> {
   )
 }
 
-export function seed(db: Db, allCards: Array<Card>): Promise<void> {
+export function seed(db: Db, allLeafs: Array<Leaf>): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => {
         if (exposuresExport.length === 0) { return resolve() }
 
-        const cardByEs: {[string]: Card} = {}
-        for (const card of allCards) {
-          if (cardByEs[card.es] !== undefined) {
-            return reject(`Multiple cards for es=${card.es}`)
+        const leafByEs: {[string]: Leaf} = {}
+        for (const leaf of allLeafs) {
+          if (leafByEs[leaf.es] !== undefined) {
+            return reject(`Multiple leafs for es=${leaf.es}`)
           }
-          cardByEs[card.es] = card
+          leafByEs[leaf.es] = leaf
         }
 
         let sql = `INSERT INTO exposures
-          (cardId, remembered, createdAtSeconds)
+          (leafId, remembered, createdAtSeconds)
           VALUES `
         const values = []
         for (let i = 0; i < exposuresExport.length; i++) {
           const export_: ExposureExport = exposuresExport[i]
-          const card = cardByEs[export_.cardEs]
-          if (card === undefined) {
-            return reject(`Can't find card for es=${export_.cardEs}`)
+          const leaf = leafByEs[export_.leafEs]
+          if (leaf === undefined) {
+            return reject(`Can't find leaf for es=${export_.leafEs}`)
           }
 
           if (i > 0) {
             sql += ', '
           }
           sql += '(?, ?, ?)'
-          values.push(card.cardId)
+          values.push(leaf.leafId)
           values.push(export_.remembered ? 1 : 0)
           values.push(export_.createdAtSeconds)
         }
