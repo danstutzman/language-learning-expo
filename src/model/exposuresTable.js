@@ -64,7 +64,12 @@ export function selectAll(db: Db): Promise<Array<Exposure>> {
         `SELECT exposureId, cardId, remembered, createdAtSeconds
           FROM exposures`,
         [],
-        (tx, { rows: { _array } }) => resolve(_array)
+        (tx, { rows: { _array } }) => {
+          for (const row of _array) {
+            row.remembered = (row.remembered === 1)
+          }
+          resolve(_array)
+        }
       ),
       (e: Error) => reject(e)
     )
