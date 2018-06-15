@@ -10,7 +10,8 @@ module.exports = {
   ],
   globals: {
     __DEV__: false,
-    fetch: false
+    fetch: false,
+    IntervalID: false
   },
   parser: 'babel-eslint',
   parserOptions: {

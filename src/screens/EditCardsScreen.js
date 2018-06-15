@@ -1,7 +1,6 @@
 import ActionButton from 'react-native-action-button'
 import React from 'react'
 import {
-  Button,
   ScrollView,
   SectionList,
   StyleSheet,
@@ -145,7 +144,7 @@ export default class EditCardsScreen extends React.PureComponent<Props, State> {
           sections={this.groupCardsIntoSections()}
           renderItem={this.renderListItem}
           renderSectionHeader={this.renderSectionHeader}
-          keyExtractor={(item, index) => item.cardId} />
+          keyExtractor={item => item.cardId} />
       </ScrollView>
 
       <ActionButton
