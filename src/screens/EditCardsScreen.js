@@ -24,6 +24,7 @@ type State = {|
 |}
 
 const CARD_TYPE_TO_SECTION_TITLE = {
+  EsD: 'Determiners',
   EsN: 'Nouns',
 }
 
