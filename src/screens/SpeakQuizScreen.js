@@ -9,7 +9,6 @@ import {
 } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
 
-import Colors from '../constants/Colors'
 import type { Card } from '../model/Card'
 
 type Props = {|
@@ -102,29 +101,30 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
     clearInterval(this.countdown)
   }
 
-  componentWillReceiveProps() {
-    this.setState({
-      remembered: false,
-      secondsLeft: 3,
-      showMnemonic: false,
-    }, this.setInterval)
+  componentDidUpdate(prevProps: Props) {
+    if (this.props.card.cardId !== prevProps.card.cardId) {
+      this.setState({
+        remembered: false,
+        secondsLeft: 3,
+        showMnemonic: false,
+      }, this.setInterval)
+    }
   }
 
   setInterval() {
     if (this.countdown !== null) {
-      this.countdown = setInterval(() =>
-        this.setState(prevState => {
-          if (prevState.secondsLeft === 1) {
-            clearInterval(this.countdown)
-            this.speakSpanish()
-            return { secondsLeft: 0 }
-          } else {
-            return { secondsLeft: prevState.secondsLeft - 1 }
-          }
-        }),
-        1000
-      )
+      clearInterval(this.countdown)
     }
+    this.countdown = setInterval(() =>
+      this.setState(prevState => {
+        if (prevState.secondsLeft === 1) {
+          clearInterval(this.countdown)
+          this.speakSpanish()
+          return { secondsLeft: 0 }
+        } else {
+          return { secondsLeft: prevState.secondsLeft - 1 }
+        }
+      }), 1000)
   }
 
   pressGlossTableRow = () => {
