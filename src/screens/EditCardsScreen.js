@@ -1,3 +1,4 @@
+import ActionButton from 'react-native-action-button'
 import React from 'react'
 import {
   Button,
@@ -9,6 +10,7 @@ import {
 import { SearchBar } from 'react-native-elements'
 
 import type { Card } from '../model/Card'
+import Colors from '../constants/Colors'
 
 type Props = {|
   allCards: Array<Card>,
@@ -83,8 +85,6 @@ export default class EditCardsScreen extends React.PureComponent<Props> {
         autoCorrect={false} />
 
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <Button onPress={this.props.showAddCardScreen} title="Add card" />
-
         <View style={styles.row}>
           <Text style={[styles.cardIdColumn, styles.columnHeader]}>ID</Text>
           <Text style={[styles.typeColumn, styles.columnHeader]}>Type</Text>
@@ -106,6 +106,10 @@ export default class EditCardsScreen extends React.PureComponent<Props> {
           </View>
         })}
       </ScrollView>
+
+      <ActionButton
+        buttonColor={Colors.tintColor}
+        onPress={this.props.showAddCardScreen} />
     </View>
   }
 }
