@@ -9,16 +9,16 @@ import {
 } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
 
+import type { Card } from '../model/Card'
 import type { Leaf } from '../model/Leaf'
 
 type Props = {|
-  leaf: Leaf,
-  exposeLeaf: (remembered: boolean) => void,
-  suspendLeaf: () => void,
+  card: Card,
+  exposeLeaf: (leafId: number, remembered: boolean) => void,
 |}
 
 type State = {|
-  remembered: boolean,
+  rememberedByLeafId: {[number]: boolean},
   secondsLeft: number,
   showMnemonic: boolean,
 |}
@@ -89,7 +89,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
-      remembered: false,
+      rememberedByLeafId: {},
       secondsLeft: 3,
       showMnemonic: false,
     }
@@ -101,9 +101,9 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (this.props.leaf.leafId !== prevProps.leaf.leafId) {
+    if (this.props.card !== prevProps.card) {
       this.setState({
-        remembered: false,
+        rememberedByLeafId: {},
         secondsLeft: 3,
         showMnemonic: false,
       }, this.setInterval)
@@ -118,7 +118,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
       this.setState(prevState => {
         if (prevState.secondsLeft === 1) {
           clearInterval(this.countdown)
-          this.speakSpanish()
+          this.speakSpanish(this.props.card.leafs)
           return { secondsLeft: 0 }
         } else {
           return { secondsLeft: prevState.secondsLeft - 1 }
@@ -126,49 +126,59 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
       }), 1000)
   }
 
-  pressGlossTableRow = () => {
+  pressGlossTableRow = (leaf: Leaf) => {
     clearInterval(this.countdown)
-    this.speakSpanish()
+    this.speakSpanish([leaf])
     this.setState(prevState => ({
-      remembered: !prevState.remembered,
+      rememberedByLeafId: {
+        ...prevState.rememberedByLeafId,
+        [leaf.leafId]: !prevState.rememberedByLeafId[leaf.leafId],
+      },
       secondsLeft: 0,
     }))
   }
 
-  onNext = () =>
-    this.props.exposeLeaf(this.state.remembered)
+  onNext = () => {
+    for (const leaf of this.props.card.leafs) {
+      this.props.exposeLeaf(
+        leaf.leafId,
+        this.state.rememberedByLeafId[leaf.leafId] || false)
+    }
+  }
 
-  onSuspend = () =>
-    this.props.suspendLeaf()
-
-  speakSpanish = () =>
-    Speech.speak(this.props.leaf.es, { language: 'es', rate: 0.5 })
+  speakSpanish = (leafs: Array<Leaf>) => {
+    const es = leafs.map(leaf => leaf.es).join(' ')
+    Speech.speak(es, { language: 'es', rate: 0.5 })
+  }
 
   render() {
     return <View style={styles.container}>
       <Text style={styles.instructions}>Tap word when you remember</Text>
       <View style={styles.gloss_table}>
-        <TouchableOpacity onPress={this.pressGlossTableRow}>
-          <View style={styles.gloss_table_row}>
-            <Text style={styles.gloss_table_english}>{this.props.leaf.en}</Text>
-            {this.state.secondsLeft > 0 ?
-              <FontAwesome
-                style={styles.hourglass}
-                name={SECONDS_LEFT_TO_ICON[this.state.secondsLeft]}
-                size={26}
-                color="#ddd" /> :
-              <Text style={[
-                styles.gloss_table_spanish,
-                this.state.remembered ? styles.remembered : styles.forgotten,
-              ]}>
-                {this.props.leaf.es}
-              </Text>}
-          </View>
-        </TouchableOpacity>
+        {this.props.card.leafs.map(leaf =>
+          <TouchableOpacity
+            key={leaf.leafId}
+            onPress={() => this.pressGlossTableRow(leaf)}>
+            <View style={styles.gloss_table_row}>
+              <Text style={styles.gloss_table_english}>{leaf.en}</Text>
+              {this.state.secondsLeft > 0 ?
+                <FontAwesome
+                  style={styles.hourglass}
+                  name={SECONDS_LEFT_TO_ICON[this.state.secondsLeft]}
+                  size={26}
+                  color="#ddd" /> :
+                <Text style={[
+                  styles.gloss_table_spanish,
+                  this.state.rememberedByLeafId[leaf.leafId] ?
+                    styles.remembered : styles.forgotten,
+                ]}>
+                  {leaf.es}
+                </Text>}
+            </View>
+          </TouchableOpacity>)}
       </View>
 
       <Button onPress={this.onNext} title='Next' />
-      <Button onPress={this.onSuspend} title='Suspend' />
     </View>
   }
 }

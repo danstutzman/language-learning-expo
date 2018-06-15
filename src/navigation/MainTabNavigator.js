@@ -74,34 +74,28 @@ const SpeakStack = createStackNavigator({
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
       <SpeakSummaryScreen
         model={args.screenProps.model}
-        startSpeakQuiz={(category: string) => {
-          args.navigation.navigate('SpeakQuiz', { category })
-        }} />,
+        startSpeakQuiz={() => { args.navigation.navigate('SpeakQuiz') }} />,
     navigationOptions: () => ({
       title: 'Speak in Spanish',
     }),
   },
   SpeakQuiz: {
     screen: (args: {navigation: any, screenProps: ScreenProps }) => {
-      const { category } = args.navigation.state.params
-      const { leafIdToCategory, speakLeafs } = args.screenProps.model
-      const topLeaf = speakLeafs.filter(leaf =>
-        leafIdToCategory[leaf.leafId] === category)[0]
-      if (topLeaf === undefined) {
-        return <Text>no leafs in this category</Text>
+      const { speakCards } = args.screenProps.model
+      const topCard = speakCards[0]
+      if (topCard === undefined) {
+        return <Text>no cards</Text>
       } else {
         return <SpeakQuizScreen
-          leaf={topLeaf}
-          exposeLeaf={(remembered: boolean) =>
+          card={topCard}
+          exposeLeaf={(leafId: number, remembered: boolean) => {
             args.screenProps.addExposure({
               exposureId: 0,
-              leafId: topLeaf.leafId,
+              leafId: leafId,
               remembered,
               createdAtSeconds: new Date().getTime() / 1000,
             })
-          }
-          suspendLeaf={() =>
-            args.screenProps.editLeaf({ ...topLeaf, suspended: true })} />
+          }} />
       }
     },
     navigationOptions: () => ({

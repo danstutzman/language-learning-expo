@@ -1,10 +1,12 @@
 import { SQLite } from 'expo'
 
+import type { Card } from './Card'
+import type { Exposure } from './Exposure'
 import type { Leaf } from './Leaf'
 import * as leafsTable from './leafsTable'
-import type { Exposure } from './Exposure'
 import * as exposuresTable from './exposuresTable'
 import type { Model } from './Model'
+
 
 export default class DbModel {
   db: any
@@ -59,35 +61,41 @@ export default class DbModel {
       }
     }
 
-    // Sort non-exposed and earlier-exposed leafs first
-    const speakLeafs = this.allLeafs.filter((leaf: Leaf) =>
-      !leaf.suspended && leaf.type === 'EsN')
-    speakLeafs.sort((c1: Leaf, c2: Leaf) => {
-      const e1 = leafIdToLastExposure[c1.leafId]
-      const e2 = leafIdToLastExposure[c2.leafId]
+    const byExposureCreatedAt = (leaf1: Leaf, leaf2: Leaf) => {
+      const e1 = leafIdToLastExposure[leaf1.leafId]
+      const e2 = leafIdToLastExposure[leaf2.leafId]
       if (e1 === undefined) { return -1 }
       if (e2 === undefined) { return 1 }
       return e1.createdAtSeconds < e2.createdAtSeconds ? -1 : 1
-    })
-
-    const leafIdToCategory: {[number]: string} = {}
-    for (const leaf of this.allLeafs) {
-      const exposure = leafIdToLastExposure[leaf.leafId]
-
-      let category: string
-      if (exposure === undefined) {
-        category = 'FIRST_TIME'
-      } else {
-        if (exposure.remembered) {
-          category = 'SUCCEEDED'
-        } else {
-          category = 'BROKEN'
-        }
-      }
-      leafIdToCategory[leaf.leafId] = category
+    }
+    const isLeafReady = (leaf: Leaf) => {
+      const lastExposure =
+        leafIdToLastExposure[leaf.leafId] || { remembered: true }
+      return !leaf.suspended && lastExposure.remembered
     }
 
-    return { allLeafs: this.allLeafs, speakLeafs, leafIdToCategory }
+    const determiners = this.allLeafs
+      .filter((leaf: Leaf) => leaf.type === 'EsD')
+      .filter(isLeafReady)
+    determiners.sort(byExposureCreatedAt)
+    const nouns = this.allLeafs
+      .filter((leaf: Leaf) => leaf.type === 'EsN')
+      .filter(isLeafReady)
+    nouns.sort(byExposureCreatedAt)
+
+    const speakCards: Array<Card> = []
+    for (const determiner of determiners) {
+      for (const noun of nouns) {
+        if (determiner.gender === noun.gender ||
+          determiner.gender === '') {
+          speakCards.push({
+            leafs: [determiner, noun],
+          })
+        }
+      }
+    }
+
+    return { allLeafs: this.allLeafs, speakCards }
   }
 
   addLeaf = (leafWithoutLeafId: Leaf): Promise<Model> =>
