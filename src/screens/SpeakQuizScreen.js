@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   hourglass: {
     marginRight: 10,
     marginTop: 10,
-    textAlign: 'right',
+    marginLeft: 'auto', // float right
   },
   englishToTranslate: {
     fontVariant: ['small-caps'],
@@ -61,20 +61,19 @@ const styles = StyleSheet.create({
   },
   gloss_table_row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
   },
   gloss_table_english: {
     fontVariant: ['small-caps'],
     fontSize: 40,
     marginLeft: 10,
-    flex: 1,
   },
   gloss_table_spanish: {
-    flex: 1,
     fontSize: 40,
     fontStyle: 'italic',
     textAlign: 'right',
     marginRight: 10,
+    marginLeft: 'auto', // float right
   },
   forgotten: {
     color: 'red',
