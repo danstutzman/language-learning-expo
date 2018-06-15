@@ -11,10 +11,11 @@ import { FontAwesome } from '@expo/vector-icons'
 
 import type { Card } from '../model/Card'
 import type { Leaf } from '../model/Leaf'
+import type { LeafIdRememberedPair } from '../model/LeafIdRememberedPair'
 
 type Props = {|
   card: Card,
-  exposeLeaf: (leafId: number, remembered: boolean) => void,
+  exposeLeafs: (pairs: Array<LeafIdRememberedPair>, createdAtSeconds: number) =>void,
 |}
 
 type State = {|
@@ -139,11 +140,14 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   onNext = () => {
+    const pairs: Array<LeafIdRememberedPair> = []
     for (const leaf of this.props.card.leafs) {
-      this.props.exposeLeaf(
-        leaf.leafId,
-        this.state.rememberedByLeafId[leaf.leafId] || false)
+      pairs.push({
+        leafId: leaf.leafId,
+        remembered: this.state.rememberedByLeafId[leaf.leafId] || false,
+      })
     }
+    this.props.exposeLeafs(pairs, new Date().getTime() / 1000)
   }
 
   speakSpanish = (leafs: Array<Leaf>) => {

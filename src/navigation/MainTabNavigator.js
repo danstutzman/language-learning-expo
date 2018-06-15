@@ -88,14 +88,7 @@ const SpeakStack = createStackNavigator({
       } else {
         return <SpeakQuizScreen
           card={topCard}
-          exposeLeaf={(leafId: number, remembered: boolean) => {
-            args.screenProps.addExposure({
-              exposureId: 0,
-              leafId: leafId,
-              remembered,
-              createdAtSeconds: new Date().getTime() / 1000,
-            })
-          }} />
+          exposeLeafs={args.screenProps.exposeLeafs} />
       }
     },
     navigationOptions: () => ({

@@ -44,17 +44,41 @@ export function drop(db: Db): Promise<void> {
   )
 }
 
-// Returns Promise with Exposure with exposureId set
-export function insertRow(db: Db, exposure: Exposure): Promise<Exposure> {
+// Returns Promise with Exposures with exposureId set
+export function insertRows(
+  db: Db,
+  exposures: Array<Exposure>
+): Promise<Array<Exposure>> {
   return new Promise((resolve, reject) =>
     db.transaction(
-      tx => tx.executeSql(
-        `INSERT INTO exposures (leafId, remembered, createdAtSeconds)
-        VALUES (?, ?, ?);`,
-        [exposure.leafId, exposure.remembered, exposure.createdAtSeconds],
-        (tx: any, result: any) =>
-          resolve({ ...exposure, exposureId: result.insertId })
-      ),
+      tx => {
+        let sql = `INSERT INTO exposures (leafId, remembered, createdAtSeconds)
+          VALUES `
+        let values = []
+        for (let i = 0; i < exposures.length; i++) {
+          const exposure = exposures[i]
+          if (i > 0) {
+            sql += ', '
+          }
+          sql += '(?, ?, ?)'
+          values.push(exposure.leafId)
+          values.push(exposure.remembered)
+          values.push(exposure.createdAtSeconds)
+        }
+        tx.executeSql(
+          sql,
+          values,
+          (tx: any, result: any) => {
+            const newExposures: Array<Exposure> = []
+            let exposureId = result.insertId - exposures.length + 1
+            for (const exposure of exposures) {
+              newExposures.push({ ...exposure, exposureId })
+              exposureId += 1
+            }
+            resolve(newExposures)
+          }
+        )
+      },
       (e: Error) => reject(`Error from INSERT INTO exposures: ${e.message}`)
     )
   )

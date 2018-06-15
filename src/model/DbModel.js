@@ -3,6 +3,7 @@ import { SQLite } from 'expo'
 import type { Card } from './Card'
 import type { Exposure } from './Exposure'
 import type { Leaf } from './Leaf'
+import type { LeafIdRememberedPair } from './LeafIdRememberedPair'
 import * as leafsTable from './leafsTable'
 import * as exposuresTable from './exposuresTable'
 import type { Model } from './Model'
@@ -133,12 +134,22 @@ export default class DbModel {
         return this._recomputeModel()
       })
 
-  addExposure = (exposure: Exposure): Promise<Model> =>
-    exposuresTable.insertRow(this.db, exposure)
-      .then(() => {
-        this.allExposures.push(exposure)
+  exposeLeafs = (
+    pairs: Array<LeafIdRememberedPair>,
+    createdAtSeconds: number
+  ): Promise<Model> => {
+    const exposures = pairs.map(pair => ({
+      exposureId: 0,
+      leafId: pair.leafId,
+      remembered: pair.remembered,
+      createdAtSeconds,
+    }))
+    return exposuresTable.insertRows(this.db, exposures)
+      .then((newExposures: Array<Exposure>) => {
+        this.allExposures = this.allExposures.concat(newExposures)
         return this._recomputeModel()
       })
+  }
 
   serializeForEmail(): string {
     const leafIdToEs: {[number]: string} = {}

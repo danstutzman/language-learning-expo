@@ -4,9 +4,9 @@ import React from 'react'
 import { Alert, Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { email } from 'react-native-communications'
 
-import type { Leaf } from './src/model/Leaf'
 import DbModel from './src/model/DbModel'
-import type { Exposure } from './src/model/Exposure'
+import type { Leaf } from './src/model/Leaf'
+import type { LeafIdRememberedPair } from './src/model/LeafIdRememberedPair'
 import type { Model } from './src/model/Model'
 import RootNavigation from './src/navigation/RootNavigation'
 
@@ -55,10 +55,6 @@ export default class App extends React.PureComponent<Props, State> {
             this.dbModel.addLeaf(card)
               .then(model => this.setState({ model }))
           }}
-          addExposure={(exposure: Exposure) => {
-            this.dbModel.addExposure(exposure)
-              .then(model => this.setState({ model }))
-          }}
           deleteLeaf={(card: Leaf) => {
             this.dbModel.deleteLeaf(card)
               .then(model => this.setState({ model }))
@@ -70,6 +66,11 @@ export default class App extends React.PureComponent<Props, State> {
           exportDatabase={() =>
             email(null, null, null, 'Lang learning export',
               this.dbModel.serializeForEmail())}
+          exposeLeafs={(pairs: Array<LeafIdRememberedPair>,
+            createdAtSeconds: number) => {
+            this.dbModel.exposeLeafs(pairs, createdAtSeconds)
+              .then(model => this.setState({ model }))
+          }}
           reseedDatabase={() =>
             this.dbModel.reseedDatabase()
               .then(model => this.setState({ model }))
