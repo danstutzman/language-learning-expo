@@ -6,6 +6,7 @@ import {
   Text,
   View,
 } from 'react-native'
+import { SearchBar } from 'react-native-elements'
 
 import type { Card } from '../model/Card'
 
@@ -15,6 +16,10 @@ type Props = {|
   showEditCardScreen: (cardId: number) => void,
 |}
 
+type State = {|
+  searchText: string,
+|}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -22,6 +27,10 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingTop: 30,
+  },
+  searchBarContainer: {
+    backgroundColor: 'white',
+    borderBottomWidth: 0,
   },
   cardIdColumn: {
     width: 20,
@@ -47,8 +56,32 @@ const styles = StyleSheet.create({
 })
 
 export default class EditCardsScreen extends React.PureComponent<Props> {
+  searchBar: number
+
+  state = {
+    searchText: '',
+  }
+
+  filterCardBySearch = (card: Card): boolean => {
+    const needle = this.state.searchText.toLowerCase()
+    return needle === '' ||
+      card.en.toLowerCase().indexOf(needle) !== -1 ||
+      card.es.toLowerCase().indexOf(needle) !== -1
+  }
+
+  onChangeSearchText = (searchText: string) =>
+    this.setState({ searchText })
+
   render() {
     return <View style={styles.container}>
+      <SearchBar
+        lightTheme
+        containerStyle={styles.searchBarContainer}
+        onChangeText={this.onChangeSearchText}
+        clearButtonMode={this.searchText === '' ? 'never' : 'always'}
+        autoCapitalize="none"
+        autoCorrect={false} />
+
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <Button onPress={this.props.showAddCardScreen} title="Add card" />
 
@@ -60,7 +93,7 @@ export default class EditCardsScreen extends React.PureComponent<Props> {
           <Text style={[styles.editColumn, styles.columnHeader]}></Text>
         </View>
 
-        {this.props.allCards.map(card => {
+        {this.props.allCards.filter(this.filterCardBySearch).map(card => {
           return <View key={card.cardId} style={styles.row}>
             <Text style={styles.cardIdColumn}>{card.cardId}</Text>
             <Text style={styles.typeColumn}>{card.type}</Text>
