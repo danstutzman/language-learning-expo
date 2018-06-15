@@ -4,6 +4,7 @@ import type { Card } from './Card'
 import * as cardsTable from './cardsTable'
 import type { Exposure } from './Exposure'
 import * as exposuresTable from './exposuresTable'
+import type { Model } from './Model'
 
 const RESEED_TABLES = false
 
@@ -54,7 +55,7 @@ export default class DbModel {
   editCard = (card: Card): Promise<void> =>
     cardsTable.updateRow(this.db, card)
 
-  loadCards = (): Promise<[Array<Card>, Array<Card>]> => {
+  loadCards = (): Promise<Model> => {
     return Promise.all([
       cardsTable.selectAll(this.db),
       exposuresTable.selectAll(this.db),
@@ -80,7 +81,7 @@ export default class DbModel {
         if (e2 === undefined) { return 1 }
         return e1.createdAtSeconds < e2.createdAtSeconds ? -1 : 1
       })
-      return [allCards, speakCards]
+      return { allCards, speakCards }
     })
   }
 

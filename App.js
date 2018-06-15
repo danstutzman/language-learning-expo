@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons'
 import type { Card } from './src/model/Card'
 import DbModel from './src/model/DbModel'
 import type { Exposure } from './src/model/Exposure'
+import type { Model } from './src/model/Model'
 import RootNavigation from './src/navigation/RootNavigation'
 
 const styles = StyleSheet.create({
@@ -20,21 +21,22 @@ type Props = {
 }
 
 type State = {
-  allCards: Array<Card>,
   isLoadingComplete: boolean,
-  speakCards: Array<Card>,
+  model: Model,
 }
 
 export default class App extends React.PureComponent<Props, State> {
-  model: DbModel
+  dbModel: DbModel
 
   constructor() {
     super()
-    this.model = new DbModel()
+    this.dbModel = new DbModel()
     this.state = {
-      allCards: [],
       isLoadingComplete: false,
-      speakCards: [],
+      model: {
+        allCards: [],
+        speakCards: [],
+      }
     }
   }
 
@@ -49,31 +51,27 @@ export default class App extends React.PureComponent<Props, State> {
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <RootNavigation
           addCard={(card: Card) => {
-            this.model.addCard(card)
-              .then(this.model.loadCards)
-              .then((pair: [Array<Card>, Array<Card>]) =>
-                this.setState({ allCards: pair[0], speakCards: pair[1] }))
+            this.dbModel.addCard(card)
+              .then(this.dbModel.loadCards)
+              .then((model: Model) => this.setState({ model }))
           }}
           addExposure={(exposure: Exposure) => {
-            this.model.addExposure(exposure)
-              .then(this.model.loadCards)
-              .then((pair: [Array<Card>, Array<Card>]) =>
-                this.setState({ allCards: pair[0], speakCards: pair[1] }))
+            this.dbModel.addExposure(exposure)
+              .then(this.dbModel.loadCards)
+              .then((model: Model) => this.setState({ model }))
           }}
           deleteCard={(card: Card) => {
-            this.model.deleteCard(card)
-              .then(this.model.loadCards)
-              .then((pair: [Array<Card>, Array<Card>]) =>
-                this.setState({ allCards: pair[0], speakCards: pair[1] }))
+            this.dbModel.deleteCard(card)
+              .then(this.dbModel.loadCards)
+              .then((model: Model) => this.setState({ model }))
           }}
           editCard={(card: Card) => {
-            this.model.editCard(card)
-              .then(this.model.loadCards)
-              .then((pair: [Array<Card>, Array<Card>]) =>
-                this.setState({ allCards: pair[0], speakCards: pair[1] }))
+            this.dbModel.editCard(card)
+              .then(this.dbModel.loadCards)
+              .then((model: Model) => this.setState({ model }))
           }}
-          allCards={this.state.allCards}
-          speakCards={this.state.speakCards} />
+          allCards={this.state.model.allCards}
+          speakCards={this.state.model.speakCards} />
       </View>
     }
   }
@@ -91,10 +89,9 @@ export default class App extends React.PureComponent<Props, State> {
         // to remove this if you are not using it in your app
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
-      this.model.initDb()
-        .then(this.model.loadCards)
-        .then((pair: [Array<Card>, Array<Card>]) =>
-          this.setState({ allCards: pair[0], speakCards: pair[1] }))
+      this.dbModel.initDb()
+        .then(this.dbModel.loadCards)
+        .then((model: Model) => this.setState({ model }))
     ])
   }
 
