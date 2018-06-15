@@ -3,8 +3,10 @@ import React from 'react'
 import {
   Button,
   ScrollView,
+  SectionList,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native'
 import { SearchBar } from 'react-native-elements'
@@ -34,30 +36,40 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderBottomWidth: 0,
   },
-  cardIdColumn: {
-    width: 20,
-  },
-  englishColumn: {
-    flex: 1,
-  },
-  spanishColumn: {
-    flex: 1,
-  },
-  typeColumn: {
-    width: 40,
-  },
-  editColumn: {
-    width: 20,
-  },
-  row: {
+  sectionHeader: {
+    backgroundColor: '#eee',
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 3,
+    paddingBottom: 3,
+    paddingLeft: 10,
+    paddingRight: 10,
   },
-  columnHeader: {
-    fontWeight: 'bold',
+  sectionHeaderEnglish: {
+    color: 'gray',
+  },
+  sectionHeaderTitle: {
+  },
+  sectionHeaderSpanish: {
+    color: 'gray',
+  },
+  listItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  listItemEn: {
+    fontSize: 24,
+    fontVariant: ['small-caps'],
+    paddingLeft: 10,
+  },
+  listItemEs: {
+    fontSize: 24,
+    fontStyle: 'italic',
+    paddingRight: 10,
   },
 })
 
-export default class EditCardsScreen extends React.PureComponent<Props> {
+export default class EditCardsScreen extends React.PureComponent<Props, State> {
   searchBar: number
 
   state = {
@@ -71,8 +83,42 @@ export default class EditCardsScreen extends React.PureComponent<Props> {
       card.es.toLowerCase().indexOf(needle) !== -1
   }
 
+  groupCardsIntoSections = () => {
+    const cardsByType: {[string]: Array<Card>} = {}
+    for (const card of this.props.allCards.filter(this.filterCardBySearch)) {
+      if (cardsByType[card.type] === undefined) {
+        cardsByType[card.type] = []
+      }
+      cardsByType[card.type].push(card)
+    }
+
+    const sections = []
+    for (const type of Object.keys(cardsByType)) {
+      sections.push({ title: type, data: cardsByType[type] })
+    }
+    return sections
+  }
+
   onChangeSearchText = (searchText: string) =>
     this.setState({ searchText })
+
+  onPressListItem = (card: Card) =>
+    this.props.showEditCardScreen(card.cardId)
+
+  renderSectionHeader= (section: { section: any }) =>
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionHeaderEnglish}>English</Text>
+      <Text style={styles.sectionHeaderTitle}>{section.section.title}</Text>
+      <Text style={styles.sectionHeaderSpanish}>Spanish</Text>
+    </View>
+
+  renderListItem = (item: { item: Card }) =>
+    <TouchableOpacity onPress={() => this.onPressListItem(item.item)}>
+      <View style={styles.listItem}>
+        <Text style={styles.listItemEn}>{item.item.en}</Text>
+        <Text style={styles.listItemEs}>{item.item.es}</Text>
+      </View>
+    </TouchableOpacity>
 
   render() {
     return <View style={styles.container}>
@@ -80,31 +126,16 @@ export default class EditCardsScreen extends React.PureComponent<Props> {
         lightTheme
         containerStyle={styles.searchBarContainer}
         onChangeText={this.onChangeSearchText}
-        clearButtonMode={this.searchText === '' ? 'never' : 'always'}
+        clearButtonMode={this.state.searchText === '' ? 'never' : 'always'}
         autoCapitalize="none"
         autoCorrect={false} />
 
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <View style={styles.row}>
-          <Text style={[styles.cardIdColumn, styles.columnHeader]}>ID</Text>
-          <Text style={[styles.typeColumn, styles.columnHeader]}>Type</Text>
-          <Text style={[styles.englishColumn, styles.columnHeader]}>English</Text>
-          <Text style={[styles.spanishColumn, styles.columnHeader]}>Spanish</Text>
-          <Text style={[styles.editColumn, styles.columnHeader]}></Text>
-        </View>
-
-        {this.props.allCards.filter(this.filterCardBySearch).map(card => {
-          return <View key={card.cardId} style={styles.row}>
-            <Text style={styles.cardIdColumn}>{card.cardId}</Text>
-            <Text style={styles.typeColumn}>{card.type}</Text>
-            <Text style={styles.englishColumn}>{card.en}</Text>
-            <Text style={styles.spanishColumn}>{card.es}</Text>
-            <Button
-              onPress={() => this.props.showEditCardScreen(card.cardId)}
-              style={styles.editColumn}
-              title="Edit" />
-          </View>
-        })}
+        <SectionList
+          sections={this.groupCardsIntoSections()}
+          renderItem={this.renderListItem}
+          renderSectionHeader={this.renderSectionHeader}
+          keyExtractor={(item, index) => item.cardId} />
       </ScrollView>
 
       <ActionButton
