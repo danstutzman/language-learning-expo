@@ -83,8 +83,8 @@ export default class DbModel {
       return e1.createdAtSeconds < e2.createdAtSeconds ? -1 : 1
     })
 
-    const speakCardsByCategory: {[string]: Array<Card>} = {}
-    for (const card of speakCards) {
+    const cardIdToCategory: {[number]: string} = {}
+    for (const card of this.allCards) {
       const exposure = cardIdToLastExposure[card.cardId]
 
       let category: string
@@ -97,14 +97,10 @@ export default class DbModel {
           category = 'BROKEN'
         }
       }
-
-      if (speakCardsByCategory[category] === undefined) {
-        speakCardsByCategory[category] = []
-      }
-      speakCardsByCategory[category].push(card)
+      cardIdToCategory[card.cardId] = category
     }
 
-    return { allCards: this.allCards, speakCards, speakCardsByCategory }
+    return { allCards: this.allCards, speakCards, cardIdToCategory }
   }
 
   addCard = (cardWithoutCardId: Card): Promise<Model> =>

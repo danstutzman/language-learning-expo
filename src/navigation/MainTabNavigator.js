@@ -72,30 +72,32 @@ const SpeakStack = createStackNavigator({
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
       <SpeakSummaryScreen
         model={args.screenProps.model}
-        startSpeakQuiz={() => {
-          args.navigation.navigate('SpeakQuiz')
+        startSpeakQuiz={(category: string) => {
+          args.navigation.navigate('SpeakQuiz', { category })
         }} />,
     navigationOptions: () => ({
       title: 'Speak in Spanish',
     }),
   },
   SpeakQuiz: {
-    screen: (args: {navigation: any, screenProps: ScreenProps }) =>
-      <SpeakQuizScreen
-        card={args.screenProps.model.speakCards[0]}
+    screen: (args: {navigation: any, screenProps: ScreenProps }) => {
+      const { category } = args.navigation.state.params
+      const { cardIdToCategory, speakCards } = args.screenProps.model
+      const topCard = speakCards.filter(card =>
+        cardIdToCategory[card.cardId] === category)[0]
+      return <SpeakQuizScreen
+        card={topCard}
         exposeCard={(remembered: boolean) =>
           args.screenProps.addExposure({
             exposureId: 0,
-            cardId: args.screenProps.model.speakCards[0].cardId,
+            cardId: topCard.cardId,
             remembered,
             createdAtSeconds: new Date().getTime() / 1000,
           })
         }
         suspendCard={() =>
-          args.screenProps.editCard({
-            ...args.screenProps.model.speakCards[0],
-            suspended: true,
-          })} />,
+          args.screenProps.editCard({ ...topCard, suspended: true })} />
+    },
     navigationOptions: () => ({
       title: 'Speak in Spanish',
     }),
