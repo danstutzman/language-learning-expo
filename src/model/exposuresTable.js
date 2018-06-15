@@ -41,14 +41,16 @@ export function drop(db: Db): Promise<void> {
   )
 }
 
-export function insertRow(db: Db, exposure: Exposure): Promise<void> {
+// Returns Promise with Exposure with exposureId set
+export function insertRow(db: Db, exposure: Exposure): Promise<Exposure> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
         `INSERT INTO exposures (cardId, remembered, createdAtSeconds)
         VALUES (?, ?, ?);`,
         [exposure.cardId, exposure.remembered, exposure.createdAtSeconds],
-        () => resolve()
+        (tx: any, result: any) =>
+          resolve({ ...exposure, exposureId: result.insertId })
       ),
       (e: Error) => reject(e)
     )

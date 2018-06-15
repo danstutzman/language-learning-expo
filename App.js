@@ -36,6 +36,7 @@ export default class App extends React.PureComponent<Props, State> {
       model: {
         allCards: [],
         speakCards: [],
+        speakCardsByCategory: {},
       }
     }
   }
@@ -52,26 +53,21 @@ export default class App extends React.PureComponent<Props, State> {
         <RootNavigation
           addCard={(card: Card) => {
             this.dbModel.addCard(card)
-              .then(this.dbModel.loadCards)
-              .then((model: Model) => this.setState({ model }))
+              .then(model => this.setState({ model }))
           }}
           addExposure={(exposure: Exposure) => {
             this.dbModel.addExposure(exposure)
-              .then(this.dbModel.loadCards)
-              .then((model: Model) => this.setState({ model }))
+              .then(model => this.setState({ model }))
           }}
           deleteCard={(card: Card) => {
             this.dbModel.deleteCard(card)
-              .then(this.dbModel.loadCards)
-              .then((model: Model) => this.setState({ model }))
+              .then(model => this.setState({ model }))
           }}
           editCard={(card: Card) => {
             this.dbModel.editCard(card)
-              .then(this.dbModel.loadCards)
-              .then((model: Model) => this.setState({ model }))
+              .then(model => this.setState({ model }))
           }}
-          allCards={this.state.model.allCards}
-          speakCards={this.state.model.speakCards} />
+          model={this.state.model} />
       </View>
     }
   }
@@ -89,8 +85,7 @@ export default class App extends React.PureComponent<Props, State> {
         // to remove this if you are not using it in your app
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
-      this.dbModel.initDb()
-        .then(this.dbModel.loadCards)
+      this.dbModel.init()
         .then((model: Model) => this.setState({ model }))
     ])
   }

@@ -16,7 +16,7 @@ const EditStack = createStackNavigator({
   EditCardScreen: {
     screen: (args: {navigation: any, screenProps: ScreenProps }) => {
       const { cardId } = args.navigation.state.params || { cardId: undefined }
-      const initialCard = args.screenProps.allCards.find(card =>
+      const initialCard = args.screenProps.model.allCards.find(card =>
         card.cardId === cardId) || BLANK_CARD
       return <EditCardScreen
         addCard={args.screenProps.addCard}
@@ -37,7 +37,7 @@ const EditStack = createStackNavigator({
         showEditCardScreen={(cardId: number) => {
           args.navigation.navigate('EditCardScreen', { cardId })
         }}
-        allCards={args.screenProps.allCards} />,
+        allCards={args.screenProps.model.allCards} />,
     navigationOptions: () => ({
       title: 'Edit Cards',
     }),
@@ -71,7 +71,7 @@ const SpeakStack = createStackNavigator({
   Speak: {
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
       <SpeakSummaryScreen
-        cards={args.screenProps.speakCards}
+        model={args.screenProps.model}
         startSpeakQuiz={() => {
           args.navigation.navigate('SpeakQuiz')
         }} />,
@@ -82,18 +82,18 @@ const SpeakStack = createStackNavigator({
   SpeakQuiz: {
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
       <SpeakQuizScreen
-        card={args.screenProps.speakCards[0]}
+        card={args.screenProps.model.speakCards[0]}
         exposeCard={(remembered: boolean) =>
           args.screenProps.addExposure({
             exposureId: 0,
-            cardId: args.screenProps.speakCards[0].cardId,
+            cardId: args.screenProps.model.speakCards[0].cardId,
             remembered,
             createdAtSeconds: new Date().getTime() / 1000,
           })
         }
         suspendCard={() =>
           args.screenProps.editCard({
-            ...args.screenProps.speakCards[0],
+            ...args.screenProps.model.speakCards[0],
             suspended: true,
           })} />,
     navigationOptions: () => ({

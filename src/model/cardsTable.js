@@ -75,7 +75,8 @@ export function seed(db: Db): Promise<void> {
   )
 }
 
-export function insertRow(db: Db, card: Card): Promise<void> {
+// Returns Promise with Card with cardId set
+export function insertRow(db: Db, card: Card): Promise<Card> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
@@ -83,7 +84,7 @@ export function insertRow(db: Db, card: Card): Promise<void> {
         VALUES (?, ?, ?, ?, ?, ?);`,
         [card.en, card.es, card.gender, card.mnemonic, card.suspended,
           card.type],
-        () => resolve()
+        (tx: any, result: any) => resolve({ ...card, cardId: result.insertId })
       ),
       (e: Error) => reject(e)
     )
@@ -96,7 +97,13 @@ export function deleteRow(db: Db, card: Card): Promise<void> {
       tx => tx.executeSql(
         'DELETE FROM cards WHERE cardId=?;',
         [card.cardId],
-        () => resolve()
+        (tx: any, result: any) => {
+          if (result.rowsAffected !== 1) {
+            reject(`rowsAffected=${result.rowsAffected} from DELETE FROM cards`)
+          } else {
+            resolve()
+          }
+        }
       ),
       (e: Error) => reject(e)
     )
@@ -111,7 +118,13 @@ export function updateRow(db: Db, card: Card): Promise<void> {
           WHERE cardId=?;`,
         [card.en, card.es, card.mnemonic, card.gender, card.suspended,
           card.type, card.cardId],
-        () => resolve()
+        (tx: any, result: any) => {
+          if (result.rowsAffected !== 1) {
+            reject(`rowsAffected=${result.rowsAffected} from UPDATE cards`)
+          } else {
+            resolve()
+          }
+        }
       ),
       (e: Error) => reject(e)
     )

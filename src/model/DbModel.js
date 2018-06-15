@@ -10,13 +10,18 @@ const RESEED_TABLES = false
 
 export default class DbModel {
   db: any
+  allCards: Array<Card>
+  allExposures: Array<Exposure>
 
   constructor() {
     this.db = SQLite.openDatabase('db.db')
   }
 
-  initDb = (): Promise<void> =>
-    this._initCardsTable().then(this._initExposuresTable)
+  init = (): Promise<Model> =>
+    this._initCardsTable()
+      .then(this._initExposuresTable)
+      .then(this._loadFromTables)
+      .then(this._recomputeModel)
 
   _initCardsTable = (): Promise<void> =>
     cardsTable.checkExists(this.db)
@@ -46,45 +51,89 @@ export default class DbModel {
         }
       })
 
-  addCard = (card: Card): Promise<void> =>
-    cardsTable.insertRow(this.db, card)
-
-  deleteCard = (card: Card): Promise<void> =>
-    cardsTable.deleteRow(this.db, card)
-
-  editCard = (card: Card): Promise<void> =>
-    cardsTable.updateRow(this.db, card)
-
-  loadCards = (): Promise<Model> => {
+  _loadFromTables = (): Promise<void> => {
     return Promise.all([
       cardsTable.selectAll(this.db),
       exposuresTable.selectAll(this.db),
     ]).then((results: [Array<Card>, Array<Exposure>]) => {
-      const allCards = results[0]
-
-      const exposures = results[1]
-      const cardIdToLastExposure: {[number]: Exposure} = {}
-      for (const exposure of exposures) {
-        const lastExposure = cardIdToLastExposure[exposure.cardId]
-        if (lastExposure === undefined ||
-            exposure.createdAtSeconds > lastExposure.createdAtSeconds) {
-          cardIdToLastExposure[exposure.cardId] = exposure
-        }
-      }
-
-      // Sort non-exposed and earlier-exposed cards first
-      const speakCards = allCards.filter((card: Card) => !card.suspended)
-      speakCards.sort((c1: Card, c2: Card) => {
-        const e1 = cardIdToLastExposure[c1.cardId]
-        const e2 = cardIdToLastExposure[c2.cardId]
-        if (e1 === undefined) { return -1 }
-        if (e2 === undefined) { return 1 }
-        return e1.createdAtSeconds < e2.createdAtSeconds ? -1 : 1
-      })
-      return { allCards, speakCards }
+      this.allCards = results[0]
+      this.allExposures = results[1]
     })
   }
 
-  addExposure = (exposure: Exposure): Promise<void> =>
+  // Reads in this.allCards and this.allExposures
+  _recomputeModel = (): Model => {
+    const cardIdToLastExposure: {[number]: Exposure} = {}
+    for (const exposure of this.allExposures) {
+      const lastExposure = cardIdToLastExposure[exposure.cardId]
+      if (lastExposure === undefined ||
+          exposure.createdAtSeconds > lastExposure.createdAtSeconds) {
+        cardIdToLastExposure[exposure.cardId] = exposure
+      }
+    }
+
+    // Sort non-exposed and earlier-exposed cards first
+    const speakCards = this.allCards.filter((card: Card) =>
+      !card.suspended && card.type == 'EsN')
+    speakCards.sort((c1: Card, c2: Card) => {
+      const e1 = cardIdToLastExposure[c1.cardId]
+      const e2 = cardIdToLastExposure[c2.cardId]
+      if (e1 === undefined) { return -1 }
+      if (e2 === undefined) { return 1 }
+      return e1.createdAtSeconds < e2.createdAtSeconds ? -1 : 1
+    })
+
+    const speakCardsByCategory: {[string]: Array<Card>} = {}
+    for (const card of speakCards) {
+      const exposure = cardIdToLastExposure[card.cardId]
+
+      let category: string
+      if (exposure === undefined) {
+        category = 'FIRST_TIME'
+      } else {
+        if (exposure.remembered) {
+          category = 'SUCCEEDED'
+        } else {
+          category = 'BROKEN'
+        }
+      }
+
+      if (speakCardsByCategory[category] === undefined) {
+        speakCardsByCategory[category] = []
+      }
+      speakCardsByCategory[category].push(card)
+    }
+
+    return { allCards: this.allCards, speakCards, speakCardsByCategory }
+  }
+
+  addCard = (cardWithoutCardId: Card): Promise<Model> =>
+    cardsTable.insertRow(this.db, cardWithoutCardId)
+      .then((cardWithCardId: Card) => {
+        this.allCards.push(cardWithCardId)
+        return this._recomputeModel()
+      })
+
+  deleteCard = (cardToDelete: Card): Promise<Model> =>
+    cardsTable.deleteRow(this.db, cardToDelete)
+      .then(() => {
+        this.allCards = this.allCards.filter(card =>
+          card.cardId !== cardToDelete.cardId)
+        return this._recomputeModel()
+      })
+
+  editCard = (updatedCard: Card): Promise<Model> =>
+    cardsTable.updateRow(this.db, updatedCard)
+      .then(() => {
+        this.allCards = this.allCards.map(card =>
+          card.cardId === updatedCard.cardId ? updatedCard : card)
+        return this._recomputeModel()
+      })
+
+  addExposure = (exposure: Exposure): Promise<Model> =>
     exposuresTable.insertRow(this.db, exposure)
+      .then(() => {
+        this.allExposures.push(exposure)
+        return this._recomputeModel()
+      })
 }
