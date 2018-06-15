@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import FontAwesome from '@expo/vector-icons/FontAwesome'
+import { FontAwesome } from '@expo/vector-icons'
 
 import Colors from '../constants/Colors'
 import type { Card } from '../model/Card'
@@ -25,9 +25,9 @@ type State = {|
 |}
 
 const SECONDS_LEFT_TO_ICON = {
-  3: 'hourglass-start',
-  2: 'hourglass-half',
-  1: 'hourglass-end',
+  '3': 'hourglass-start',
+  '2': 'hourglass-half',
+  '1': 'hourglass-end',
 }
 
 const styles = StyleSheet.create({
