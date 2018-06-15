@@ -34,7 +34,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   contentContainer: {
-    paddingTop: 30,
   },
   searchBarContainer: {
     backgroundColor: 'white',
