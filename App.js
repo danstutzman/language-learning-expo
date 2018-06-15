@@ -1,7 +1,8 @@
-import React from 'react'
-import { Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { AppLoading, Asset, Font } from 'expo'
 import { Ionicons } from '@expo/vector-icons'
+import React from 'react'
+import { Alert, Platform, StatusBar, StyleSheet, View } from 'react-native'
+import { email } from 'react-native-communications'
 
 import type { Card } from './src/model/Card'
 import DbModel from './src/model/DbModel'
@@ -67,6 +68,18 @@ export default class App extends React.PureComponent<Props, State> {
             this.dbModel.editCard(card)
               .then(model => this.setState({ model }))
           }}
+          exportDatabase={() =>
+            email(null, null, null, 'Lang learning export',
+              this.dbModel.serializeForEmail())}
+          reseedDatabase={() =>
+            this.dbModel.reseedDatabase()
+              .then(model => this.setState({ model }))
+              .then(() => Alert.alert(
+                'Reseed finished',
+                'Reseed finished',
+                [{ text: 'OK' }],
+                { cancelable: false }))
+          }
           model={this.state.model} />
       </View>
     }

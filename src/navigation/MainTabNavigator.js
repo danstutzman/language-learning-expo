@@ -33,6 +33,8 @@ const EditStack = createStackNavigator({
     header: null,
     screen: (args: {navigation: any, screenProps: ScreenProps }) =>
       <EditCardsScreen
+        exportDatabase={args.screenProps.exportDatabase}
+        reseedDatabase={args.screenProps.reseedDatabase}
         showAddCardScreen={() => { args.navigation.navigate('EditCardScreen') }}
         showEditCardScreen={(cardId: number) => {
           args.navigation.navigate('EditCardScreen', { cardId })

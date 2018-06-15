@@ -1,6 +1,7 @@
 import ActionButton from 'react-native-action-button'
 import React from 'react'
 import {
+  Button,
   ScrollView,
   SectionList,
   StyleSheet,
@@ -15,6 +16,8 @@ import Colors from '../constants/Colors'
 
 type Props = {|
   allCards: Array<Card>,
+  exportDatabase: () => void,
+  reseedDatabase: () => Promise<void>,
   showAddCardScreen: () => void,
   showEditCardScreen: (cardId: number) => void,
 |}
@@ -146,6 +149,8 @@ export default class EditCardsScreen extends React.PureComponent<Props, State> {
           renderItem={this.renderListItem}
           renderSectionHeader={this.renderSectionHeader}
           keyExtractor={item => item.cardId} />
+        <Button title='Export database' onPress={this.props.exportDatabase} />
+        <Button title='Reseed database' onPress={this.props.reseedDatabase} />
       </ScrollView>
 
       <ActionButton

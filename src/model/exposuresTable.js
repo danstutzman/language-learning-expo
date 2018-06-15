@@ -1,5 +1,8 @@
+import type { Card } from './Card'
 import type { Db } from './Db'
 import type { Exposure } from './Exposure'
+import type { ExposureExport } from './exposuresExport'
+import exposuresExport from './exposuresExport'
 
 export function checkExists(db: Db): Promise<boolean> {
   return new Promise((resolve, reject) =>
@@ -75,3 +78,45 @@ export function selectAll(db: Db): Promise<Array<Exposure>> {
     )
   )
 }
+
+export function seed(db: Db, allCards: Array<Card>): Promise<void> {
+  return new Promise((resolve, reject) =>
+    db.transaction(
+      tx => {
+        if (exposuresExport.length === 0) { return resolve() }
+
+        const cardByEs: {[string]: Card} = {}
+        for (const card of allCards) {
+          if (cardByEs[card.es] !== undefined) {
+            return reject(`Multiple cards for es=${card.es}`)
+          }
+          cardByEs[card.es] = card
+        }
+
+        let sql = `INSERT INTO exposures
+          (cardId, remembered, createdAtSeconds)
+          VALUES `
+        const values = []
+        for (let i = 0; i < exposuresExport.length; i++) {
+          const export_: ExposureExport = exposuresExport[i]
+          const card = cardByEs[export_.cardEs]
+          if (card === undefined) {
+            return reject(`Can't find card for es=${export_.cardEs}`)
+          }
+
+          if (i > 0) {
+            sql += ', '
+          }
+          sql += '(?, ?, ?)'
+          values.push(card.cardId)
+          values.push(export_.remembered ? 1 : 0)
+          values.push(export_.createdAtSeconds)
+        }
+        sql += ';'
+        tx.executeSql(sql, values, () => resolve())
+      },
+      (e: Error) => reject(e)
+    )
+  )
+}
+

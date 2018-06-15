@@ -6,8 +6,6 @@ import type { Exposure } from './Exposure'
 import * as exposuresTable from './exposuresTable'
 import type { Model } from './Model'
 
-const RESEED_TABLES = false
-
 export default class DbModel {
   db: any
   allCards: Array<Card>
@@ -26,13 +24,7 @@ export default class DbModel {
   _initCardsTable = (): Promise<void> =>
     cardsTable.checkExists(this.db)
       .then((exists: boolean) => {
-        if (exists) {
-          if (RESEED_TABLES) {
-            return cardsTable.drop(this.db)
-              .then(() => cardsTable.create(this.db))
-              .then(() => cardsTable.seed(this.db))
-          }
-        } else {
+        if (!exists) {
           return cardsTable.create(this.db)
             .then(() => cardsTable.seed(this.db))
         }
@@ -41,12 +33,7 @@ export default class DbModel {
   _initExposuresTable = (): Promise<void> =>
     exposuresTable.checkExists(this.db)
       .then((exists: boolean) => {
-        if (exists) {
-          if (RESEED_TABLES) {
-            return exposuresTable.drop(this.db)
-              .then(() => exposuresTable.create(this.db))
-          }
-        } else {
+        if (!exists) {
           return exposuresTable.create(this.db)
         }
       })
@@ -132,4 +119,28 @@ export default class DbModel {
         this.allExposures.push(exposure)
         return this._recomputeModel()
       })
+
+  serializeForEmail(): string {
+    const cardIdToEs: {[number]: string} = {}
+    for (const card of this.allCards) {
+      cardIdToEs[card.cardId] = card.es
+    }
+
+    return JSON.stringify(this.allExposures.map(exposure => ({
+      cardEs: cardIdToEs[exposure.cardId],
+      remembered: exposure.remembered,
+      createdAtSeconds: exposure.createdAtSeconds,
+    })))
+  }
+
+  reseedDatabase = (): Promise<Model> =>
+    cardsTable.drop(this.db)
+      .then(() => cardsTable.create(this.db))
+      .then(() => cardsTable.seed(this.db))
+      .then(() => exposuresTable.drop(this.db))
+      .then(() => exposuresTable.create(this.db))
+      .then(() => cardsTable.selectAll(this.db))
+      .then((allCards: Array<Card>) => exposuresTable.seed(this.db, allCards))
+      .then(this._loadFromTables)
+      .then(this._recomputeModel)
 }

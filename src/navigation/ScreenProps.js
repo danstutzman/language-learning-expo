@@ -7,5 +7,7 @@ export type ScreenProps = {|
   addExposure: (exposure: Exposure) => void,
   deleteCard: (card: Card) => void,
   editCard: (card: Card) => void,
+  exportDatabase: () => void,
+  reseedDatabase: () => Promise<void>,
   model: Model,
 |}
