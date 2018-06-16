@@ -160,10 +160,10 @@ export default class SlowSpeakGameScreen
               {leaf.es}
             </Text>
           </View>}
-        </TouchableOpacity>
+      </TouchableOpacity>
 
-        {this.state.secondsLeft === 0 &&
-          <Button onPress={this.pressNext} title="Next" />}
+      {this.state.secondsLeft === 0 &&
+        <Button onPress={this.pressNext} title="Next" />}
     </View>
   }
 }
