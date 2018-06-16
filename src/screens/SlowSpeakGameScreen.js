@@ -128,12 +128,8 @@ export default class SlowSpeakGameScreen
     this.speakMnemonicAndSpanish()
   }
 
-  pressNext = () => {
-    if (this.state.newMnemonic !== null) {
-      this.props.editMnemonic(this.state.newMnemonic)
-    }
+  pressNext = () =>
     this.props.exposeLeaf(this.state.remembered)
-  }
 
   render() {
     const { leaf } = this.props
@@ -152,8 +148,13 @@ export default class SlowSpeakGameScreen
           ]}>
             <TextInput
               style={[styles.mnemonic, this.state.remembered || styles.forgotten]}
+              multiline={true}
+              returnKeyType="done"
+              blurOnSubmit={true} // makes Return submit instead of insert LF
               onChangeText={(newMnemonic: string) =>
                 this.setState({ newMnemonic })}
+              onSubmitEditing={() =>
+                this.props.editMnemonic(this.state.newMnemonic)}
               value={this.state.newMnemonic !== null ?
                 this.state.newMnemonic : leaf.mnemonic} />
             <Text style={[styles.es, this.state.remembered || styles.forgotten]}>
