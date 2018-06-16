@@ -1,3 +1,4 @@
+import { assertExposureGrade } from './ExposureGrade'
 import type { Leaf } from './Leaf'
 import type { Db } from './Db'
 import type { Exposure } from './Exposure'
@@ -94,7 +95,12 @@ export function selectAll(db: Db): Promise<Array<Exposure>> {
         `SELECT exposureId, leafId, createdAt, grade, earlyDurationMs
           FROM exposures`,
         [],
-        (tx, { rows: { _array } }) => resolve(_array)
+        (tx, { rows: { _array } }) => {
+          for (const row of _array) {
+            assertExposureGrade(row.grade)
+          }
+          resolve(_array)
+        }
       ),
       (e: Error) => reject(`Error from SELECT FROM exposures: ${e.message}`)
     )
