@@ -7,7 +7,6 @@ import EditLeafScreen from '../screens/EditLeafScreen'
 import EditLeafsScreen from '../screens/EditLeafsScreen'
 import TabBarIcon from '../components/TabBarIcon'
 import SlowSpeakGameScreen from '../screens/SlowSpeakGameScreen'
-import SlowSpeakSummaryScreen from '../screens/SlowSpeakSummaryScreen'
 import type { ScreenProps } from './ScreenProps'
 import SettingsScreen from '../screens/SettingsScreen'
 import SpeakSummaryScreen from '../screens/SpeakSummaryScreen'
@@ -70,68 +69,40 @@ EditStack.navigationOptions = {
       } />,
 }
 
-const SlowSpeakStack = createStackNavigator({
-  SlowSpeakSummary: {
-    screen: (args: { navigation: any, screenProps: ScreenProps }) =>
-      <SlowSpeakSummaryScreen
-        startSlowSpeakGame={() => { args.navigation.navigate('SlowSpeakGame') }}
-        />,
-    navigationOptions: () => ({
-      title: 'Slow Speak',
-    }),
-  },
-  SlowSpeakGame: {
-    screen: (args: { navigation: any, screenProps: ScreenProps }) => {
-      const { model, editLeaf, exposeLeafs } = args.screenProps
-      const topLeaf = model.slowSpeakLeafs[0]
-      if (topLeaf === undefined) {
-        return <Text>No card</Text>
-      } else {
-        return <SlowSpeakGameScreen
-          leaf={topLeaf}
-          editMnemonic={(mnemonic: string) =>
-            editLeaf({ ...topLeaf, mnemonic })}
-          exposeLeaf={(remembered: boolean) =>
-            exposeLeafs([{ leafId: topLeaf.leafId, remembered }],
-              new Date().getTime() / 1000)} />
-      }
-    },
-    navigationOptions: () => ({
-      title: 'Slow Speak',
-    }),
-  },
-})
-
-SlowSpeakStack.navigationOptions = {
-  tabBarLabel: 'Slow Speak',
-  tabBarIcon: (args: { focused: boolean }) =>
-    <TabBarIcon
-      focused={args.focused}
-      name={Platform.OS === 'ios'
-        ? `ios-information-circle${args.focused ? '' : '-outline'}`
-        : 'md-information-circle'} />,
-}
-
 const SpeakStack = createStackNavigator({
-  Speak: {
+  SpeakSummary: {
     screen: (args: { navigation: any, screenProps: ScreenProps }) =>
       <SpeakSummaryScreen
         model={args.screenProps.model}
-        startSpeakQuiz={() => { args.navigation.navigate('SpeakQuiz') }} />,
+        startSpeakQuiz={(category: string) => {
+          args.navigation.navigate('SpeakQuiz', { category })
+        }} />,
     navigationOptions: () => ({
       title: 'Speak in Spanish',
     }),
   },
   SpeakQuiz: {
     screen: (args: { navigation: any, screenProps: ScreenProps }) => {
-      const { speakCards } = args.screenProps.model
-      const topCard = speakCards[0]
+      const { category } = args.navigation.state.params
+      const { model, editLeaf, exposeLeafs } = args.screenProps
+
+      const topCard = model.speakCardsByCategory[category][0]
       if (topCard === undefined) {
-        return <Text>no cards</Text>
+        return <Text>No cards in this category</Text>
+      } else if (category === 'BROKEN') {
+        if (topCard.leafs.length !== 1) {
+          throw new Error(
+            `Unexpected num leafs on topCard: ${JSON.stringify(topCard)}`)
+        }
+        const leaf = topCard.leafs[0]
+        return <SlowSpeakGameScreen
+          leaf={leaf}
+          editMnemonic={(mnemonic: string) => editLeaf({ ...leaf, mnemonic })}
+          exposeLeaf={(remembered: boolean) =>
+            exposeLeafs([{ leafId: leaf.leafId, remembered }],
+              new Date().getTime() / 1000)} />
       } else {
-        return <SpeakQuizScreen
-          card={topCard}
-          exposeLeafs={args.screenProps.exposeLeafs} />
+        return <SpeakQuizScreen card={topCard} exposeLeafs={exposeLeafs} />
       }
     },
     navigationOptions: () => ({
@@ -172,7 +143,6 @@ SettingsStack.navigationOptions = {
 
 export default createBottomTabNavigator({
   EditStack,
-  SlowSpeakStack,
   SpeakStack,
   SettingsStack,
 })

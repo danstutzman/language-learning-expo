@@ -61,53 +61,32 @@ export default class DbModel {
       }
     }
 
-    const isLeafReady = (leaf: Leaf) => {
-      const lastExposure =
-        leafIdToLastExposure[leaf.leafId] || { remembered: false }
-      return !leaf.suspended && lastExposure.remembered
-    }
-
-    const nouns = this.allLeafs
-      .filter((leaf: Leaf) => leaf.type === 'EsN')
-      .filter(isLeafReady)
-
-    const speakCards: Array<Card> = []
-    for (const noun of nouns) {
-      speakCards.push({ leafs: [noun] })
-    }
-
-    const earliestExposureCreatedAt = (card: Card) => {
-      let earliest: number = 999999999999
-      for (const leaf of card.leafs) {
-        const lastExposure = leafIdToLastExposure[leaf.leafId]
-        if (lastExposure === undefined) {
-          earliest = 0
-        } else if (lastExposure.createdAtSeconds < earliest) {
-          earliest = lastExposure.createdAtSeconds
-        }
-      }
-      return earliest
-    }
-    const byEarliestExposureCreatedAt = (card1: Card, card2: Card) =>
-      earliestExposureCreatedAt(card1) < earliestExposureCreatedAt(card2) ?
-        -1 : 1
-    speakCards.sort(byEarliestExposureCreatedAt)
-
-    const isLeafNounAndBroken = (leaf: Leaf) => {
-      const lastExposure =
-        leafIdToLastExposure[leaf.leafId] || { remembered: false }
-      return leaf.type === 'EsN' && !lastExposure.remembered
-    }
-
-    const slowSpeakLeafs = this.allLeafs.filter(isLeafNounAndBroken)
+    const nounLeafs = this.allLeafs.filter((leaf =>
+      leaf.type === 'EsN' && !leaf.suspended))
     const byExposureCreatedAt = (leaf1: Leaf, leaf2: Leaf) => {
       const e1 = leafIdToLastExposure[leaf1.leafId] || { createdAtSeconds: 0 }
       const e2 = leafIdToLastExposure[leaf2.leafId] || { createdAtSeconds: 0 }
       return e1.createdAtSeconds < e2.createdAtSeconds ? -1 : 1
     }
-    slowSpeakLeafs.sort(byExposureCreatedAt)
+    nounLeafs.sort(byExposureCreatedAt)
 
-    return { allLeafs: this.allLeafs, slowSpeakLeafs, speakCards }
+    const speakCardsByCategory: {[string]: Array<Card>} =
+      { 'FIRST_TIME': [], 'BROKEN': [], 'SUCCESSFUL': [] }
+    const cardFromSingleLeaf = (leaf: Leaf) => ({ leafs: [leaf] })
+    for (const leaf of nounLeafs) {
+      const lastExposure = leafIdToLastExposure[leaf.leafId]
+      if (lastExposure === undefined) {
+        speakCardsByCategory['FIRST_TIME'].push(cardFromSingleLeaf(leaf))
+      } else {
+        if (lastExposure.remembered) {
+          speakCardsByCategory['SUCCESSFUL'].push(cardFromSingleLeaf(leaf))
+        } else {
+          speakCardsByCategory['BROKEN'].push(cardFromSingleLeaf(leaf))
+        }
+      }
+    }
+
+    return { allLeafs: this.allLeafs, speakCardsByCategory }
   }
 
   addLeaf = (leafWithoutLeafId: Leaf): Promise<Model> =>

@@ -36,8 +36,7 @@ export default class App extends React.PureComponent<Props, State> {
       isLoadingComplete: false,
       model: {
         allLeafs: [],
-        slowSpeakLeafs: [],
-        speakCards: [],
+        speakCardsByCategory: {},
       }
     }
   }
