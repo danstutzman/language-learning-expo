@@ -115,7 +115,7 @@ export function updateRow(db: Db, leaf: Leaf): Promise<void> {
       tx => tx.executeSql(
         `UPDATE leafs SET en=?, es=?, gender=?, mnemonic=?, suspended=?, type=?
           WHERE leafId=?;`,
-        [leaf.en, leaf.es, leaf.mnemonic, leaf.gender, leaf.suspended,
+        [leaf.en, leaf.es, leaf.gender, leaf.mnemonic, leaf.suspended,
           leaf.type, leaf.leafId],
         (tx: any, result: any) => {
           if (result.rowsAffected !== 1) {
