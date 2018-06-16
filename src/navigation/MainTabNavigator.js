@@ -100,9 +100,7 @@ const SpeakStack = createStackNavigator({
         return <SlowSpeakGameScreen
           leaf={leaf}
           editMnemonic={(mnemonic: string) => editLeaf({ ...leaf, mnemonic })}
-          exposeLeaf={(remembered: boolean) =>
-            exposeLeafs([{ leafId: leaf.leafId, remembered }],
-              new Date().getTime() / 1000)} />
+          exposeLeafs={exposeLeafs} />
       } else {
         return <SpeakQuizScreen card={topCard} exposeLeafs={exposeLeafs} />
       }

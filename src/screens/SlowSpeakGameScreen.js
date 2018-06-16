@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native'
 
+import type { Exposure } from '../model/Exposure'
 import type { Leaf } from '../model/Leaf'
 import Hourglass from '../components/Hourglass'
 
@@ -31,11 +32,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
   },
-  answerRemembered: {
+  gradeEarly: {
+    borderColor: 'green',
+    borderWidth: 10,
+  },
+  gradeRemembered: {
     borderColor: 'green',
     borderWidth: 3,
   },
-  answerForgotten: {
+  gradeForgotten: {
     borderColor: 'red',
     borderWidth: 3,
   },
@@ -54,25 +59,33 @@ const styles = StyleSheet.create({
 
 export type Props = {|
   leaf: Leaf,
-  exposeLeaf: (remembered: boolean) => void,
+  exposeLeafs: (exposures: Array<Exposure>) => void,
   editMnemonic: (mnemonic: string) => void,
 |}
 
 export type State = {|
+  exposure: Exposure | null,
   newMnemonic: string | null,
-  remembered: boolean,
   secondsLeft: number,
 |}
+
+const GRADE_TO_STYLE = {
+  'EARLY': styles.gradeEarly,
+  'REMEMBERED': styles.gradeRemembered,
+  'FORGOTTEN': styles.gradeForgotten,
+}
 
 export default class SlowSpeakGameScreen
   extends React.PureComponent<Props, State> {
   countdown: IntervalID
+  timerStartedAt: Date
 
   constructor(props: Props) {
     super(props)
+    this.timerStartedAt = new Date()
     this.state = {
+      exposure: null,
       newMnemonic: null,
-      remembered: false,
       secondsLeft: 3,
     }
     this.setInterval()
@@ -80,9 +93,10 @@ export default class SlowSpeakGameScreen
 
   componentDidUpdate(prevProps: Props) {
     if (this.props.leaf.leafId !== prevProps.leaf.leafId) {
+      this.timerStartedAt = new Date()
       this.setState({
+        exposure: null,
         newMnemonic: null,
-        remembered: false,
         secondsLeft: 3,
       }, this.setInterval)
     }
@@ -101,7 +115,16 @@ export default class SlowSpeakGameScreen
         if (prevState.secondsLeft === 1) {
           clearInterval(this.countdown)
           this.speakMnemonicAndSpanish()
-          return { secondsLeft: 0 }
+          return {
+            secondsLeft: 0,
+            exposure: {
+              exposureId: 0,
+              leafId: this.props.leaf.leafId,
+              createdAt: new Date().getTime() / 1000,
+              grade: 'FORGOTTEN',
+              earlyDurationMs: null,
+            },
+          }
         } else {
           return { secondsLeft: prevState.secondsLeft - 1 }
         }
@@ -121,16 +144,40 @@ export default class SlowSpeakGameScreen
 
   toggleRemembered = () => {
     clearInterval(this.countdown)
-    this.setState(prevState => ({
-      secondsLeft: 0,
-      remembered: !prevState.remembered,
-    }))
+    this.setState(prevState => {
+      const nowMs = new Date().getTime() // milliseconds since epoch
+      if (prevState.exposure === null) {
+        return {
+          exposure: {
+            exposureId: 0,
+            leafId: this.props.leaf.leafId,
+            createdAt: nowMs / 1000,
+            grade: 'EARLY',
+            earlyDurationMs: nowMs - this.timerStartedAt.getTime(),
+          },
+          secondsLeft: 0,
+        }
+      } else {
+        return {
+          exposure: {
+            ...prevState.exposure,
+            grade: prevState.exposure.grade === 'FORGOTTEN' ?
+              'REMEMBERED' : 'FORGOTTEN',
+          },
+        }
+      }
+    })
     this.speakMnemonicAndSpanish()
   }
 
   pressNext = () => {
     Speech.stop()
-    this.props.exposeLeaf(this.state.remembered)
+
+    const { exposure } = this.state
+    if (exposure === null) {
+      throw new Error('Exposure supposed to be set before next button shown')
+    }
+    this.props.exposeLeafs([exposure])
   }
 
   render() {
@@ -143,13 +190,10 @@ export default class SlowSpeakGameScreen
         onPress={this.toggleRemembered}>
         {this.state.secondsLeft > 0 ?
           <Hourglass secondsLeft={this.state.secondsLeft} /> :
-          <View style={[
-            styles.answer,
-            this.state.remembered ?
-              styles.answerRemembered : styles.answerForgotten,
-          ]}>
+          <View style={[styles.answer, GRADE_TO_STYLE[
+            (this.state.exposure || { grade: 'FORGOTTEN' }).grade]]}>
             <TextInput
-              style={[styles.mnemonic, this.state.remembered || styles.forgotten]}
+              style={styles.mnemonic}
               multiline={true}
               returnKeyType="done"
               blurOnSubmit={true} // makes Return submit instead of insert LF
@@ -159,9 +203,7 @@ export default class SlowSpeakGameScreen
                 this.props.editMnemonic(this.state.newMnemonic || '')}
               value={this.state.newMnemonic !== null ?
                 this.state.newMnemonic : leaf.mnemonic} />
-            <Text style={[styles.es, this.state.remembered || styles.forgotten]}>
-              {leaf.es}
-            </Text>
+            <Text style={styles.es}>{leaf.es}</Text>
           </View>}
       </TouchableOpacity>
 

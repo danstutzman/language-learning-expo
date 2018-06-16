@@ -1,0 +1,1 @@
+export type ExposureGrade = 'EARLY' | 'REMEMBERED' | 'FORGOTTEN'

@@ -24,8 +24,9 @@ export function create(db: Db): Promise<void> {
         `CREATE TABLE exposures (
           exposureId INTEGER PRIMARY KEY NOT NULL,
           leafId INTEGER NOT NULL,
-          remembered BOOLEAN NOT NULL,
-          createdAt REAL NOT NULL
+          createdAt REAL NOT NULL,
+          grade TEXT NOT NULL,
+          earlyDurationMs INTEGER
         );`,
         [],
         () => resolve()
@@ -52,7 +53,8 @@ export function insertRows(
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => {
-        let sql = `INSERT INTO exposures (leafId, remembered, createdAt)
+        let sql = `INSERT INTO exposures
+          (leafId, createdAt, grade, earlyDurationMs)
           VALUES `
         let values = []
         for (let i = 0; i < exposures.length; i++) {
@@ -60,10 +62,11 @@ export function insertRows(
           if (i > 0) {
             sql += ', '
           }
-          sql += '(?, ?, ?)'
+          sql += '(?, ?, ?, ?)'
           values.push(exposure.leafId)
-          values.push(exposure.remembered)
           values.push(exposure.createdAt)
+          values.push(exposure.grade)
+          values.push(exposure.earlyDurationMs)
         }
         tx.executeSql(
           sql,
@@ -88,14 +91,10 @@ export function selectAll(db: Db): Promise<Array<Exposure>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        'SELECT exposureId, leafId, remembered, createdAt FROM exposures',
+        `SELECT exposureId, leafId, createdAt, grade, earlyDurationMs
+          FROM exposures`,
         [],
-        (tx, { rows: { _array } }) => {
-          for (const row of _array) {
-            row.remembered = (row.remembered === 1)
-          }
-          resolve(_array)
-        }
+        (tx, { rows: { _array } }) => resolve(_array)
       ),
       (e: Error) => reject(`Error from SELECT FROM exposures: ${e.message}`)
     )
@@ -117,7 +116,7 @@ export function seed(db: Db, allLeafs: Array<Leaf>): Promise<void> {
         }
 
         let sql = `INSERT INTO exposures
-          (leafId, remembered, createdAt)
+          (leafId, createdAt, grade, earlyDurationMs)
           VALUES `
         const values = []
         for (let i = 0; i < exposuresExport.length; i++) {
@@ -130,10 +129,11 @@ export function seed(db: Db, allLeafs: Array<Leaf>): Promise<void> {
           if (i > 0) {
             sql += ', '
           }
-          sql += '(?, ?, ?)'
+          sql += '(?, ?, ?, ?)'
           values.push(leaf.leafId)
-          values.push(export_.remembered ? 1 : 0)
           values.push(export_.createdAt)
+          values.push(export_.grade)
+          values.push(export_.earlyDurationMs)
         }
         sql += ';'
         tx.executeSql(sql, values, () => resolve())
@@ -142,4 +142,3 @@ export function seed(db: Db, allLeafs: Array<Leaf>): Promise<void> {
     )
   )
 }
-

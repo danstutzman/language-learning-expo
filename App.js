@@ -5,8 +5,8 @@ import { Alert, Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { email } from 'react-native-communications'
 
 import DbModel from './src/model/DbModel'
+import type { Exposure } from './src/model/Exposure'
 import type { Leaf } from './src/model/Leaf'
-import type { LeafIdRememberedPair } from './src/model/LeafIdRememberedPair'
 import type { Model } from './src/model/Model'
 import RootNavigation from './src/navigation/RootNavigation'
 
@@ -69,9 +69,8 @@ export default class App extends React.PureComponent<Props, State> {
             console.warn('Email body', body)
             email(null, null, null, 'Lang learning export', body)
           }}
-          exposeLeafs={(pairs: Array<LeafIdRememberedPair>,
-            createdAt: number) => {
-            this.dbModel.exposeLeafs(pairs, createdAt)
+          exposeLeafs={(exposures: Array<Exposure>) => {
+            this.dbModel.exposeLeafs(exposures)
               .then(model => this.setState({ model }))
           }}
           reseedDatabase={() =>

@@ -9,21 +9,21 @@ import {
 } from 'react-native'
 
 import type { Card } from '../model/Card'
+import type { Exposure } from '../model/Exposure'
 import Hourglass from '../components/Hourglass'
 import type { Leaf } from '../model/Leaf'
-import type { LeafIdRememberedPair } from '../model/LeafIdRememberedPair'
+
 
 type Props = {|
   card: Card,
-  exposeLeafs: (pairs: Array<LeafIdRememberedPair>, createdAt: number) => void,
+  exposeLeafs: (exposures: Array<Exposure>) => void,
 |}
 
 type State = {|
-  rememberedByLeafId: {[number]: boolean},
+  exposureByLeafId: {[number]: Exposure},
   secondsLeft: number,
   showMnemonic: boolean,
 |}
-
 
 const styles = StyleSheet.create({
   container: {
@@ -81,11 +81,13 @@ const styles = StyleSheet.create({
 
 export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   countdown: IntervalID
+  timerStartedAt: Date
 
   constructor(props: Props) {
     super(props)
+    this.timerStartedAt = new Date()
     this.state = {
-      rememberedByLeafId: {},
+      exposureByLeafId: {},
       secondsLeft: 3,
       showMnemonic: false,
     }
@@ -98,8 +100,9 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
   componentDidUpdate(prevProps: Props) {
     if (this.props.card !== prevProps.card) {
+      this.timerStartedAt = new Date()
       this.setState({
-        rememberedByLeafId: {},
+        exposureByLeafId: {},
         secondsLeft: 3,
         showMnemonic: false,
       }, this.setInterval)
@@ -115,7 +118,20 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
         if (prevState.secondsLeft === 1) {
           clearInterval(this.countdown)
           this.speakSpanish(this.props.card.leafs)
-          return { secondsLeft: 0 }
+
+          const exposureByLeafId = {}
+          const createdAt = new Date().getTime() / 1000
+          for (const leaf of this.props.card.leafs) {
+            exposureByLeafId[leaf.leafId] = {
+              exposureId: 0,
+              leafId: leaf.leafId,
+              createdAt,
+              grade: 'FORGOTTEN',
+              earlyDurationMs: null,
+            }
+          }
+
+          return { exposureByLeafId, secondsLeft: 0 }
         } else {
           return { secondsLeft: prevState.secondsLeft - 1 }
         }
@@ -124,25 +140,41 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
   pressGlossTableRow = (leaf: Leaf) => {
     clearInterval(this.countdown)
+
     this.speakSpanish([leaf])
-    this.setState(prevState => ({
-      rememberedByLeafId: {
-        ...prevState.rememberedByLeafId,
-        [leaf.leafId]: !prevState.rememberedByLeafId[leaf.leafId],
-      },
-      secondsLeft: 0,
-    }))
+
+    this.setState(prevState => {
+      let newExposure: Exposure
+      const oldExposure = prevState.exposureByLeafId[leaf.leafId]
+      if (oldExposure === undefined) {
+        const nowMs = new Date().getTime()
+        newExposure = {
+          exposureId: 0,
+          leafId: leaf.leafId,
+          createdAt: nowMs / 1000,
+          grade: 'EARLY',
+          earlyDurationMs: nowMs - this.timerStartedAt,
+        }
+      } else {
+        newExposure = {
+          ...oldExposure,
+          grade: oldExposure.grade === 'FORGOTTEN' ? 'REMEMBERED' : 'FORGOTTEN',
+        }
+      }
+
+      return {
+        exposureByLeafId: {
+          ...prevState.exposureByLeafId,
+          [leaf.leafId]: newExposure,
+        },
+        secondsLeft: 0,
+      }
+    })
   }
 
   onNext = () => {
-    const pairs: Array<LeafIdRememberedPair> = []
-    for (const leaf of this.props.card.leafs) {
-      pairs.push({
-        leafId: leaf.leafId,
-        remembered: this.state.rememberedByLeafId[leaf.leafId] || false,
-      })
-    }
-    this.props.exposeLeafs(pairs, new Date().getTime() / 1000)
+    const exposures = (Object.values(this.state.exposureByLeafId): any)
+    this.props.exposeLeafs(exposures)
   }
 
   speakSpanish = (leafs: Array<Leaf>) => {
@@ -169,7 +201,8 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
                 </View> :
                 <Text style={[
                   styles.gloss_table_spanish,
-                  this.state.rememberedByLeafId[leaf.leafId] ?
+                  (this.state.exposureByLeafId[leaf.leafId] ||
+                    { grade: 'REMEMBERED' }).grade !== 'FORGOTTEN' ?
                     styles.remembered : styles.forgotten,
                 ]}>
                   {leaf.es}

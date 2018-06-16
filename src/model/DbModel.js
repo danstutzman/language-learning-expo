@@ -2,10 +2,9 @@ import { SQLite } from 'expo'
 
 import type { Card } from './Card'
 import type { Exposure } from './Exposure'
-import type { Leaf } from './Leaf'
-import type { LeafIdRememberedPair } from './LeafIdRememberedPair'
-import * as leafsTable from './leafsTable'
 import * as exposuresTable from './exposuresTable'
+import type { Leaf } from './Leaf'
+import * as leafsTable from './leafsTable'
 import type { Model } from './Model'
 
 export default class DbModel {
@@ -95,11 +94,11 @@ export default class DbModel {
       if (lastExposure === undefined) {
         category = 'UNTESTED'
         matureAt = 0
-      } else if (!lastExposure.remembered) {
+      } else if (lastExposure.grade !== 'FORGOTTEN') {
         category = 'BROKEN'
         matureAt = lastExposure.createdAt + 60
       } else if (penultimateExposure === undefined ||
-        !penultimateExposure.remembered) {
+        penultimateExposure.grade !== 'FORGOTTEN') {
         category = 'REMEMBERED_1X'
         matureAt = lastExposure.createdAt + 300
       } else {
@@ -149,16 +148,7 @@ export default class DbModel {
         return this._recomputeModel()
       })
 
-  exposeLeafs = (
-    pairs: Array<LeafIdRememberedPair>,
-    createdAt: number
-  ): Promise<Model> => {
-    const exposures = pairs.map(pair => ({
-      exposureId: 0,
-      leafId: pair.leafId,
-      remembered: pair.remembered,
-      createdAt,
-    }))
+  exposeLeafs = (exposures: Array<Exposure>): Promise<Model> => {
     return exposuresTable.insertRows(this.db, exposures)
       .then((newExposures: Array<Exposure>) => {
         this.allExposures = this.allExposures.concat(newExposures)
@@ -174,8 +164,9 @@ export default class DbModel {
 
     const exposuresJson = JSON.stringify(this.allExposures.map(exposure => ({
       leafEs: leafIdToEs[exposure.leafId],
-      remembered: exposure.remembered,
       createdAt: exposure.createdAt,
+      grade: exposure.grade,
+      earlyDurationMs: exposure.earlyDurationMs,
     })))
 
     const leafsJson = JSON.stringify(this.allLeafs.map(leaf => {
