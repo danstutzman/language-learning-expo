@@ -173,11 +173,29 @@ export default class DbModel {
       leafIdToEs[leaf.leafId] = leaf.es
     }
 
-    return JSON.stringify(this.allExposures.map(exposure => ({
+    const exposuresJson = JSON.stringify(this.allExposures.map(exposure => ({
       leafEs: leafIdToEs[exposure.leafId],
       remembered: exposure.remembered,
       createdAtSeconds: exposure.createdAtSeconds,
     })))
+
+    const leafsJson = JSON.stringify(this.allLeafs.map(leaf => {
+      const { type, en, es, gender } = leaf
+      const mnemonic = leaf.mnemonic ? leaf.mnemonic : undefined
+      if (type === 'EsN') {
+        return { type, en, es, gender, mnemonic }
+      } else if (type === 'EsD') {
+        return { type, en, es, gender }
+      }
+    })).replace(/,{"type"/g, ',\n{"type"')
+
+    return `Paste in src/model/exposuresExport.js:
+
+    ${exposuresJson}
+
+    Paste in src/model/seedLeafs.js:
+
+    ${leafsJson}`
   }
 
   reseedDatabase = (): Promise<Model> =>

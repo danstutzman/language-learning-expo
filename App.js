@@ -63,9 +63,12 @@ export default class App extends React.PureComponent<Props, State> {
             this.dbModel.editLeaf(card)
               .then(model => this.setState({ model }))
           }}
-          exportDatabase={() =>
-            email(null, null, null, 'Lang learning export',
-              this.dbModel.serializeForEmail())}
+          exportDatabase={() => {
+            const body = this.dbModel.serializeForEmail()
+            // eslint-disable-next-line no-console
+            console.warn('Email body', body)
+            email(null, null, null, 'Lang learning export', body)
+          }}
           exposeLeafs={(pairs: Array<LeafIdRememberedPair>,
             createdAtSeconds: number) => {
             this.dbModel.exposeLeafs(pairs, createdAtSeconds)
