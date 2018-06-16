@@ -156,7 +156,7 @@ export default class SlowSpeakGameScreen
               onChangeText={(newMnemonic: string) =>
                 this.setState({ newMnemonic })}
               onSubmitEditing={() =>
-                this.props.editMnemonic(this.state.newMnemonic)}
+                this.props.editMnemonic(this.state.newMnemonic || '')}
               value={this.state.newMnemonic !== null ?
                 this.state.newMnemonic : leaf.mnemonic} />
             <Text style={[styles.es, this.state.remembered || styles.forgotten]}>
