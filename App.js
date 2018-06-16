@@ -70,8 +70,8 @@ export default class App extends React.PureComponent<Props, State> {
             email(null, null, null, 'Lang learning export', body)
           }}
           exposeLeafs={(pairs: Array<LeafIdRememberedPair>,
-            createdAtSeconds: number) => {
-            this.dbModel.exposeLeafs(pairs, createdAtSeconds)
+            createdAt: number) => {
+            this.dbModel.exposeLeafs(pairs, createdAt)
               .then(model => this.setState({ model }))
           }}
           reseedDatabase={() =>

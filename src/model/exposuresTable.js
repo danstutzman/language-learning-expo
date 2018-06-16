@@ -25,7 +25,7 @@ export function create(db: Db): Promise<void> {
           exposureId INTEGER PRIMARY KEY NOT NULL,
           leafId INTEGER NOT NULL,
           remembered BOOLEAN NOT NULL,
-          createdAtSeconds REAL NOT NULL
+          createdAt REAL NOT NULL
         );`,
         [],
         () => resolve()
@@ -52,7 +52,7 @@ export function insertRows(
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => {
-        let sql = `INSERT INTO exposures (leafId, remembered, createdAtSeconds)
+        let sql = `INSERT INTO exposures (leafId, remembered, createdAt)
           VALUES `
         let values = []
         for (let i = 0; i < exposures.length; i++) {
@@ -63,7 +63,7 @@ export function insertRows(
           sql += '(?, ?, ?)'
           values.push(exposure.leafId)
           values.push(exposure.remembered)
-          values.push(exposure.createdAtSeconds)
+          values.push(exposure.createdAt)
         }
         tx.executeSql(
           sql,
@@ -88,8 +88,7 @@ export function selectAll(db: Db): Promise<Array<Exposure>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `SELECT exposureId, leafId, remembered, createdAtSeconds
-          FROM exposures`,
+        'SELECT exposureId, leafId, remembered, createdAt FROM exposures',
         [],
         (tx, { rows: { _array } }) => {
           for (const row of _array) {
@@ -118,7 +117,7 @@ export function seed(db: Db, allLeafs: Array<Leaf>): Promise<void> {
         }
 
         let sql = `INSERT INTO exposures
-          (leafId, remembered, createdAtSeconds)
+          (leafId, remembered, createdAt)
           VALUES `
         const values = []
         for (let i = 0; i < exposuresExport.length; i++) {
@@ -134,7 +133,7 @@ export function seed(db: Db, allLeafs: Array<Leaf>): Promise<void> {
           sql += '(?, ?, ?)'
           values.push(leaf.leafId)
           values.push(export_.remembered ? 1 : 0)
-          values.push(export_.createdAtSeconds)
+          values.push(export_.createdAt)
         }
         sql += ';'
         tx.executeSql(sql, values, () => resolve())

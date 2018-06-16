@@ -15,8 +15,7 @@ import type { LeafIdRememberedPair } from '../model/LeafIdRememberedPair'
 
 type Props = {|
   card: Card,
-  exposeLeafs: (pairs: Array<LeafIdRememberedPair>, createdAtSeconds: number) =>
-    void,
+  exposeLeafs: (pairs: Array<LeafIdRememberedPair>, createdAt: number) => void,
 |}
 
 type State = {|

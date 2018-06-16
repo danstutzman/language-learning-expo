@@ -60,11 +60,10 @@ export default class DbModel {
       const penultimateExposure = leafIdToPenultimateExposure[leafId]
       if (lastExposure === undefined) {
         leafIdToLastExposure[leafId] = exposure
-      } else if (exposure.createdAtSeconds > lastExposure.createdAtSeconds) {
+      } else if (exposure.createdAt > lastExposure.createdAt) {
         leafIdToPenultimateExposure[leafId] = leafIdToLastExposure[leafId]
         leafIdToLastExposure[leafId] = exposure
-      } else if (exposure.createdAtSeconds >
-        penultimateExposure.createdAtSeconds) {
+      } else if (exposure.createdAt > penultimateExposure.createdAt) {
         leafIdToPenultimateExposure[leafId] = exposure
       }
     }
@@ -72,9 +71,9 @@ export default class DbModel {
     const nounLeafs = this.allLeafs.filter((leaf =>
       leaf.type === 'EsN' && !leaf.suspended))
     const byExposureCreatedAt = (leaf1: Leaf, leaf2: Leaf) => {
-      const e1 = leafIdToLastExposure[leaf1.leafId] || { createdAtSeconds: 0 }
-      const e2 = leafIdToLastExposure[leaf2.leafId] || { createdAtSeconds: 0 }
-      return e1.createdAtSeconds < e2.createdAtSeconds ? -1 : 1
+      const e1 = leafIdToLastExposure[leaf1.leafId] || { createdAt: 0 }
+      const e2 = leafIdToLastExposure[leaf2.leafId] || { createdAt: 0 }
+      return e1.createdAt < e2.createdAt ? -1 : 1
     }
     nounLeafs.sort(byExposureCreatedAt)
 
@@ -98,26 +97,26 @@ export default class DbModel {
         matureAt = 0
       } else if (!lastExposure.remembered) {
         category = 'BROKEN'
-        matureAt = lastExposure.createdAtSeconds + 60
+        matureAt = lastExposure.createdAt + 60
       } else if (penultimateExposure === undefined ||
         !penultimateExposure.remembered) {
         category = 'REMEMBERED_1X'
-        matureAt = lastExposure.createdAtSeconds + 300
+        matureAt = lastExposure.createdAt + 300
       } else {
-        const memoryDuration = lastExposure.createdAtSeconds -
-          penultimateExposure.createdAtSeconds
+        const memoryDuration = lastExposure.createdAt -
+          penultimateExposure.createdAt
         if (memoryDuration >= 24 * 60 * 60) {
           category = 'REMEMBERED_1DAY'
-          matureAt = lastExposure.createdAtSeconds + 24 * 60 * 60
+          matureAt = lastExposure.createdAt + 24 * 60 * 60
         } else if (memoryDuration >= 60 * 60) {
           category = 'REMEMBERED_1HOUR'
-          matureAt = lastExposure.createdAtSeconds + 24 * 60 * 60
+          matureAt = lastExposure.createdAt + 24 * 60 * 60
         } else if (memoryDuration >= 5 * 60) {
           category = 'REMEMBERED_5MIN'
-          matureAt = lastExposure.createdAtSeconds + 60 * 60
+          matureAt = lastExposure.createdAt + 60 * 60
         } else {
           category = 'REMEMBERED_2X'
-          matureAt = lastExposure.createdAtSeconds + 5 * 60
+          matureAt = lastExposure.createdAt + 5 * 60
         }
       }
 
@@ -152,13 +151,13 @@ export default class DbModel {
 
   exposeLeafs = (
     pairs: Array<LeafIdRememberedPair>,
-    createdAtSeconds: number
+    createdAt: number
   ): Promise<Model> => {
     const exposures = pairs.map(pair => ({
       exposureId: 0,
       leafId: pair.leafId,
       remembered: pair.remembered,
-      createdAtSeconds,
+      createdAt,
     }))
     return exposuresTable.insertRows(this.db, exposures)
       .then((newExposures: Array<Exposure>) => {
@@ -176,7 +175,7 @@ export default class DbModel {
     const exposuresJson = JSON.stringify(this.allExposures.map(exposure => ({
       leafEs: leafIdToEs[exposure.leafId],
       remembered: exposure.remembered,
-      createdAtSeconds: exposure.createdAtSeconds,
+      createdAt: exposure.createdAt,
     })))
 
     const leafsJson = JSON.stringify(this.allLeafs.map(leaf => {

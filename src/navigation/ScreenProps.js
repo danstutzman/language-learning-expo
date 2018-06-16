@@ -4,8 +4,7 @@ import type { Model } from '../model/Model'
 
 export type ScreenProps = {|
   addLeaf: (leaf: Leaf) => void,
-  exposeLeafs: (pairs: Array<LeafIdRememberedPair>, createdAtSeconds: number) =>
-   void,
+  exposeLeafs: (pairs: Array<LeafIdRememberedPair>, createdAt: number) => void,
   deleteLeaf: (leaf: Leaf) => void,
   editLeaf: (leaf: Leaf) => void,
   exportDatabase: () => void,
