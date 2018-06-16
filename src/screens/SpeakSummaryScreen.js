@@ -45,7 +45,7 @@ type CategoryAndNumCards = {
   numCards: number,
 }
 
-export const CATEGORIES = ['FIRST_TIME', 'BROKEN', 'SUCCESSFUL']
+export const CATEGORIES = ['FIRST_TIME', 'BROKEN', 'NURSERY', 'SUCCESSFUL']
 
 export default class SpeakSummaryScreen extends React.PureComponent<Props> {
   summarizeCategories = (): Array<CategoryAndNumCards> => {

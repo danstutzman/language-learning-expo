@@ -89,7 +89,9 @@ const SpeakStack = createStackNavigator({
       const topCard = model.speakCardsByCategory[category][0]
       if (topCard === undefined) {
         return <Text>No cards in this category</Text>
-      } else if (category === 'BROKEN') {
+      } else if (category === 'FIRST_TIME' ||
+        category === 'BROKEN' ||
+        category === 'NURSERY') {
         if (topCard.leafs.length !== 1) {
           throw new Error(
             `Unexpected num leafs on topCard: ${JSON.stringify(topCard)}`)

@@ -53,11 +53,19 @@ export default class DbModel {
   // Reads in this.allLeafs and this.allExposures
   _recomputeModel = (): Model => {
     const leafIdToLastExposure: {[number]: Exposure} = {}
+    const leafIdToPenultimateExposure: {[number]: Exposure} = {}
     for (const exposure of this.allExposures) {
-      const lastExposure = leafIdToLastExposure[exposure.leafId]
-      if (lastExposure === undefined ||
-          exposure.createdAtSeconds > lastExposure.createdAtSeconds) {
-        leafIdToLastExposure[exposure.leafId] = exposure
+      const { leafId } = exposure
+      const lastExposure = leafIdToLastExposure[leafId]
+      const penultimateExposure = leafIdToPenultimateExposure[leafId]
+      if (lastExposure === undefined) {
+        leafIdToLastExposure[leafId] = exposure
+      } else if (exposure.createdAtSeconds > lastExposure.createdAtSeconds) {
+        leafIdToPenultimateExposure[leafId] = leafIdToLastExposure[leafId]
+        leafIdToLastExposure[leafId] = exposure
+      } else if (exposure.createdAtSeconds >
+        penultimateExposure.createdAtSeconds) {
+        leafIdToPenultimateExposure[leafId] = exposure
       }
     }
 
@@ -71,19 +79,29 @@ export default class DbModel {
     nounLeafs.sort(byExposureCreatedAt)
 
     const speakCardsByCategory: {[string]: Array<Card>} =
-      { 'FIRST_TIME': [], 'BROKEN': [], 'SUCCESSFUL': [] }
+      { 'FIRST_TIME': [], 'BROKEN': [], 'NURSERY': [], 'SUCCESSFUL': [] }
     const cardFromSingleLeaf = (leaf: Leaf) => ({ leafs: [leaf] })
     for (const leaf of nounLeafs) {
       const lastExposure = leafIdToLastExposure[leaf.leafId]
+      const penultimateExposure = leafIdToPenultimateExposure[leaf.leafId]
+
+      let category: string
       if (lastExposure === undefined) {
-        speakCardsByCategory['FIRST_TIME'].push(cardFromSingleLeaf(leaf))
+        category = 'FIRST_TIME'
       } else {
         if (lastExposure.remembered) {
-          speakCardsByCategory['SUCCESSFUL'].push(cardFromSingleLeaf(leaf))
+          if (penultimateExposure !== undefined &&
+            penultimateExposure.remembered) {
+            category = 'SUCCESSFUL'
+          } else {
+            category = 'NURSERY'
+          }
         } else {
-          speakCardsByCategory['BROKEN'].push(cardFromSingleLeaf(leaf))
+          category = 'BROKEN'
         }
       }
+
+      speakCardsByCategory[category].push(cardFromSingleLeaf(leaf))
     }
 
     return { allLeafs: this.allLeafs, speakCardsByCategory }
