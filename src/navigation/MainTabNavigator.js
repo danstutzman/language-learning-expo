@@ -86,11 +86,12 @@ const SpeakStack = createStackNavigator({
       const { category } = args.navigation.state.params
       const { model, editLeaf, exposeLeafs } = args.screenProps
 
-      const topCard = model.speakCardsByCategory[category][0]
+      const topCard = model.speakCardsByCategory[category]
+        .filter(card => card.matureAt < new Date().getTime() / 1000)[0]
       if (topCard === undefined) {
         return <Text>No cards in this category</Text>
       } else if (['UNTESTED', 'BROKEN', 'REMEMBERED_1X', 'REMEMBERED_2X'
-        ].indexOf(category) !== -1) {
+      ].indexOf(category) !== -1) {
         if (topCard.leafs.length !== 1) {
           throw new Error(
             `Unexpected num leafs on topCard: ${JSON.stringify(topCard)}`)

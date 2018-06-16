@@ -25,7 +25,6 @@ const styles = StyleSheet.create({
   },
   listItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
   },
   listItemDisabled: {
     color: 'gray',
@@ -33,16 +32,26 @@ const styles = StyleSheet.create({
   listItemCategory: {
     fontSize: 24,
     paddingLeft: 10,
+    flex: 1,
   },
-  listItemNumCards: {
+  listItemNumMatureCards: {
     fontSize: 24,
     paddingRight: 10,
+    width: 40,
+    textAlign: 'right',
+  },
+  listItemNumImmatureCards: {
+    fontSize: 24,
+    paddingRight: 10,
+    width: 40,
+    textAlign: 'right',
   },
 })
 
 type CategoryAndNumCards = {
   category: string,
-  numCards: number,
+  numMatureCards: number,
+  numImmatureCards: number,
 }
 
 export const CATEGORIES = [
@@ -59,21 +68,29 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
   summarizeCategories = (): Array<CategoryAndNumCards> => {
     const { speakCardsByCategory } = this.props.model
     return Object.keys(speakCardsByCategory)
-      .map((category: string) => ({
-        category,
-        numCards: speakCardsByCategory[category].length,
-      }))
+      .map((category: string) => {
+        const cards = speakCardsByCategory[category]
+        const now = new Date().getTime() / 1000
+        const numMatureCards =
+          cards.filter(card => card.matureAt <= now).length
+        const numImmatureCards =
+          cards.filter(card => card.matureAt > now).length
+        return { category, numMatureCards, numImmatureCards }
+      })
   }
 
   renderListItem = (item: { item: CategoryAndNumCards }) => {
-    const { category, numCards } = item.item
-    if (numCards === 0) {
+    const { category, numMatureCards, numImmatureCards } = item.item
+    if (numMatureCards === 0) {
       return <View key={category} style={styles.listItem}>
         <Text style={[styles.listItemCategory, styles.listItemDisabled]}>
           {category}
         </Text>
-        <Text style={[styles.listItemNumCards, styles.listItemDisabled]}>
-          {numCards}
+        <Text style={[styles.listItemNumMatureCards, styles.listItemDisabled]}>
+          {numMatureCards}
+        </Text>
+        <Text style={[styles.listItemNumImmatureCards, styles.listItemDisabled]}>
+          {numImmatureCards}
         </Text>
       </View>
     } else {
@@ -82,7 +99,8 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
         style={styles.listItem}
         onPress={() => this.props.startSpeakQuiz(category)}>
         <Text style={styles.listItemCategory}>{category}</Text>
-        <Text style={styles.listItemNumCards}>{numCards}</Text>
+        <Text style={styles.listItemNumMatureCards}>{numMatureCards}</Text>
+        <Text style={styles.listItemNumImmatureCards}>{numImmatureCards}</Text>
       </TouchableOpacity>
     }
   }

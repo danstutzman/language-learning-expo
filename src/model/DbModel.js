@@ -87,34 +87,41 @@ export default class DbModel {
       'REMEMBERED_1HOUR': [],
       'REMEMBERED_1DAY': [],
     }
-    const cardFromSingleLeaf = (leaf: Leaf) => ({ leafs: [leaf] })
     for (const leaf of nounLeafs) {
       const lastExposure = leafIdToLastExposure[leaf.leafId]
       const penultimateExposure = leafIdToPenultimateExposure[leaf.leafId]
 
       let category: string
+      let matureAt: number
       if (lastExposure === undefined) {
         category = 'UNTESTED'
+        matureAt = 0
       } else if (!lastExposure.remembered) {
         category = 'BROKEN'
+        matureAt = lastExposure.createdAtSeconds + 60
       } else if (penultimateExposure === undefined ||
-        !penultimateExposure.remembered) { 
+        !penultimateExposure.remembered) {
         category = 'REMEMBERED_1X'
+        matureAt = lastExposure.createdAtSeconds + 300
       } else {
         const memoryDuration = lastExposure.createdAtSeconds -
           penultimateExposure.createdAtSeconds
         if (memoryDuration >= 24 * 60 * 60) {
           category = 'REMEMBERED_1DAY'
+          matureAt = lastExposure.createdAtSeconds + 24 * 60 * 60
         } else if (memoryDuration >= 60 * 60) {
           category = 'REMEMBERED_1HOUR'
+          matureAt = lastExposure.createdAtSeconds + 24 * 60 * 60
         } else if (memoryDuration >= 5 * 60) {
           category = 'REMEMBERED_5MIN'
+          matureAt = lastExposure.createdAtSeconds + 60 * 60
         } else {
           category = 'REMEMBERED_2X'
+          matureAt = lastExposure.createdAtSeconds + 5 * 60
         }
       }
 
-      speakCardsByCategory[category].push(cardFromSingleLeaf(leaf))
+      speakCardsByCategory[category].push({ leafs: [leaf], matureAt })
     }
 
     return { allLeafs: this.allLeafs, speakCardsByCategory }
