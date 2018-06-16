@@ -63,27 +63,17 @@ export default class DbModel {
 
     const isLeafReady = (leaf: Leaf) => {
       const lastExposure =
-        leafIdToLastExposure[leaf.leafId] || { remembered: true }
+        leafIdToLastExposure[leaf.leafId] || { remembered: false }
       return !leaf.suspended && lastExposure.remembered
     }
 
-    const determiners = this.allLeafs
-      .filter((leaf: Leaf) => leaf.type === 'EsD')
-      .filter(isLeafReady)
     const nouns = this.allLeafs
       .filter((leaf: Leaf) => leaf.type === 'EsN')
       .filter(isLeafReady)
 
     const speakCards: Array<Card> = []
-    for (const determiner of determiners) {
-      for (const noun of nouns) {
-        if (determiner.gender === noun.gender ||
-          determiner.gender === '') {
-          speakCards.push({
-            leafs: [determiner, noun],
-          })
-        }
-      }
+    for (const noun of nouns) {
+      speakCards.push({ leafs: [noun] })
     }
 
     const earliestExposureCreatedAt = (card: Card) => {
@@ -103,7 +93,21 @@ export default class DbModel {
         -1 : 1
     speakCards.sort(byEarliestExposureCreatedAt)
 
-    return { allLeafs: this.allLeafs, speakCards }
+    const isLeafNounAndBroken = (leaf: Leaf) => {
+      const lastExposure =
+        leafIdToLastExposure[leaf.leafId] || { remembered: false }
+      return leaf.type === 'EsN' && !lastExposure.remembered
+    }
+
+    const slowSpeakLeafs = this.allLeafs.filter(isLeafNounAndBroken)
+    const byExposureCreatedAt = (leaf1: Leaf, leaf2: Leaf) => {
+      const e1 = leafIdToLastExposure[leaf1.leafId] || { createdAtSeconds: 0 }
+      const e2 = leafIdToLastExposure[leaf2.leafId] || { createdAtSeconds: 0 }
+      return e1.createdAtSeconds < e2.createdAtSeconds ? -1 : 1
+    }
+    slowSpeakLeafs.sort(byExposureCreatedAt)
+
+    return { allLeafs: this.allLeafs, slowSpeakLeafs, speakCards }
   }
 
   addLeaf = (leafWithoutLeafId: Leaf): Promise<Model> =>

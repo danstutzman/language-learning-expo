@@ -7,15 +7,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { FontAwesome } from '@expo/vector-icons'
 
 import type { Card } from '../model/Card'
+import Hourglass from '../components/Hourglass'
 import type { Leaf } from '../model/Leaf'
 import type { LeafIdRememberedPair } from '../model/LeafIdRememberedPair'
 
 type Props = {|
   card: Card,
-  exposeLeafs: (pairs: Array<LeafIdRememberedPair>, createdAtSeconds: number) =>void,
+  exposeLeafs: (pairs: Array<LeafIdRememberedPair>, createdAtSeconds: number) =>
+    void,
 |}
 
 type State = {|
@@ -24,11 +25,6 @@ type State = {|
   showMnemonic: boolean,
 |}
 
-const SECONDS_LEFT_TO_ICON = {
-  '3': 'hourglass-start',
-  '2': 'hourglass-half',
-  '1': 'hourglass-end',
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -169,11 +165,9 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
                   '' : leaf.en}
               </Text>
               {this.state.secondsLeft > 0 ?
-                <FontAwesome
-                  style={styles.hourglass}
-                  name={SECONDS_LEFT_TO_ICON[this.state.secondsLeft]}
-                  size={26}
-                  color="#ddd" /> :
+                <View style={styles.hourglass}>
+                  <Hourglass secondsLeft={this.state.secondsLeft} />
+                </View> :
                 <Text style={[
                   styles.gloss_table_spanish,
                   this.state.rememberedByLeafId[leaf.leafId] ?
