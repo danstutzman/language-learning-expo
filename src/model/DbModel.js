@@ -78,8 +78,15 @@ export default class DbModel {
     }
     nounLeafs.sort(byExposureCreatedAt)
 
-    const speakCardsByCategory: {[string]: Array<Card>} =
-      { 'FIRST_TIME': [], 'BROKEN': [], 'NURSERY': [], 'SUCCESSFUL': [] }
+    const speakCardsByCategory: {[string]: Array<Card>} = {
+      'UNTESTED': [],
+      'BROKEN': [],
+      'REMEMBERED_1X': [],
+      'REMEMBERED_2X': [],
+      'REMEMBERED_5MIN': [],
+      'REMEMBERED_1HOUR': [],
+      'REMEMBERED_1DAY': [],
+    }
     const cardFromSingleLeaf = (leaf: Leaf) => ({ leafs: [leaf] })
     for (const leaf of nounLeafs) {
       const lastExposure = leafIdToLastExposure[leaf.leafId]
@@ -87,17 +94,23 @@ export default class DbModel {
 
       let category: string
       if (lastExposure === undefined) {
-        category = 'FIRST_TIME'
+        category = 'UNTESTED'
+      } else if (!lastExposure.remembered) {
+        category = 'BROKEN'
+      } else if (penultimateExposure === undefined ||
+        !penultimateExposure.remembered) { 
+        category = 'REMEMBERED_1X'
       } else {
-        if (lastExposure.remembered) {
-          if (penultimateExposure !== undefined &&
-            penultimateExposure.remembered) {
-            category = 'SUCCESSFUL'
-          } else {
-            category = 'NURSERY'
-          }
+        const memoryDuration = lastExposure.createdAtSeconds -
+          penultimateExposure.createdAtSeconds
+        if (memoryDuration >= 24 * 60 * 60) {
+          category = 'REMEMBERED_1DAY'
+        } else if (memoryDuration >= 60 * 60) {
+          category = 'REMEMBERED_1HOUR'
+        } else if (memoryDuration >= 5 * 60) {
+          category = 'REMEMBERED_5MIN'
         } else {
-          category = 'BROKEN'
+          category = 'REMEMBERED_2X'
         }
       }
 
