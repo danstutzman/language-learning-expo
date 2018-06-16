@@ -107,9 +107,10 @@ const SpeakStack = createStackNavigator({
         return <SpeakQuizScreen card={topCard} exposeLeafs={exposeLeafs} />
       }
     },
-    navigationOptions: () => ({
-      title: 'Speak in Spanish',
-    }),
+    navigationOptions: (args: {navigation: any, screenProps: ScreenProps}) => {
+      const { category } = args.navigation.state.params
+      return { title: `Speak: ${category}` }
+    },
   }
 })
 
