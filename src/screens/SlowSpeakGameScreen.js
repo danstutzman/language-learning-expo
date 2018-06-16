@@ -128,8 +128,10 @@ export default class SlowSpeakGameScreen
     this.speakMnemonicAndSpanish()
   }
 
-  pressNext = () =>
+  pressNext = () => {
+    Speech.stop()
     this.props.exposeLeaf(this.state.remembered)
+  }
 
   render() {
     const { leaf } = this.props
