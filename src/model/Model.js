@@ -1,4 +1,4 @@
-import type { Card } from './Card'
+import type { Card } from '../bank/Card'
 import type { Leaf } from './Leaf'
 
 export type Model = {|

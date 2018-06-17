@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native'
 
-import type { Card } from '../model/Card'
+import type { Card } from '../bank/Card'
 import type { Exposure } from '../model/Exposure'
 import type { ExposureType } from '../model/ExposureType'
 import type { Leaf } from '../model/Leaf'

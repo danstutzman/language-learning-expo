@@ -1,4 +1,4 @@
-import type { Leaf } from './Leaf'
+import type { Leaf } from '../model/Leaf'
 
 export type Card = {|
   leafs: Array<Leaf>,

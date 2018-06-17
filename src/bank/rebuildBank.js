@@ -1,4 +1,4 @@
-import type { Card } from '../model/Card'
+import type { Card } from './Card'
 import DbModel from '../model/DbModel'
 import type { Exposure } from '../model/Exposure'
 import type { Leaf } from '../model/Leaf'
