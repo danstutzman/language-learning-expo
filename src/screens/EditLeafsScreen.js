@@ -28,6 +28,7 @@ type State = {|
 
 const LEAF_TYPE_TO_SECTION_TITLE = {
   Det: 'Determiners',
+  Inf: 'Infinitives',
   N: 'Nouns',
 }
 

@@ -23,7 +23,7 @@ export function create(db: Db): Promise<void> {
           leafId INTEGER PRIMARY KEY NOT NULL,
           en TEXT NOT NULL,
           es TEXT NOT NULL,
-          gender TEXT NOT NULL,
+          gender TEXT,
           mnemonic TEXT NOT NULL,
           suspended BOOLEAN NOT NULL,
           type TEXT NOT NULL

@@ -38,7 +38,9 @@ export default (
 {"type":"Det","en":"my","es":"mi","gender":""},
 {"type":"Det","en":"this","es":"este","gender":"M"},
 {"type":"Det","en":"this","es":"esta","gender":"F"},
-{"type":"Det","en":"every","es":"cada","gender":""}]
+{"type":"Det","en":"every","es":"cada","gender":""},
+{"type":"Inf","en":"ask","es":"preguntar"},
+{"type":"Inf","en":"eat","es":"comer"}]
 
 .map(seed => ({
   ...seed,
