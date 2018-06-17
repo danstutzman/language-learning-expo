@@ -92,11 +92,11 @@ const SpeakStack = createStackNavigator({
         return <Text>No cards in this category</Text>
       } else if (['UNTESTED', 'BROKEN', 'REMEMBERED_1X', 'REMEMBERED_2X'
       ].indexOf(category) !== -1) {
-        if (topCard.leafs.length !== 1) {
+        if (topCard.getLeafs().length !== 1) {
           throw new Error(
             `Unexpected num leafs on topCard: ${JSON.stringify(topCard)}`)
         }
-        const leaf = topCard.leafs[0]
+        const leaf = topCard.getLeafs()[0]
         return <SlowSpeakGameScreen
           leaf={leaf}
           editMnemonic={(mnemonic: string) => editLeaf({ ...leaf, mnemonic })}

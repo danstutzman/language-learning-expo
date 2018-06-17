@@ -3,6 +3,7 @@ import type { Card } from './Card'
 import DbModel from '../model/DbModel'
 import type { Exposure } from '../model/Exposure'
 import type { Leaf } from '../model/Leaf'
+import N from './N'
 
 export default function rebuildBank(dbModel: DbModel): Bank {
   const { allExposures, allLeafs } = dbModel
@@ -24,14 +25,12 @@ export default function rebuildBank(dbModel: DbModel): Bank {
     }
   }
 
-  const nounLeafs = allLeafs.filter((leaf =>
-    leaf.type === 'N' && !leaf.suspended))
   const byExposureCreatedAt = (leaf1: Leaf, leaf2: Leaf) => {
     const e1 = leafIdToLastExposure[leaf1.leafId] || { createdAt: 0 }
     const e2 = leafIdToLastExposure[leaf2.leafId] || { createdAt: 0 }
     return e1.createdAt < e2.createdAt ? -1 : 1
   }
-  nounLeafs.sort(byExposureCreatedAt)
+  allLeafs.sort(byExposureCreatedAt)
 
   const speakCardsByCategory: {[string]: Array<Card>} = {
     'UNTESTED': [],
@@ -42,7 +41,7 @@ export default function rebuildBank(dbModel: DbModel): Bank {
     'REMEMBERED_1HOUR': [],
     'REMEMBERED_1DAY': [],
   }
-  for (const leaf of nounLeafs) {
+  for (const leaf of allLeafs) {
     const lastExposure = leafIdToLastExposure[leaf.leafId]
     const penultimateExposure = leafIdToPenultimateExposure[leaf.leafId]
 
@@ -76,7 +75,9 @@ export default function rebuildBank(dbModel: DbModel): Bank {
       }
     }
 
-    speakCardsByCategory[category].push({ leafs: [leaf], matureAt })
+    if (leaf.type === 'N' && !leaf.suspended) {
+      speakCardsByCategory[category].push(new N(leaf, matureAt))
+    }
   }
 
   return { allLeafs, speakCardsByCategory }

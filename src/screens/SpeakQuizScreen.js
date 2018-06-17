@@ -81,7 +81,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
   revealAnswer = () => {
     const recalledByLeafId = {}
-    for (const leaf of this.props.card.leafs) {
+    for (const leaf of this.props.card.getLeafs()) {
       recalledByLeafId[leaf.leafId] = true
     }
 
@@ -104,7 +104,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
   onNext = () => {
     const { recalledByLeafId, recalledAtMillis } = this.state
-    const allLeafIds = this.props.card.leafs.map(leaf => leaf.leafId)
+    const allLeafIds = this.props.card.getLeafs().map(leaf => leaf.leafId)
     const nonRecalledLeafIds =
       allLeafIds.filter(leafId => !recalledByLeafId[leafId])
 
@@ -140,7 +140,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   renderGlossTable() {
-    return this.props.card.leafs.map(leaf =>
+    return this.props.card.getLeafs().map(leaf =>
       <TouchableOpacity
         key={leaf.leafId}
         style={styles.gloss_table_row}
@@ -160,7 +160,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   render() {
     return <View style={styles.container}>
       <Text style={styles.leaf_english}>
-        {this.props.card.leafs.map(leaf => leaf.en).join(' ')}
+        {this.props.card.getLeafs().map(leaf => leaf.en).join(' ')}
       </Text>
       <View style={styles.gloss_table}>
         {this.state.recalledAtMillis === null
