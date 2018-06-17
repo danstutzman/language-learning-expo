@@ -8,6 +8,7 @@ import DbModel from './src/model/DbModel'
 import type { Exposure } from './src/model/Exposure'
 import type { Leaf } from './src/model/Leaf'
 import type { Model } from './src/model/Model'
+import rebuildBank from './src/bank/rebuildBank'
 import RootNavigation from './src/navigation/RootNavigation'
 
 const styles = StyleSheet.create({
@@ -53,15 +54,15 @@ export default class App extends React.PureComponent<Props, State> {
         <RootNavigation
           addLeaf={(card: Leaf) => {
             this.dbModel.addLeaf(card)
-              .then(model => this.setState({ model }))
+              .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
           }}
           deleteLeaf={(card: Leaf) => {
             this.dbModel.deleteLeaf(card)
-              .then(model => this.setState({ model }))
+              .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
           }}
           editLeaf={(card: Leaf) => {
             this.dbModel.editLeaf(card)
-              .then(model => this.setState({ model }))
+              .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
           }}
           exportDatabase={() => {
             const body = this.dbModel.serializeForEmail()
@@ -71,11 +72,11 @@ export default class App extends React.PureComponent<Props, State> {
           }}
           addExposures={(exposures: Array<Exposure>) => {
             this.dbModel.addExposures(exposures)
-              .then(model => this.setState({ model }))
+              .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
           }}
           reseedDatabase={() =>
             this.dbModel.reseedDatabase()
-              .then(model => this.setState({ model }))
+              .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
               .then(() => Alert.alert(
                 'Reseed finished',
                 'Reseed finished',
@@ -101,7 +102,7 @@ export default class App extends React.PureComponent<Props, State> {
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
       this.dbModel.init()
-        .then((model: Model) => this.setState({ model }))
+        .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
     ])
   }
 }
