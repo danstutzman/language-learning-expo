@@ -88,9 +88,9 @@ export default class DbModel {
     const leafsJson = JSON.stringify(this.allLeafs.map(leaf => {
       const { type, en, es, gender } = leaf
       const mnemonic = leaf.mnemonic ? leaf.mnemonic : undefined
-      if (type === 'EsN') {
+      if (type === 'N') {
         return { type, en, es, gender, mnemonic }
-      } else if (type === 'EsD') {
+      } else if (type === 'Det') {
         return { type, en, es, gender }
       }
     })).replace(/,{"type"/g, ',\n{"type"')

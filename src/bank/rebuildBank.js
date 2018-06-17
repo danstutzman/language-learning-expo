@@ -25,7 +25,7 @@ export default function rebuildBank(dbModel: DbModel): Bank {
   }
 
   const nounLeafs = allLeafs.filter((leaf =>
-    leaf.type === 'EsN' && !leaf.suspended))
+    leaf.type === 'N' && !leaf.suspended))
   const byExposureCreatedAt = (leaf1: Leaf, leaf2: Leaf) => {
     const e1 = leafIdToLastExposure[leaf1.leafId] || { createdAt: 0 }
     const e2 = leafIdToLastExposure[leaf2.leafId] || { createdAt: 0 }

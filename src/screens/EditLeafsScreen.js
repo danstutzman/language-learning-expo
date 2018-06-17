@@ -27,8 +27,8 @@ type State = {|
 |}
 
 const LEAF_TYPE_TO_SECTION_TITLE = {
-  EsD: 'Determiners',
-  EsN: 'Nouns',
+  Det: 'Determiners',
+  N: 'Nouns',
 }
 
 const styles = StyleSheet.create({
