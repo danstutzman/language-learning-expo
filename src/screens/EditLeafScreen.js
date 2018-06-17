@@ -1,6 +1,7 @@
 import React from 'react'
 import {
   Button,
+  Picker,
   Switch,
   StyleSheet,
   Text,
@@ -10,6 +11,8 @@ import {
 
 import type { Leaf } from '../model/Leaf'
 import { BLANK_LEAF } from '../model/Leaf'
+import { LEAF_TYPE_TO_FIELDS } from '../model/LeafType'
+import { LEAF_TYPE_TO_DESCRIPTION } from '../model/LeafType'
 
 type Props = {|
   addLeaf: (leaf: Leaf) => void,
@@ -29,6 +32,13 @@ const styles = StyleSheet.create({
   },
   textInput: {
     borderWidth: 1,
+  },
+  typeField: {
+    borderWidth: 1,
+  },
+  typeFieldItem: {
+    height: 35,
+    fontSize: 16,
   },
 })
 
@@ -55,51 +65,74 @@ export default class EditLeafScreen extends React.PureComponent<Props, State> {
   }
 
   render() {
+    const { leaf } = this.state
+    const show = LEAF_TYPE_TO_FIELDS[leaf.type]
+
     return <View style={styles.container}>
 
-      <Text>Type</Text>
-      <TextInput
-        style={styles.textInput}
-        onChangeText={(type: string) =>
-          this.setState({ leaf: { ...this.state.leaf, type } })}
-        value={this.state.leaf.type} />
+      <View>
+        <Text>Type</Text>
+        <Picker
+          style={styles.typeField}
+          itemStyle={styles.typeFieldItem}
+          selectedValue={leaf.type}
+          onValueChange={item =>
+            this.setState({ leaf: { ...leaf, type: item } })}>
+          {Object.keys(LEAF_TYPE_TO_DESCRIPTION).map(type =>
+            <Picker.Item
+              key={type}
+              label={LEAF_TYPE_TO_DESCRIPTION[type]}
+              value={type} />
+          )}
+        </Picker>
+      </View>
 
-      <Text>Spanish</Text>
-      <TextInput
-        style={styles.textInput}
-        onChangeText={(es: string) =>
-          this.setState({ leaf: { ...this.state.leaf, es } })}
-        value={this.state.leaf.es} />
+      {show.es && <View>
+        <Text>Spanish</Text>
+        <TextInput
+          style={styles.textInput}
+          onChangeText={(es: string) =>
+            this.setState({ leaf: { ...leaf, es } })}
+          value={leaf.es} />
+      </View>}
 
-      <Text>English</Text>
-      <TextInput
-        style={styles.textInput}
-        onChangeText={(en: string) =>
-          this.setState({ leaf: { ...this.state.leaf, en } })}
-        value={this.state.leaf.en} />
+      {show.en && <View>
+        <Text>English</Text>
+        <TextInput
+          style={styles.textInput}
+          onChangeText={(en: string) =>
+            this.setState({ leaf: { ...leaf, en } })}
+          value={leaf.en} />
+      </View>}
 
-      <Text>Gender</Text>
-      <TextInput
-        style={styles.textInput}
-        onChangeText={(gender: string) =>
-          this.setState({ leaf: { ...this.state.leaf, gender } })}
-        value={this.state.leaf.gender} />
+      {show.gender && <View>
+        <Text>Gender</Text>
+        <TextInput
+          style={styles.textInput}
+          onChangeText={(gender: string) =>
+            this.setState({ leaf: { ...leaf, gender } })}
+          value={leaf.gender} />
+      </View>}
 
-      <Text>Mnemonic</Text>
-      <TextInput
-        style={styles.textInput}
-        onChangeText={(mnemonic: string) =>
-          this.setState({ leaf: { ...this.state.leaf, mnemonic } })}
-        value={this.state.leaf.mnemonic} />
+      <View>
+        <Text>Mnemonic</Text>
+        <TextInput
+          style={styles.textInput}
+          onChangeText={(mnemonic: string) =>
+            this.setState({ leaf: { ...leaf, mnemonic } })}
+          value={leaf.mnemonic} />
+      </View>
 
-      <Text>Suspended</Text>
-      <Switch
-        title='Suspended'
-        onValueChange={(suspended: boolean) =>
-          this.setState({ leaf: { ...this.state.leaf, suspended } })}
-        value={this.state.leaf.suspended} />
+      <View>
+        <Text>Suspended</Text>
+        <Switch
+          title='Suspended'
+          onValueChange={(suspended: boolean) =>
+            this.setState({ leaf: { ...leaf, suspended } })}
+          value={leaf.suspended} />
+      </View>
 
-      {this.state.leaf.leafId === 0 ?
+      {leaf.leafId === 0 ?
         <Button onPress={this.onPressAdd} title='Add' /> :
         <Button onPress={this.onPressDelete} title='Delete' />}
     </View>

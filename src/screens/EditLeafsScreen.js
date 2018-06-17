@@ -12,6 +12,7 @@ import {
 import { SearchBar } from 'react-native-elements'
 
 import type { Leaf } from '../model/Leaf'
+import { LEAF_TYPE_TO_DESCRIPTION } from '../model/LeafType'
 import Colors from '../constants/Colors'
 
 type Props = {|
@@ -25,12 +26,6 @@ type Props = {|
 type State = {|
   searchText: string,
 |}
-
-const LEAF_TYPE_TO_SECTION_TITLE = {
-  Det: 'Determiners',
-  Inf: 'Infinitives',
-  N: 'Nouns',
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -100,10 +95,10 @@ export default class EditLeafsScreen extends React.PureComponent<Props, State> {
     }
 
     const sections = []
-    for (const type of Object.keys(LEAF_TYPE_TO_SECTION_TITLE)) {
+    for (const type of Object.keys(LEAF_TYPE_TO_DESCRIPTION)) {
       const leafs = leafsByType[type]
       if (leafs !== undefined) {
-        const sectionTitle = LEAF_TYPE_TO_SECTION_TITLE[type]
+        const sectionTitle = LEAF_TYPE_TO_DESCRIPTION[type] + 's'
         leafs.sort((leaf1: Leaf, leaf2: Leaf) =>
           leaf1.es.localeCompare(leaf2.es))
         sections.push({ title: sectionTitle, data: leafs })
