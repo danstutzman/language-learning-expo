@@ -1,6 +1,7 @@
 import type { Leaf } from './Leaf'
 import type { Db } from './Db'
 import seedLeafs from './seedLeafs'
+import validateLeafFields from './validateLeafFields'
 
 export function checkExists(db: Db): Promise<boolean> {
   return new Promise((resolve, reject) =>
@@ -54,7 +55,8 @@ export function seed(db: Db): Promise<void> {
           VALUES `
         const values = []
         for (let i = 0; i < seedLeafs.length; i++) {
-          const leaf = seedLeafs[i]
+          const leaf = validateLeafFields(seedLeafs[i])
+
           if (i > 0) {
             sql += ', '
           }
@@ -75,7 +77,8 @@ export function seed(db: Db): Promise<void> {
 }
 
 // Returns Promise with Leaf with leafId set
-export function insertRow(db: Db, leaf: Leaf): Promise<Leaf> {
+export function insertRow(db: Db, leafUnvalidated: Leaf): Promise<Leaf> {
+  const leaf = validateLeafFields(leafUnvalidated)
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
@@ -109,7 +112,8 @@ export function deleteRow(db: Db, leaf: Leaf): Promise<void> {
   )
 }
 
-export function updateRow(db: Db, leaf: Leaf): Promise<void> {
+export function updateRow(db: Db, leafUnvalidated: Leaf): Promise<void> {
+  const leaf = validateLeafFields(leafUnvalidated)
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(

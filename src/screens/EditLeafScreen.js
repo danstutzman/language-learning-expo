@@ -42,6 +42,18 @@ const styles = StyleSheet.create({
   },
 })
 
+function setFieldsBasedOnType(leaf: Leaf, type: string) {
+  const hasField = LEAF_TYPE_TO_FIELDS[type]
+  if (hasField === undefined) {
+    throw new Error(`Unknown type ${type}`)
+  }
+  return {
+    ...leaf,
+    type,
+    gender: hasField.gender ? leaf.gender || '' : undefined,
+  }
+}
+
 export default class EditLeafScreen extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props)
@@ -76,8 +88,8 @@ export default class EditLeafScreen extends React.PureComponent<Props, State> {
           style={styles.typeField}
           itemStyle={styles.typeFieldItem}
           selectedValue={leaf.type}
-          onValueChange={item =>
-            this.setState({ leaf: { ...leaf, type: item } })}>
+          onValueChange={item => this.setState(
+            { leaf: setFieldsBasedOnType(leaf, item) })}>
           {Object.keys(LEAF_TYPE_TO_DESCRIPTION).map(type =>
             <Picker.Item
               key={type}
@@ -87,23 +99,23 @@ export default class EditLeafScreen extends React.PureComponent<Props, State> {
         </Picker>
       </View>
 
-      {show.es && <View>
+      <View>
         <Text>Spanish</Text>
         <TextInput
           style={styles.textInput}
           onChangeText={(es: string) =>
             this.setState({ leaf: { ...leaf, es } })}
           value={leaf.es} />
-      </View>}
+      </View>
 
-      {show.en && <View>
+      <View>
         <Text>English</Text>
         <TextInput
           style={styles.textInput}
           onChangeText={(en: string) =>
             this.setState({ leaf: { ...leaf, en } })}
           value={leaf.en} />
-      </View>}
+      </View>
 
       {show.gender && <View>
         <Text>Gender</Text>

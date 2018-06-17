@@ -4,8 +4,10 @@ export const LEAF_TYPE_TO_DESCRIPTION = {
   'N': 'Noun',
 }
 
+export const ALL_FIELDS = ['es', 'en', 'gender']
+
 export const LEAF_TYPE_TO_FIELDS = {
-  Det: { es: true, en: true, gender: true },
-  Inf: { es: true, en: true },
-  N: { es: true, en: true, gender: true },
+  Det: { gender: true },
+  Inf: { },
+  N: { gender: true },
 }

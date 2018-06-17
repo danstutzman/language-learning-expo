@@ -5,15 +5,16 @@ export const BLANK_LEAF: Leaf = {
   es: '',
   mnemonic: '',
   suspended: false,
-  type: '',
+  type: 'N',
 }
 
 export type Leaf = {|
+  type: string,
   leafId: number,
   en: string,
   es: string,
-  gender: string,
   mnemonic: string,
   suspended: boolean,
-  type: string,
+
+  gender?: string,
 |}
