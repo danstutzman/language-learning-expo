@@ -4,10 +4,10 @@ import React from 'react'
 import { Alert, Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { email } from 'react-native-communications'
 
+import type { Bank } from './src/bank/Bank'
 import DbModel from './src/model/DbModel'
 import type { Exposure } from './src/model/Exposure'
 import type { Leaf } from './src/model/Leaf'
-import type { Model } from './src/model/Model'
 import rebuildBank from './src/bank/rebuildBank'
 import RootNavigation from './src/navigation/RootNavigation'
 
@@ -24,7 +24,7 @@ type Props = {
 
 type State = {
   isLoadingComplete: boolean,
-  model: Model,
+  bank: Bank,
 }
 
 export default class App extends React.PureComponent<Props, State> {
@@ -35,7 +35,7 @@ export default class App extends React.PureComponent<Props, State> {
     this.dbModel = new DbModel()
     this.state = {
       isLoadingComplete: false,
-      model: {
+      bank: {
         allLeafs: [],
         speakCardsByCategory: {},
       }
@@ -54,15 +54,15 @@ export default class App extends React.PureComponent<Props, State> {
         <RootNavigation
           addLeaf={(card: Leaf) => {
             this.dbModel.addLeaf(card)
-              .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
+              .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
           }}
           deleteLeaf={(card: Leaf) => {
             this.dbModel.deleteLeaf(card)
-              .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
+              .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
           }}
           editLeaf={(card: Leaf) => {
             this.dbModel.editLeaf(card)
-              .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
+              .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
           }}
           exportDatabase={() => {
             const body = this.dbModel.serializeForEmail()
@@ -72,18 +72,18 @@ export default class App extends React.PureComponent<Props, State> {
           }}
           addExposures={(exposures: Array<Exposure>) => {
             this.dbModel.addExposures(exposures)
-              .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
+              .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
           }}
           reseedDatabase={() =>
             this.dbModel.reseedDatabase()
-              .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
+              .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
               .then(() => Alert.alert(
                 'Reseed finished',
                 'Reseed finished',
                 [{ text: 'OK' }],
                 { cancelable: false }))
           }
-          model={this.state.model} />
+          bank={this.state.bank} />
       </View>
     }
   }
@@ -102,7 +102,7 @@ export default class App extends React.PureComponent<Props, State> {
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
       this.dbModel.init()
-        .then(() => this.setState({ model: rebuildBank(this.dbModel) }))
+        .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
     ])
   }
 }

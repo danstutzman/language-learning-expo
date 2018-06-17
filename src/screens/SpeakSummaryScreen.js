@@ -8,10 +8,10 @@ import {
   View,
 } from 'react-native'
 
-import type { Model } from '../model/Model'
+import type { Bank } from '../bank/Bank'
 
 type Props = {|
-  model: Model,
+  bank: Bank,
   startSpeakQuiz: (category: string) => void,
 |}
 
@@ -66,7 +66,7 @@ export const CATEGORIES = [
 
 export default class SpeakSummaryScreen extends React.PureComponent<Props> {
   summarizeCategories = (): Array<CategoryAndNumCards> => {
-    const { speakCardsByCategory } = this.props.model
+    const { speakCardsByCategory } = this.props.bank
     return Object.keys(speakCardsByCategory)
       .map((category: string) => {
         const cards = speakCardsByCategory[category]

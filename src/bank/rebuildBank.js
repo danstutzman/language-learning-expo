@@ -1,10 +1,10 @@
+import type { Bank } from '../bank/Bank'
 import type { Card } from './Card'
 import DbModel from '../model/DbModel'
 import type { Exposure } from '../model/Exposure'
 import type { Leaf } from '../model/Leaf'
-import type { Model } from '../model/Model'
 
-export default function rebuildBank(dbModel: DbModel): Model {
+export default function rebuildBank(dbModel: DbModel): Bank {
   const { allExposures, allLeafs } = dbModel
 
   const leafIdToLastExposure: {[number]: Exposure} = {}

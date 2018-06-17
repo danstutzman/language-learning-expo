@@ -16,7 +16,7 @@ const EditStack = createStackNavigator({
   EditLeafScreen: {
     screen: (args: {navigation: any, screenProps: ScreenProps }) => {
       const { leafId } = args.navigation.state.params || { leafId: undefined }
-      const initialLeaf = args.screenProps.model.allLeafs.find(leaf =>
+      const initialLeaf = args.screenProps.bank.allLeafs.find(leaf =>
         leaf.leafId === leafId) || BLANK_LEAF
       return <EditLeafScreen
         addLeaf={args.screenProps.addLeaf}
@@ -39,7 +39,7 @@ const EditStack = createStackNavigator({
         showEditLeafScreen={(leafId: number) => {
           args.navigation.navigate('EditLeafScreen', { leafId })
         }}
-        allLeafs={args.screenProps.model.allLeafs} />,
+        allLeafs={args.screenProps.bank.allLeafs} />,
     navigationOptions: () => ({
       title: 'Edit Leafs',
     }),
@@ -73,7 +73,7 @@ const SpeakStack = createStackNavigator({
   SpeakSummary: {
     screen: (args: { navigation: any, screenProps: ScreenProps }) =>
       <SpeakSummaryScreen
-        model={args.screenProps.model}
+        bank={args.screenProps.bank}
         startSpeakQuiz={(category: string) => {
           args.navigation.navigate('SpeakQuiz', { category })
         }} />,
@@ -84,9 +84,9 @@ const SpeakStack = createStackNavigator({
   SpeakQuiz: {
     screen: (args: { navigation: any, screenProps: ScreenProps }) => {
       const { category } = args.navigation.state.params
-      const { model, editLeaf, addExposures } = args.screenProps
+      const { bank, editLeaf, addExposures } = args.screenProps
 
-      const topCard = model.speakCardsByCategory[category]
+      const topCard = bank.speakCardsByCategory[category]
         .filter(card => card.matureAt < new Date().getTime() / 1000)[0]
       if (topCard === undefined) {
         return <Text>No cards in this category</Text>
