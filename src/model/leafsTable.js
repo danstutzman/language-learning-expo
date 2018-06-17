@@ -23,13 +23,18 @@ export function create(db: Db): Promise<void> {
       tx => tx.executeSql(
         `CREATE TABLE leafs (
           leafId INTEGER PRIMARY KEY NOT NULL,
+          type TEXT NOT NULL,
           en TEXT NOT NULL,
           es TEXT NOT NULL,
-          gender TEXT,
           mnemonic TEXT NOT NULL,
           suspended BOOLEAN NOT NULL,
-          type TEXT NOT NULL
-        );`,
+
+          gender TEXT,
+          infCategory TEXT,
+          number INTEGER,
+          person INTEGER,
+          tense TEXT
+        )`,
         [],
         () => resolve()
       ),
@@ -51,9 +56,18 @@ export function seed(db: Db): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => {
-        let sql = `INSERT INTO leafs
-          (en, es, gender, mnemonic, suspended, type)
-          VALUES `
+        let sql = `INSERT INTO leafs (
+            type,
+            en,
+            es,
+            mnemonic,
+            suspended,
+            gender,
+            infCategory,
+            number,
+            person,
+            tense
+          ) VALUES `
         const values = []
         for (let i = 0; i < seedLeafs.length; i++) {
           const leaf = validateLeafFields(seedLeafs[i])
@@ -61,15 +75,18 @@ export function seed(db: Db): Promise<void> {
           if (i > 0) {
             sql += ', '
           }
-          sql += '(?, ?, ?, ?, ?, ?)'
+          sql += '(?,?,?,?,?,?,?,?,?,?)'
+          values.push(leaf.type)
           values.push(leaf.en)
           values.push(leaf.es)
-          values.push(leaf.gender)
           values.push(leaf.mnemonic)
           values.push(leaf.suspended)
-          values.push(leaf.type)
+          values.push(leaf.gender)
+          values.push(leaf.infCategory)
+          values.push(leaf.number)
+          values.push(leaf.person)
+          values.push(leaf.tense)
         }
-        sql += ';'
         tx.executeSql(sql, values, () => resolve())
       },
       (e: Error) => reject(`Error from INSERT into leafs: ${e.message}`)
@@ -83,10 +100,28 @@ export function insertRow(db: Db, leafUnvalidated: Leaf): Promise<Leaf> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `INSERT INTO leafs (en, es, gender, mnemonic, suspended, type)
-        VALUES (?, ?, ?, ?, ?, ?);`,
-        [leaf.en, leaf.es, leaf.gender, leaf.mnemonic, leaf.suspended,
-          leaf.type],
+        `INSERT INTO leafs (
+          type,
+          en,
+          es,
+          mnemonic,
+          suspended,
+          gender,
+          infCategory,
+          number,
+          person,
+          tense
+        ) VALUES (?,?,?,?,?,?,?,?,?,?)`,
+        [leaf.type,
+          leaf.en,
+          leaf.es,
+          leaf.mnemonic,
+          leaf.suspended,
+          leaf.gender,
+          leaf.infCategory,
+          leaf.number,
+          leaf.person,
+          leaf.tense],
         (tx: any, result: any) => resolve({ ...leaf, leafId: result.insertId })
       ),
       (e: Error) => reject(`Error from INSERT into leafs: ${e.message}`)
@@ -118,10 +153,29 @@ export function updateRow(db: Db, leafUnvalidated: Leaf): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `UPDATE leafs SET en=?, es=?, gender=?, mnemonic=?, suspended=?, type=?
-          WHERE leafId=?;`,
-        [leaf.en, leaf.es, leaf.gender, leaf.mnemonic, leaf.suspended,
-          leaf.type, leaf.leafId],
+        `UPDATE leafs SET
+          type=?,
+          en=?,
+          es=?,
+          mnemonic=?,
+          suspended=?,
+          gender=?,
+          infCategory=?,
+          number=?,
+          person=?,
+          tense=?
+          WHERE leafId=?`,
+        [leaf.type,
+          leaf.en,
+          leaf.es,
+          leaf.mnemonic,
+          leaf.suspended,
+          leaf.gender,
+          leaf.infCategory,
+          leaf.number,
+          leaf.person,
+          leaf.tense,
+          leaf.leafId],
         (tx: any, result: any) => {
           if (result.rowsAffected !== 1) {
             reject(`rowsAffected=${result.rowsAffected} from UPDATE leafs`)
@@ -139,7 +193,19 @@ export function selectAll(db: Db): Promise<Array<Leaf>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        'SELECT leafId, en, es, gender, mnemonic, suspended, type FROM leafs',
+        `SELECT
+          leafId,
+          type,
+          en,
+          es,
+          mnemonic,
+          suspended,
+          gender,
+          infCategory,
+          number,
+          person,
+          tense
+          FROM leafs`,
         [],
         (tx, { rows: { _array } }) => resolve(_array.map(row => {
           row.suspended = (row.suspended === 1)

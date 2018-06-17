@@ -9,12 +9,20 @@ import {
   View,
 } from 'react-native'
 
+import { assertInfCategory } from '../model/InfCategory'
 import { assertLeafType } from '../model/LeafType'
+import { assertNumber } from '../model/Number'
+import { assertPerson } from '../model/Person'
+import { assertTense } from '../model/Tense'
 import { BLANK_LEAF } from '../model/Leaf'
+import { INF_CATEGORY_TO_DESCRIPTION } from '../model/InfCategory'
 import type { Leaf } from '../model/Leaf'
 import type { LeafType } from '../model/LeafType'
 import { LEAF_TYPE_TO_FIELDS } from '../model/LeafType'
 import { LEAF_TYPE_TO_DESCRIPTION } from '../model/LeafType'
+import { NUMBER_TO_DESCRIPTION } from '../model/Number'
+import { PERSON_TO_DESCRIPTION } from '../model/Person'
+import { TENSE_TO_DESCRIPTION } from '../model/Tense'
 
 type Props = {|
   addLeaf: (leaf: Leaf) => void,
@@ -35,10 +43,10 @@ const styles = StyleSheet.create({
   textInput: {
     borderWidth: 1,
   },
-  typeField: {
+  pickerField: {
     borderWidth: 1,
   },
-  typeFieldItem: {
+  pickerFieldItem: {
     height: 35,
     fontSize: 16,
   },
@@ -87,8 +95,8 @@ export default class EditLeafScreen extends React.PureComponent<Props, State> {
       <View>
         <Text>Type</Text>
         <Picker
-          style={styles.typeField}
-          itemStyle={styles.typeFieldItem}
+          style={styles.pickerField}
+          itemStyle={styles.pickerFieldItem}
           selectedValue={leaf.type}
           onValueChange={item => this.setState(
             { leaf: setFieldsBasedOnType(leaf, assertLeafType(item)) })}>
@@ -126,6 +134,74 @@ export default class EditLeafScreen extends React.PureComponent<Props, State> {
           onChangeText={(gender: string) =>
             this.setState({ leaf: { ...leaf, gender } })}
           value={leaf.gender} />
+      </View>}
+
+      {show.infCategory && <View>
+        <Text>Infinitive Category</Text>
+        <Picker
+          style={styles.pickerField}
+          itemStyle={styles.pickerFieldItem}
+          selectedValue={leaf.infCategory}
+          onValueChange={item => this.setState(
+            { leaf: { ...leaf, infCategory: assertInfCategory(item) } })}>
+          {Object.keys(INF_CATEGORY_TO_DESCRIPTION).map(infCategory =>
+            <Picker.Item
+              key={infCategory}
+              label={INF_CATEGORY_TO_DESCRIPTION[infCategory]}
+              value={infCategory} />
+          )}
+        </Picker>
+      </View>}
+
+      {show.number && <View>
+        <Text>Number</Text>
+        <Picker
+          style={styles.pickerField}
+          itemStyle={styles.pickerFieldItem}
+          selectedValue={leaf.number}
+          onValueChange={item => this.setState(
+            { leaf: { ...leaf, number: assertNumber(item) } })}>
+          {Object.keys(NUMBER_TO_DESCRIPTION).map(number =>
+            <Picker.Item
+              key={number}
+              label={NUMBER_TO_DESCRIPTION[number]}
+              value={parseInt(number, 10)} />
+          )}
+        </Picker>
+      </View>}
+
+      {show.person && <View>
+        <Text>Person</Text>
+        <Picker
+          style={styles.pickerField}
+          itemStyle={styles.pickerFieldItem}
+          selectedValue={leaf.person}
+          onValueChange={item => this.setState(
+            { leaf: { ...leaf, person: assertPerson(item) } })}>
+          {Object.keys(PERSON_TO_DESCRIPTION).map(person =>
+            <Picker.Item
+              key={person}
+              label={PERSON_TO_DESCRIPTION[person]}
+              value={parseInt(person, 10)} />
+          )}
+        </Picker>
+      </View>}
+
+      {show.tense && <View>
+        <Text>Tense</Text>
+        <Picker
+          style={styles.pickerField}
+          itemStyle={styles.pickerFieldItem}
+          selectedValue={leaf.tense}
+          onValueChange={item => this.setState(
+            { leaf: { ...leaf, tense: assertTense(item) } })}>
+          {Object.keys(TENSE_TO_DESCRIPTION).map(tense =>
+            <Picker.Item
+              key={tense}
+              label={TENSE_TO_DESCRIPTION[tense]}
+              value={tense} />
+          )}
+        </Picker>
       </View>}
 
       <View>

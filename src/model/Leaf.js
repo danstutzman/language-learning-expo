@@ -1,4 +1,8 @@
+import type { InfCategory } from './InfCategory'
 import type { LeafType } from './LeafType'
+import type { Number } from './Number'
+import type { Person } from './Person'
+import type { Tense } from './Tense'
 
 export const BLANK_LEAF: Leaf = {
   leafId: 0,
@@ -19,4 +23,8 @@ export type Leaf = {|
   suspended: boolean,
 
   gender?: string,
+  infCategory?: InfCategory,
+  number?: Number,
+  person?: Person,
+  tense?: Tense,
 |}

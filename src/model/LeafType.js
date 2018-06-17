@@ -1,16 +1,41 @@
-export type LeafType = 'Det' | 'Inf' | 'N'
-
+export type LeafType = 'Det' | 'Inf' | 'N' | 'RegVPattern'
 
 export const LEAF_TYPE_TO_DESCRIPTION = {
   Det: 'Determiner',
   Inf: 'Infinitive',
   N: 'Noun',
+  RegVPattern: 'Verb pattern',
 }
 
 export const LEAF_TYPE_TO_FIELDS = {
-  Det: { gender: true },
-  Inf: { gender: false },
-  N: { gender: true },
+  Det: {
+    gender: true,
+    infCategory: false,
+    number: false,
+    person: false,
+    tense: false,
+  },
+  Inf: {
+    gender: false,
+    infCategory: false,
+    number: false,
+    person: false,
+    tense: false,
+  },
+  N: {
+    gender: true,
+    infCategory: false,
+    number: false,
+    person: false,
+    tense: false,
+  },
+  RegVPattern: {
+    gender: false,
+    infCategory: true,
+    number: true,
+    person: true,
+    tense: true,
+  },
 }
 
 export function assertLeafType(value: string): LeafType {
