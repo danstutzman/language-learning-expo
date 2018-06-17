@@ -2,6 +2,7 @@ import type { Leaf } from './Leaf'
 import type { Db } from './Db'
 import seedLeafs from './seedLeafs'
 import validateLeafFields from './validateLeafFields'
+import { LEAF_TYPE_TO_FIELDS } from './LeafType'
 
 export function checkExists(db: Db): Promise<boolean> {
   return new Promise((resolve, reject) =>
@@ -140,10 +141,20 @@ export function selectAll(db: Db): Promise<Array<Leaf>> {
       tx => tx.executeSql(
         'SELECT leafId, en, es, gender, mnemonic, suspended, type FROM leafs',
         [],
-        (tx, { rows: { _array } }) => resolve(_array.map(row => ({
-          ...row,
-          suspended: row.suspended === 1,
-        })))
+        (tx, { rows: { _array } }) => resolve(_array.map(row => {
+          row.suspended = (row.suspended === 1)
+
+          const hasField = LEAF_TYPE_TO_FIELDS[row.type]
+          if (hasField === undefined) {
+            throw new Error(`Unknown type ${row.type}`)
+          }
+          for (const field of Object.keys(hasField)) {
+            if (!hasField[field]) {
+              delete row[field]
+            }
+          }
+          return row
+        }))
       ),
       (e: Error) => reject(`Error from SELECT FROM leafs: ${e.message}`)
     )
