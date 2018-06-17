@@ -9,8 +9,10 @@ import {
   View,
 } from 'react-native'
 
-import type { Leaf } from '../model/Leaf'
+import { assertLeafType } from '../model/LeafType'
 import { BLANK_LEAF } from '../model/Leaf'
+import type { Leaf } from '../model/Leaf'
+import type { LeafType } from '../model/LeafType'
 import { LEAF_TYPE_TO_FIELDS } from '../model/LeafType'
 import { LEAF_TYPE_TO_DESCRIPTION } from '../model/LeafType'
 
@@ -42,7 +44,7 @@ const styles = StyleSheet.create({
   },
 })
 
-function setFieldsBasedOnType(leaf: Leaf, type: string) {
+function setFieldsBasedOnType(leaf: Leaf, type: LeafType) {
   const hasField = LEAF_TYPE_TO_FIELDS[type]
   if (hasField === undefined) {
     throw new Error(`Unknown type ${type}`)
@@ -89,7 +91,7 @@ export default class EditLeafScreen extends React.PureComponent<Props, State> {
           itemStyle={styles.typeFieldItem}
           selectedValue={leaf.type}
           onValueChange={item => this.setState(
-            { leaf: setFieldsBasedOnType(leaf, item) })}>
+            { leaf: setFieldsBasedOnType(leaf, assertLeafType(item)) })}>
           {Object.keys(LEAF_TYPE_TO_DESCRIPTION).map(type =>
             <Picker.Item
               key={type}

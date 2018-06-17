@@ -1,3 +1,5 @@
+import type { LeafType } from './LeafType'
+
 export const BLANK_LEAF: Leaf = {
   leafId: 0,
   gender: '',
@@ -9,7 +11,7 @@ export const BLANK_LEAF: Leaf = {
 }
 
 export type Leaf = {|
-  type: string,
+  type: LeafType,
   leafId: number,
   en: string,
   es: string,
