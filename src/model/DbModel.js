@@ -82,7 +82,7 @@ export default class DbModel {
       type: exposure.type,
       leafEss: exposure.leafIds.map(leafId => leafIdToEs[leafId]),
       createdAt: exposure.createdAt,
-      recallMillis: exposure.recallMillis,
+      delay: exposure.delay,
     })))
 
     const leafsJson = JSON.stringify(this.allLeafs.map(leaf => {

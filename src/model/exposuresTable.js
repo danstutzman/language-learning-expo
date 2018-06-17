@@ -27,7 +27,7 @@ export function create(db: Db): Promise<void> {
           type TEXT NOT NULL,
           leafIdsCsv TEXT NOT NULL,
           createdAt REAL NOT NULL,
-          recallMillis INTEGER
+          delay INTEGER
         );`,
         [],
         () => resolve()
@@ -55,7 +55,7 @@ export function insertRows(
     db.transaction(
       tx => {
         let sql = `INSERT INTO exposures
-          (type, leafIdsCsv, createdAt, recallMillis)
+          (type, leafIdsCsv, createdAt, delay)
           VALUES `
         let values = []
         for (let i = 0; i < exposures.length; i++) {
@@ -67,7 +67,7 @@ export function insertRows(
           values.push(exposure.type)
           values.push(exposure.leafIds.join(','))
           values.push(exposure.createdAt)
-          values.push(exposure.recallMillis)
+          values.push(exposure.delay)
         }
         tx.executeSql(
           sql,
@@ -92,7 +92,7 @@ export function selectAll(db: Db): Promise<Array<Exposure>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `SELECT exposureId, type, leafIdsCsv, createdAt, recallMillis
+        `SELECT exposureId, type, leafIdsCsv, createdAt, delay
           FROM exposures`,
         [],
         (tx, { rows: { _array } }) => resolve(_array.map(row => ({
@@ -108,7 +108,7 @@ export function selectAll(db: Db): Promise<Array<Exposure>> {
             return leafId
           }),
           createdAt: row.createdAt,
-          recallMillis: row.recallMillis,
+          delay: row.delay,
         })))
       ),
       (e: Error) => reject(`Error from SELECT FROM exposures: ${e.message}`)
@@ -131,7 +131,7 @@ export function seed(db: Db, allLeafs: Array<Leaf>): Promise<void> {
         }
 
         let sql = `INSERT INTO exposures
-          (type, leafIdsCsv, createdAt, recallMillis)
+          (type, leafIdsCsv, createdAt, delay)
           VALUES `
         const values = []
         for (let i = 0; i < exposuresExport.length; i++) {
@@ -151,7 +151,7 @@ export function seed(db: Db, allLeafs: Array<Leaf>): Promise<void> {
           values.push(export_.type)
           values.push(leafIds)
           values.push(export_.createdAt)
-          values.push(export_.recallMillis)
+          values.push(export_.delay)
         }
         sql += ';'
         tx.executeSql(sql, values, () => resolve())

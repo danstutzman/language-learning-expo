@@ -4,7 +4,7 @@ export type ExposureExport = {|
   type: ExposureType,
   leafEss: Array<string>,
   createdAt: number,
-  recallMillis: number | null,
+  delay: number | null,
 |}
 
 export default (

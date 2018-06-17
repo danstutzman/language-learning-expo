@@ -120,7 +120,7 @@ export default class SlowSpeakGameScreen
       type: this.state.recalled ? 'RECALLED_ES' : 'DIDNT_RECALL_ES',
       createdAt: this.timerStartedAtMillis / 1000,
       leafIds: [this.props.leaf.leafId],
-      recallMillis: recalled && recalledAtMillis !== null
+      delay: recalled && recalledAtMillis !== null
         ? recalledAtMillis - this.timerStartedAtMillis : null,
     }])
   }

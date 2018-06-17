@@ -110,19 +110,19 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
     let type: ExposureType
     let leafIds: Array<number>
-    let recallMillis: number | null
+    let delay: number | null
     if (recalledAtMillis === null) {
       type = 'DIDNT_RECALL_ES'
       leafIds = allLeafIds
-      recallMillis = null
+      delay = null
     } else if (nonRecalledLeafIds.length === 0) {
       type = 'RECALLED_ES'
       leafIds = allLeafIds
-      recallMillis = recalledAtMillis - this.timerStartedAtMillis
+      delay = recalledAtMillis - this.timerStartedAtMillis
     } else {
       type = 'DIDNT_RECALL_ES'
       leafIds = nonRecalledLeafIds
-      recallMillis = null
+      delay = null
     }
 
     this.props.addExposures([{
@@ -130,7 +130,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
       type,
       leafIds,
       createdAt: this.timerStartedAtMillis / 1000,
-      recallMillis,
+      delay,
     }])
   }
 
