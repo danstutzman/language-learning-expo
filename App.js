@@ -69,8 +69,8 @@ export default class App extends React.PureComponent<Props, State> {
             console.warn('Email body', body)
             email(null, null, null, 'Lang learning export', body)
           }}
-          exposeLeafs={(exposures: Array<Exposure>) => {
-            this.dbModel.exposeLeafs(exposures)
+          addExposures={(exposures: Array<Exposure>) => {
+            this.dbModel.addExposures(exposures)
               .then(model => this.setState({ model }))
           }}
           reseedDatabase={() =>

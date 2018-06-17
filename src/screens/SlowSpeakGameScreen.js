@@ -11,7 +11,6 @@ import {
 
 import type { Exposure } from '../model/Exposure'
 import type { Leaf } from '../model/Leaf'
-import Hourglass from '../components/Hourglass'
 
 const styles = StyleSheet.create({
   container: {
@@ -25,22 +24,15 @@ const styles = StyleSheet.create({
     fontVariant: ['small-caps'],
     fontSize: 40,
   },
-  hourglass: {
-    marginTop: 30,
-  },
   answer: {
     alignItems: 'center',
     padding: 10,
   },
-  gradeEarly: {
-    borderColor: 'green',
-    borderWidth: 10,
-  },
-  gradeRemembered: {
+  recalled: {
     borderColor: 'green',
     borderWidth: 3,
   },
-  gradeForgotten: {
+  notRecalled: {
     borderColor: 'red',
     borderWidth: 3,
   },
@@ -59,76 +51,39 @@ const styles = StyleSheet.create({
 
 export type Props = {|
   leaf: Leaf,
-  exposeLeafs: (exposures: Array<Exposure>) => void,
+  addExposures: (exposures: Array<Exposure>) => void,
   editMnemonic: (mnemonic: string) => void,
 |}
 
 export type State = {|
-  exposure: Exposure | null,
   newMnemonic: string | null,
-  secondsLeft: number,
+  recalled: boolean,
+  recalledAtMillis: number | null,
 |}
-
-const GRADE_TO_STYLE = {
-  'EARLY': styles.gradeEarly,
-  'REMEMBERED': styles.gradeRemembered,
-  'FORGOTTEN': styles.gradeForgotten,
-}
 
 export default class SlowSpeakGameScreen
   extends React.PureComponent<Props, State> {
-  countdown: IntervalID
-  timerStartedAt: Date
+  timerStartedAtMillis: number
 
   constructor(props: Props) {
     super(props)
-    this.timerStartedAt = new Date()
+    this.timerStartedAtMillis = new Date().getTime()
     this.state = {
-      exposure: null,
       newMnemonic: null,
-      secondsLeft: 3,
+      recalled: false,
+      recalledAtMillis: null,
     }
-    this.setInterval()
   }
 
   componentDidUpdate(prevProps: Props) {
     if (this.props.leaf.leafId !== prevProps.leaf.leafId) {
-      this.timerStartedAt = new Date()
+      this.timerStartedAtMillis = new Date().getTime()
       this.setState({
-        exposure: null,
         newMnemonic: null,
-        secondsLeft: 3,
-      }, this.setInterval)
+        recalled: false,
+        recalledAtMillis: null,
+      })
     }
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.countdown)
-  }
-
-  setInterval() {
-    if (this.countdown !== null) {
-      clearInterval(this.countdown)
-    }
-    this.countdown = setInterval(() =>
-      this.setState(prevState => {
-        if (prevState.secondsLeft === 1) {
-          clearInterval(this.countdown)
-          this.speakMnemonicAndSpanish()
-          return {
-            secondsLeft: 0,
-            exposure: {
-              exposureId: 0,
-              leafId: this.props.leaf.leafId,
-              createdAt: new Date().getTime() / 1000,
-              grade: 'FORGOTTEN',
-              earlyDurationMs: null,
-            },
-          }
-        } else {
-          return { secondsLeft: prevState.secondsLeft - 1 }
-        }
-      }), 1000)
   }
 
   speakMnemonicAndSpanish() {
@@ -142,73 +97,65 @@ export default class SlowSpeakGameScreen
     }
   }
 
-  toggleRemembered = () => {
-    clearInterval(this.countdown)
+  toggleRecalled = () => {
+    this.speakMnemonicAndSpanish()
     this.setState(prevState => {
-      const nowMs = new Date().getTime() // milliseconds since epoch
-      if (prevState.exposure === null) {
+      if (prevState.recalledAtMillis === null) {
         return {
-          exposure: {
-            exposureId: 0,
-            leafId: this.props.leaf.leafId,
-            createdAt: nowMs / 1000,
-            grade: 'EARLY',
-            earlyDurationMs: nowMs - this.timerStartedAt.getTime(),
-          },
-          secondsLeft: 0,
+          recalled: true,
+          recalledAtMillis: new Date().getTime(),
         }
       } else {
-        return {
-          exposure: {
-            ...prevState.exposure,
-            grade: prevState.exposure.grade === 'FORGOTTEN' ?
-              'REMEMBERED' : 'FORGOTTEN',
-          },
-        }
+        return { recalled: !prevState.recalled }
       }
     })
-    this.speakMnemonicAndSpanish()
   }
 
   pressNext = () => {
     Speech.stop()
 
-    const { exposure } = this.state
-    if (exposure === null) {
-      throw new Error('Exposure supposed to be set before next button shown')
-    }
-    this.props.exposeLeafs([exposure])
+    const { recalled, recalledAtMillis } = this.state
+    this.props.addExposures([{
+      exposureId: 0,
+      type: this.state.recalled ? 'RECALLED_ES' : 'DIDNT_RECALL_ES',
+      createdAt: this.timerStartedAtMillis / 1000,
+      leafIds: [this.props.leaf.leafId],
+      recallMillis: recalled && recalledAtMillis !== null
+        ? recalledAtMillis - this.timerStartedAtMillis : null,
+    }])
+  }
+
+  renderAnswer() {
+    return <View style={[
+      styles.answer,
+      this.state.recalled ? styles.recalled : styles.notRecalled,
+    ]}>
+      <TextInput
+        style={styles.mnemonic}
+        multiline={true}
+        returnKeyType="done"
+        blurOnSubmit={true} // makes Return submit instead of insert LF
+        onChangeText={(newMnemonic: string) =>
+          this.setState({ newMnemonic })}
+        onSubmitEditing={() =>
+          this.props.editMnemonic(this.state.newMnemonic || '')}
+        value={this.state.newMnemonic !== null ?
+          this.state.newMnemonic : this.props.leaf.mnemonic} />
+      <Text style={styles.es}>{this.props.leaf.es}</Text>
+    </View>
   }
 
   render() {
-    const { leaf } = this.props
     return <View style={styles.container}>
-      <Text style={styles.en}>{leaf.en}</Text>
+      <Text style={styles.en}>{this.props.leaf.en}</Text>
 
-      <TouchableOpacity
-        style={styles.hourglass}
-        onPress={this.toggleRemembered}>
-        {this.state.secondsLeft > 0 ?
-          <Hourglass secondsLeft={this.state.secondsLeft} /> :
-          <View style={[styles.answer, GRADE_TO_STYLE[
-            (this.state.exposure || { grade: 'FORGOTTEN' }).grade]]}>
-            <TextInput
-              style={styles.mnemonic}
-              multiline={true}
-              returnKeyType="done"
-              blurOnSubmit={true} // makes Return submit instead of insert LF
-              onChangeText={(newMnemonic: string) =>
-                this.setState({ newMnemonic })}
-              onSubmitEditing={() =>
-                this.props.editMnemonic(this.state.newMnemonic || '')}
-              value={this.state.newMnemonic !== null ?
-                this.state.newMnemonic : leaf.mnemonic} />
-            <Text style={styles.es}>{leaf.es}</Text>
-          </View>}
-      </TouchableOpacity>
+      {this.state.recalledAtMillis === null
+        ? <Button onPress={this.toggleRecalled} title='Tap when you remember' />
+        : <TouchableOpacity onPress={this.toggleRecalled}>
+          {this.renderAnswer()}
+        </TouchableOpacity>}
 
-      {this.state.secondsLeft === 0 &&
-        <Button onPress={this.pressNext} title="Next" />}
+      <Button onPress={this.pressNext} title="Next" />
     </View>
   }
 }

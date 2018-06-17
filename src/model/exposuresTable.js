@@ -1,4 +1,4 @@
-import { assertExposureGrade } from './ExposureGrade'
+import { assertExposureType } from './ExposureType'
 import type { Leaf } from './Leaf'
 import type { Db } from './Db'
 import type { Exposure } from './Exposure'
@@ -24,10 +24,10 @@ export function create(db: Db): Promise<void> {
       tx => tx.executeSql(
         `CREATE TABLE exposures (
           exposureId INTEGER PRIMARY KEY NOT NULL,
-          leafId INTEGER NOT NULL,
+          type TEXT NOT NULL,
+          leafIdsCsv TEXT NOT NULL,
           createdAt REAL NOT NULL,
-          grade TEXT NOT NULL,
-          earlyDurationMs INTEGER
+          recallMillis INTEGER
         );`,
         [],
         () => resolve()
@@ -55,7 +55,7 @@ export function insertRows(
     db.transaction(
       tx => {
         let sql = `INSERT INTO exposures
-          (leafId, createdAt, grade, earlyDurationMs)
+          (type, leafIdsCsv, createdAt, recallMillis)
           VALUES `
         let values = []
         for (let i = 0; i < exposures.length; i++) {
@@ -64,10 +64,10 @@ export function insertRows(
             sql += ', '
           }
           sql += '(?, ?, ?, ?)'
-          values.push(exposure.leafId)
+          values.push(exposure.type)
+          values.push(exposure.leafIds.join(','))
           values.push(exposure.createdAt)
-          values.push(exposure.grade)
-          values.push(exposure.earlyDurationMs)
+          values.push(exposure.recallMillis)
         }
         tx.executeSql(
           sql,
@@ -92,15 +92,24 @@ export function selectAll(db: Db): Promise<Array<Exposure>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `SELECT exposureId, leafId, createdAt, grade, earlyDurationMs
+        `SELECT exposureId, type, leafIdsCsv, createdAt, recallMillis
           FROM exposures`,
         [],
-        (tx, { rows: { _array } }) => {
-          for (const row of _array) {
-            assertExposureGrade(row.grade)
-          }
-          resolve(_array)
-        }
+        (tx, { rows: { _array } }) => resolve(_array.map(row => ({
+          exposureId: row.exposureId,
+          type: assertExposureType(row.type),
+          leafIds: row.leafIdsCsv.split(',').map(leafIdString => {
+            const leafId = parseInt(leafIdString, 10)
+            if (Number.isNaN(leafId)) {
+              throw new Error(
+                `Can't parse leafId ${JSON.stringify(leafIdString)} ` +
+                ` in ${JSON.stringify(row.leafIdsCsv)}`)
+            }
+            return leafId
+          }),
+          createdAt: row.createdAt,
+          recallMillis: row.recallMillis,
+        })))
       ),
       (e: Error) => reject(`Error from SELECT FROM exposures: ${e.message}`)
     )
@@ -122,24 +131,27 @@ export function seed(db: Db, allLeafs: Array<Leaf>): Promise<void> {
         }
 
         let sql = `INSERT INTO exposures
-          (leafId, createdAt, grade, earlyDurationMs)
+          (type, leafIdsCsv, createdAt, recallMillis)
           VALUES `
         const values = []
         for (let i = 0; i < exposuresExport.length; i++) {
           const export_: ExposureExport = exposuresExport[i]
-          const leaf = leafByEs[export_.leafEs]
-          if (leaf === undefined) {
-            return reject(`Can't find leaf for es=${export_.leafEs}`)
-          }
+          const leafIds = export_.leafEss.map(es => {
+            const leaf = leafByEs[es]
+            if (leaf === undefined) {
+              throw new Error(`Can't find leaf for es=${es}`)
+            }
+            return leaf.leafId
+          }).join(',')
 
           if (i > 0) {
             sql += ', '
           }
           sql += '(?, ?, ?, ?)'
-          values.push(leaf.leafId)
+          values.push(export_.type)
+          values.push(leafIds)
           values.push(export_.createdAt)
-          values.push(export_.grade)
-          values.push(export_.earlyDurationMs)
+          values.push(export_.recallMillis)
         }
         sql += ';'
         tx.executeSql(sql, values, () => resolve())

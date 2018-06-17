@@ -1,9 +1,11 @@
-import type { ExposureGrade } from './ExposureGrade'
+import type { ExposureType } from './ExposureType'
 
 export type Exposure = {|
   exposureId: number,
-  leafId: number,
+  type: ExposureType,
+  leafIds: Array<number>,
   createdAt: number, // seconds since epoch
-  grade: ExposureGrade,
-  earlyDurationMs: number | null, // milliseconds to respond, null if not EARLY
+
+  // milliseconds for answer (if type is RECALLED_ES); otherwise null
+  recallMillis: number | null,
 |}

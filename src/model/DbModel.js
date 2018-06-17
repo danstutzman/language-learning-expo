@@ -54,16 +54,17 @@ export default class DbModel {
     const leafIdToLastExposure: {[number]: Exposure} = {}
     const leafIdToPenultimateExposure: {[number]: Exposure} = {}
     for (const exposure of this.allExposures) {
-      const { leafId } = exposure
-      const lastExposure = leafIdToLastExposure[leafId]
-      const penultimateExposure = leafIdToPenultimateExposure[leafId]
-      if (lastExposure === undefined) {
-        leafIdToLastExposure[leafId] = exposure
-      } else if (exposure.createdAt > lastExposure.createdAt) {
-        leafIdToPenultimateExposure[leafId] = leafIdToLastExposure[leafId]
-        leafIdToLastExposure[leafId] = exposure
-      } else if (exposure.createdAt > penultimateExposure.createdAt) {
-        leafIdToPenultimateExposure[leafId] = exposure
+      for (const leafId of exposure.leafIds) {
+        const lastExposure = leafIdToLastExposure[leafId]
+        const penultimateExposure = leafIdToPenultimateExposure[leafId]
+        if (lastExposure === undefined) {
+          leafIdToLastExposure[leafId] = exposure
+        } else if (exposure.createdAt > lastExposure.createdAt) {
+          leafIdToPenultimateExposure[leafId] = leafIdToLastExposure[leafId]
+          leafIdToLastExposure[leafId] = exposure
+        } else if (exposure.createdAt > penultimateExposure.createdAt) {
+          leafIdToPenultimateExposure[leafId] = exposure
+        }
       }
     }
 
@@ -94,11 +95,11 @@ export default class DbModel {
       if (lastExposure === undefined) {
         category = 'UNTESTED'
         matureAt = 0
-      } else if (lastExposure.grade !== 'FORGOTTEN') {
+      } else if (lastExposure.type === 'RECALLED_ES') {
         category = 'BROKEN'
         matureAt = lastExposure.createdAt + 60
       } else if (penultimateExposure === undefined ||
-        penultimateExposure.grade !== 'FORGOTTEN') {
+        penultimateExposure.type === 'RECALLED_ES') {
         category = 'REMEMBERED_1X'
         matureAt = lastExposure.createdAt + 300
       } else {
@@ -148,7 +149,7 @@ export default class DbModel {
         return this._recomputeModel()
       })
 
-  exposeLeafs = (exposures: Array<Exposure>): Promise<Model> => {
+  addExposures = (exposures: Array<Exposure>): Promise<Model> => {
     return exposuresTable.insertRows(this.db, exposures)
       .then((newExposures: Array<Exposure>) => {
         this.allExposures = this.allExposures.concat(newExposures)
@@ -163,10 +164,10 @@ export default class DbModel {
     }
 
     const exposuresJson = JSON.stringify(this.allExposures.map(exposure => ({
-      leafEs: leafIdToEs[exposure.leafId],
+      type: exposure.type,
+      leafEss: exposure.leafIds.map(leafId => leafIdToEs[leafId]),
       createdAt: exposure.createdAt,
-      grade: exposure.grade,
-      earlyDurationMs: exposure.earlyDurationMs,
+      recallMillis: exposure.recallMillis,
     })))
 
     const leafsJson = JSON.stringify(this.allLeafs.map(leaf => {

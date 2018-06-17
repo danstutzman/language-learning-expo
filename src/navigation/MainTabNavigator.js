@@ -84,7 +84,7 @@ const SpeakStack = createStackNavigator({
   SpeakQuiz: {
     screen: (args: { navigation: any, screenProps: ScreenProps }) => {
       const { category } = args.navigation.state.params
-      const { model, editLeaf, exposeLeafs } = args.screenProps
+      const { model, editLeaf, addExposures } = args.screenProps
 
       const topCard = model.speakCardsByCategory[category]
         .filter(card => card.matureAt < new Date().getTime() / 1000)[0]
@@ -100,9 +100,9 @@ const SpeakStack = createStackNavigator({
         return <SlowSpeakGameScreen
           leaf={leaf}
           editMnemonic={(mnemonic: string) => editLeaf({ ...leaf, mnemonic })}
-          exposeLeafs={exposeLeafs} />
+          addExposures={addExposures} />
       } else {
-        return <SpeakQuizScreen card={topCard} exposeLeafs={exposeLeafs} />
+        return <SpeakQuizScreen card={topCard} addExposures={addExposures} />
       }
     },
     navigationOptions: (args: {navigation: any, screenProps: ScreenProps}) => {
