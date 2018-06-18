@@ -1,0 +1,15 @@
+import hydrateCardSeeds from '../cards/hydrateCardSeeds'
+import Inf from '../cards/verbs/Inf'
+import RegVPattern from '../cards/verbs/RegVPattern'
+import RegV from '../cards/verbs/RegV'
+
+it('works', () => {
+  expect(hydrateCardSeeds()).toEqual([
+    new Inf(0, 'pregunt-', 'ask', 'AR'),
+    new RegVPattern(0, '-o', 'AR', 1, 1, 'PRES'),
+    new RegV(0,
+      new Inf(0, 'pregunt-', 'ask', 'AR'),
+      new RegVPattern(0, '-o', 'AR', 1, 1, 'PRES')
+    ),
+  ])
+})
