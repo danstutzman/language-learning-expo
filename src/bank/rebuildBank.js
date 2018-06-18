@@ -46,37 +46,29 @@ export default function rebuildBank(dbModel: DbModel): Bank {
     const penultimateExposure = leafIdToPenultimateExposure[leaf.leafId]
 
     let category: string
-    let matureAt: number
     if (lastExposure === undefined) {
       category = 'UNTESTED'
-      matureAt = 0
     } else if (lastExposure.type === 'RECALLED_ES') {
       category = 'BROKEN'
-      matureAt = lastExposure.createdAt + 60
     } else if (penultimateExposure === undefined ||
       penultimateExposure.type === 'RECALLED_ES') {
       category = 'REMEMBERED_1X'
-      matureAt = lastExposure.createdAt + 300
     } else {
       const memoryDuration = lastExposure.createdAt -
         penultimateExposure.createdAt
       if (memoryDuration >= 24 * 60 * 60) {
         category = 'REMEMBERED_1DAY'
-        matureAt = lastExposure.createdAt + 24 * 60 * 60
       } else if (memoryDuration >= 60 * 60) {
         category = 'REMEMBERED_1HOUR'
-        matureAt = lastExposure.createdAt + 24 * 60 * 60
       } else if (memoryDuration >= 5 * 60) {
         category = 'REMEMBERED_5MIN'
-        matureAt = lastExposure.createdAt + 60 * 60
       } else {
         category = 'REMEMBERED_2X'
-        matureAt = lastExposure.createdAt + 5 * 60
       }
     }
 
     if (leaf.type === 'N' && !leaf.suspended) {
-      speakCardsByCategory[category].push(new N(leaf, matureAt))
+      speakCardsByCategory[category].push(new N(leaf))
     }
   }
 

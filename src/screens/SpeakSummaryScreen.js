@@ -70,11 +70,8 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
     return Object.keys(speakCardsByCategory)
       .map((category: string) => {
         const cards = speakCardsByCategory[category]
-        const now = new Date().getTime() / 1000
-        const numMatureCards =
-          cards.filter(card => card.matureAt <= now).length
-        const numImmatureCards =
-          cards.filter(card => card.matureAt > now).length
+        const numMatureCards = cards.length // TODO
+        const numImmatureCards = 0 // TODO
         return { category, numMatureCards, numImmatureCards }
       })
   }

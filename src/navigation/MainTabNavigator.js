@@ -86,8 +86,7 @@ const SpeakStack = createStackNavigator({
       const { category } = args.navigation.state.params
       const { bank, editLeaf, addExposures } = args.screenProps
 
-      const topCard = bank.speakCardsByCategory[category]
-        .filter(card => card.matureAt < new Date().getTime() / 1000)[0]
+      const topCard = bank.speakCardsByCategory[category][0]
       if (topCard === undefined) {
         return <Text>No cards in this category</Text>
       } else if (topCard.getLeafs().length === 1) {
