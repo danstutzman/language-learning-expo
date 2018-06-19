@@ -13,7 +13,7 @@ type SkillSeed = {|
 
 const skillSeeds: Array<SkillSeed> = [
   { cardType: 'Inf',
-    cardKey: 'pregunt-AR',
+    cardKey: 'preguntar',
     mnemonic: '',
   },
   { cardType: 'RegVPattern',
@@ -21,7 +21,7 @@ const skillSeeds: Array<SkillSeed> = [
     mnemonic: '',
   },
   { cardType: 'RegV',
-    cardKey: 'pregunt-ARAR11PRES',
+    cardKey: 'preguntarAR11PRES',
     mnemonic: '',
   },
 ]

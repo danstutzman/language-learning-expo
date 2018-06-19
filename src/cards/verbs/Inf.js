@@ -1,4 +1,5 @@
 import type { Card } from '../Card'
+import type { GlossRow } from '../GlossRow'
 import type { InfCategory } from '../enums/InfCategory'
 import type { LeafCard } from '../LeafCard'
 
@@ -45,15 +46,20 @@ export default class Inf implements Card, LeafCard {
     }
   }
 
-  getGloss(): string {
-    return this.en
+  getGlossRow(): GlossRow {
+    const { cardId, en, es } = this
+    return { cardId, en, es }
+  }
+
+  getGlossRows(): Array<GlossRow> {
+    return [this.getGlossRow()]
   }
 
   getKey(): string {
-    return `${this.es}${this.infCategory}`
+    return this.es
   }
 
-  getLeafCards(): Array<LeafCard> {
-    return [this]
+  getQuizQuestion(): string {
+    return `to ${this.en}`
   }
 }

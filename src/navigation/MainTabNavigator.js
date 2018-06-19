@@ -2,6 +2,7 @@ import React from 'react'
 import { Platform, Text } from 'react-native'
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation'
 
+import type { LeafCard } from '../cards/LeafCard'
 import TabBarIcon from '../components/TabBarIcon'
 import SlowSpeakGameScreen from '../screens/SlowSpeakGameScreen'
 import type { ScreenProps } from './ScreenProps'
@@ -31,8 +32,8 @@ const SpeakStack = createStackNavigator({
         skill.card.cardId === cardId)
       if (topSkill === undefined) {
         return <Text>No skills</Text>
-      } else if (topSkill.card.getLeafCards().length === 1) {
-        const leafCard = topSkill.card.getLeafCards()[0]
+      } else if (typeof (topSkill.card: any).getGlossRow !== 'undefined') {
+        const leafCard: LeafCard = (topSkill.card: any)
         return <SlowSpeakGameScreen
           leafCard={leafCard}
           skill={topSkill}

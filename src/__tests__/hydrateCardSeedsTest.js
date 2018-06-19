@@ -5,10 +5,10 @@ import RegV from '../cards/verbs/RegV'
 
 it('works', () => {
   expect(hydrateCardSeeds()).toEqual([
-    new Inf(1, 'pregunt-', 'ask', 'AR'),
+    new Inf(1, 'preguntar', 'ask', 'AR'),
     new RegVPattern(2, '-o', 'AR', 1, 1, 'PRES'),
     new RegV(3,
-      new Inf(1, 'pregunt-', 'ask', 'AR'),
+      new Inf(1, 'preguntar', 'ask', 'AR'),
       new RegVPattern(2, '-o', 'AR', 1, 1, 'PRES')
     ),
   ])

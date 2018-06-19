@@ -46,13 +46,15 @@ const styles = StyleSheet.create({
 export default class SpeakSummaryScreen extends React.PureComponent<Props> {
   renderListItem = (item: { item: Skill }) => {
     const { card } = item.item
-    const es = card.getLeafCards().map(card =>
-      card.es).join(' ').replace('- -', '')
+    const es = card.getGlossRows().map(row =>
+      row.es).join(' ').replace('- -', '')
     return <TouchableOpacity
       key={card.cardId}
       style={styles.listItem}
       onPress={() => this.props.startSpeakQuiz(card.cardId)}>
-      <Text style={styles.listItemEs}>{es}</Text>
+      <Text style={styles.listItemEs}>
+        {`${card.constructor.name} ${es}`}
+      </Text>
     </TouchableOpacity>
   }
 

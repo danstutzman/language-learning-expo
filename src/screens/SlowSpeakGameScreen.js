@@ -87,8 +87,9 @@ export default class SlowSpeakGameScreen
   }
 
   speakMnemonicAndSpanish() {
-    const es = this.props.leafCard.es
+    const es = this.props.leafCard.getGlossRow().es
     const mnemonic = this.props.skill.mnemonic
+
     if (mnemonic !== '') {
       Speech.speak(mnemonic, { language: 'en', onDone: () =>
         Speech.speak(es, { language: 'es', rate: 0.5 })
@@ -142,13 +143,13 @@ export default class SlowSpeakGameScreen
           this.props.editMnemonic(this.state.newMnemonic || '')}
         value={this.state.newMnemonic !== null ?
           this.state.newMnemonic : this.props.skill.mnemonic} />
-      <Text style={styles.es}>{this.props.leafCard.es}</Text>
+      <Text style={styles.es}>{this.props.leafCard.getGlossRow().es}</Text>
     </View>
   }
 
   render() {
     return <View style={styles.container}>
-      <Text style={styles.en}>{this.props.leafCard.getGloss()}</Text>
+      <Text style={styles.en}>{this.props.leafCard.getQuizQuestion()}</Text>
 
       {this.state.recalledAtMillis === null
         ? <Button onPress={this.toggleRecalled} title='Tap when you remember' />

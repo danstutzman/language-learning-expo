@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native'
 
-import type { LeafCard } from '../cards/LeafCard'
+import type { GlossRow } from '../cards/GlossRow'
 import type { Skill } from '../cards/Skill'
 
 type Props = {|
@@ -16,7 +16,7 @@ type Props = {|
 |}
 
 type State = {|
-  // recalledByLeafId: {[number]: boolean},
+  recalledByLeafCardId: {[number]: boolean},
   delay: number | null, // milliseconds to answer
 |}
 
@@ -60,8 +60,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props)
     this.timerStartedAtMillis = new Date().getTime()
-    // this.state = { recalledByLeafId: {}, recalledAtMillis: null }
-    this.state = { delay: null }
+    this.state = { recalledByLeafCardId: {}, delay: null }
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -72,26 +71,26 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   revealAnswer = () => {
-    // const recalledByLeafId = {}
-    // for (const leaf of this.props.card.getLeafs()) {
-    //   recalledByLeafId[leaf.leafId] = true
-    // }
+    const recalledByLeafCardId = {}
+    for (const leafCard of this.props.skill.card.getGlossRows()) {
+      recalledByLeafCardId[leafCard.cardId] = true
+    }
 
-    // this.setState({
-    //   recalledByLeafId,
-    //   recalledAtMillis: new Date().getTime(),
-    // })
+    this.setState({
+      recalledByLeafCardId,
+      delay: new Date().getTime(),
+    })
   }
 
-  pressGlossTableRow = (leaf: LeafCard) => {
-    this.speakSpanish([leaf])
+  pressGlossTableRow = (glossRow: GlossRow) => {
+    this.speakSpanish([glossRow])
 
-    // this.setState(prevState => ({
-    //   recalledByLeafId: {
-    //     ...prevState.recalledByLeafId,
-    //     [leaf.leafId]: !prevState.recalledByLeafId[leaf.leafId],
-    //   },
-    // }))
+    this.setState(prevState => ({
+      recalledByLeafCardId: {
+        ...prevState.recalledByLeafCardId,
+        [glossRow.cardId]: !prevState.recalledByLeafCardId[glossRow.cardId],
+      },
+    }))
   }
 
   onNext = () => {
@@ -126,30 +125,29 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
     // }])
   }
 
-  speakSpanish = (leafs: Array<LeafCard>) => {
-    const es = leafs.map(leaf => leaf.es).join(' ').replace(/- -/g, '')
+  speakSpanish = (glossRows: Array<GlossRow>) => {
+    const es = glossRows.map(glossRow =>
+      glossRow.es).join(' ').replace(/- -/g, '')
     Speech.speak(es, { language: 'es', rate: 0.5 })
   }
 
   renderGlossTable() {
-    return this.props.skill.card.getLeafCards().map(leafCard =>
-      <TouchableOpacity
-        key={leafCard.cardId}
+    return this.props.skill.card.getGlossRows().map(glossRow => {
+      const { cardId, en, es } = glossRow
+      return <TouchableOpacity
+        key={cardId}
         style={styles.glossTableRow}
-        onPress={() => this.pressGlossTableRow(leafCard)}>
-        <Text style={styles.glossTableEnglish}>{leafCard.getGloss()}</Text>
-        <Text style={[styles.glossTableSpanish]}>
-          {leafCard.es}
-        </Text>
+        onPress={() => this.pressGlossTableRow(glossRow)}>
+        <Text style={styles.glossTableEnglish}>{en}</Text>
+        <Text style={[styles.glossTableSpanish]}>{es}</Text>
       </TouchableOpacity>
-    )
+    })
   }
 
   render() {
     return <View style={styles.container}>
       <Text style={styles.cardEnglish}>
-        {this.props.skill.card.getLeafCards().map(leafCard =>
-          leafCard.getGloss()).join(' ')}
+        {this.props.skill.card.getQuizQuestion()}
       </Text>
       <View style={styles.glossTable}>
         {this.state.delay === null

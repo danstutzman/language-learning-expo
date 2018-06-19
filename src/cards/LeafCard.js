@@ -1,5 +1,7 @@
+import type { GlossRow } from './GlossRow'
+
 export interface LeafCard {
   cardId: number,
-  es: string,
-  getGloss(): string,
+  getGlossRow(): GlossRow,
+  getQuizQuestion(): string,
 }

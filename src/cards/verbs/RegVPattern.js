@@ -1,4 +1,5 @@
 import type { Card } from '../Card'
+import type { GlossRow } from '../GlossRow'
 import type { InfCategory } from '../enums/InfCategory'
 import type { LeafCard } from '../LeafCard'
 import type { Number } from '../enums/Number'
@@ -11,6 +12,14 @@ export function assertRegVPattern(value: any): RegVPattern {
     throw new Error(`Expected RegVPattern but got ${JSON.stringify(value)}`)
   }
   return value
+}
+
+const NUMBER_AND_PERSON_TO_EN_PRONOUN = {
+  '11' : 'I',
+  '12' : 'you',
+  '13' : 'he/she',
+  '21' : 'we',
+  '23' : 'they',
 }
 
 export default class RegVPattern implements Card, LeafCard {
@@ -58,8 +67,25 @@ export default class RegVPattern implements Card, LeafCard {
     }
   }
 
-  getGloss(): string {
-    return `(${this.number}, ${this.person}, ${this.tense})`
+  getEnPronoun(): string {
+    const enPronoun =
+      NUMBER_AND_PERSON_TO_EN_PRONOUN[`${this.number}${this.person}`]
+    if (enPronoun === undefined) {
+      throw new Error(`Unknown enPronoun for ${JSON.stringify(this)}`)
+    }
+    return enPronoun
+  }
+
+  getGlossRow(): GlossRow {
+    return {
+      cardId: this.cardId,
+      en: `(${this.getEnPronoun()})`,
+      es: this.es,
+    }
+  }
+
+  getGlossRows(): Array<GlossRow> {
+    return [this.getGlossRow()]
   }
 
   getKey(): string {
@@ -68,5 +94,10 @@ export default class RegVPattern implements Card, LeafCard {
 
   getLeafCards(): Array<LeafCard> {
     return [this]
+  }
+
+  getQuizQuestion(): string {
+    return `${this.infCategory} verb suffix for ${
+      this.getEnPronoun()} in ${this.tense}`
   }
 }

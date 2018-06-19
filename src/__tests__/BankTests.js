@@ -9,9 +9,9 @@ it('works', done => {
     .then(() => expect(bank.exportDatabase()).toEqual(
       `Paste in src/cards/hydrateCardSeeds.js:
 
-[{"type":"Inf","es":"pregunt-","en":"ask","infCategory":"AR"},
+[{"type":"Inf","es":"preguntar","en":"ask","infCategory":"AR"},
 {"type":"RegVPattern","es":"-o","infCategory":"AR","number":1,"person":1,"tense":"PRES"},
-{"type":"RegV","infKey":"pregunt-AR","patternKey":"AR11PRES"}]`))
+{"type":"RegV","infKey":"preguntar","patternKey":"AR11PRES"}]`))
     .then(() => done())
     .catch(e => { done.fail(e); done() })
 })

@@ -1,6 +1,6 @@
 import type { Card } from '../Card'
+import type { GlossRow } from '../GlossRow'
 import Inf from './Inf'
-import type { LeafCard } from '../LeafCard'
 import RegVPattern from './RegVPattern'
 
 function assertNonZero(value: number): number {
@@ -36,11 +36,22 @@ export default class RegV implements Card {
     }
   }
 
+  getGlossRows(): Array<GlossRow> {
+    return [
+      {
+        cardId: this.inf.cardId,
+        en: this.inf.en,
+        es: this.inf.es.substring(0, this.inf.es.length - 2) + '-',
+      },
+      this.pattern.getGlossRow(),
+    ]
+  }
+
   getKey(): string {
     return `${this.inf.getKey()}${this.pattern.getKey()}`
   }
 
-  getLeafCards(): Array<LeafCard> {
-    return [this.inf, this.pattern]
+  getQuizQuestion(): string {
+    return `(${this.pattern.getEnPronoun()}) ${this.inf.en}`
   }
 }

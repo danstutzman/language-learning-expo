@@ -33,7 +33,7 @@ type CardSeed = InfSeed | RegVSeed | RegVPatternSeed
 
 const cardSeeds: Array<CardSeed> = [
   { type: 'Inf',
-    es: 'pregunt-',
+    es: 'preguntar',
     en: 'ask',
     infCategory: 'AR',
   },
@@ -45,7 +45,7 @@ const cardSeeds: Array<CardSeed> = [
     es: '-o',
   },
   { type: 'RegV',
-    infKey: 'pregunt-AR',
+    infKey: 'preguntar',
     patternKey: 'AR11PRES',
   },
 ]
