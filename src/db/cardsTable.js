@@ -31,7 +31,7 @@ export function create(db: any): Promise<void> {
         [],
         () => resolve()
       ),
-      (e: Error) => reject(`Error from CREATE TABLE leafs: ${e.message}`)
+      (e: Error) => reject(`Error from CREATE TABLE cards: ${e.message}`)
     )
   })
 }
