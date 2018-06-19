@@ -51,12 +51,14 @@ const cardSeeds: Array<CardSeed> = [
 ]
 
 export default function hydrateCardSeeds(): Array<Card> {
+  let cardId = 1
+
   const infByKey: {[string]: Inf} = {}
   for (const seedUntyped of cardSeeds) {
     if (seedUntyped.type === 'Inf') {
       const seed = (seedUntyped: any)
       const { es, en, infCategory } = seed
-      const inf = new Inf(0, es, en, infCategory)
+      const inf = new Inf(cardId++, es, en, infCategory)
       infByKey[inf.getKey()] = inf
     }
   }
@@ -66,7 +68,8 @@ export default function hydrateCardSeeds(): Array<Card> {
     if (seedUntyped.type === 'RegVPattern') {
       const seed = (seedUntyped: any)
       const { es, infCategory, number, person, tense } = seed
-      const pattern = new RegVPattern(0, es, infCategory, number, person, tense)
+      const pattern =
+        new RegVPattern(cardId++, es, infCategory, number, person, tense)
       regVPatternByKey[pattern.getKey()] = pattern
     }
   }
@@ -84,7 +87,7 @@ export default function hydrateCardSeeds(): Array<Card> {
       if (pattern === undefined) {
         throw new Error(`Can't find RegVPattern for key=${patternKey}`)
       }
-      regVs.push(new RegV(0, inf, pattern))
+      regVs.push(new RegV(cardId++, inf, pattern))
     }
   }
 
