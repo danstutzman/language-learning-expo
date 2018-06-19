@@ -52,6 +52,12 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginLeft: 'auto', // float right
   },
+  glossTableSpanishForgotten: {
+    color: 'red',
+  },
+  glossTableSpanishRemembered: {
+    color: 'green',
+  },
 })
 
 export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
@@ -139,7 +145,12 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
         style={styles.glossTableRow}
         onPress={() => this.pressGlossTableRow(glossRow)}>
         <Text style={styles.glossTableEnglish}>{en}</Text>
-        <Text style={[styles.glossTableSpanish]}>{es}</Text>
+        <Text style={[
+          styles.glossTableSpanish,
+          this.state.recalledByLeafCardId[cardId]
+            ? styles.glossTableSpanishRemembered
+            : styles.glossTableSpanishForgotten,
+        ]}>{es}</Text>
       </TouchableOpacity>
     })
   }
