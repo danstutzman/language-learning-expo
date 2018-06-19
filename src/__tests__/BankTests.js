@@ -6,7 +6,8 @@ it('works', done => {
   const seeds = [
     { type: 'Inf',
       es: 'preguntar',
-      en: 'ask',
+      enPresent: 'ask',
+      enPast: 'asked',
       infCategory: 'AR',
     },
     { type: 'RegVPattern',
@@ -28,7 +29,7 @@ it('works', done => {
     .then(() => expect(bank.exportDatabase()).toEqual(
       `Paste in src/cards/seeds/seeds.js:
 
-[{"type":"Inf","es":"preguntar","en":"ask","infCategory":"AR"},
+[{"type":"Inf","es":"preguntar","enPresent":"ask","enPast":"asked","infCategory":"AR"},
 {"type":"RegVPattern","es":"-o","infCategory":"AR","number":1,"person":1,"tense":"PRES"},
 {"type":"RegV","infKey":"preguntar","patternKey":"AR11PRES"}]`))
     .then(() => done())

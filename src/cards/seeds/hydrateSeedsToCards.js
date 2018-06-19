@@ -11,8 +11,8 @@ export default function hydrateSeedsToCards(seeds: Array<Seed>): Array<Card> {
   for (const seedUntyped of seeds) {
     if (seedUntyped.type === 'Inf') {
       const seed = (seedUntyped: any)
-      const { es, en, infCategory } = seed
-      const inf = new Inf(cardId++, es, en, infCategory)
+      const { es, enPresent, enPast, infCategory } = seed
+      const inf = new Inf(cardId++, es, enPresent, enPast, infCategory)
       infByKey[inf.getKey()] = inf
     }
   }

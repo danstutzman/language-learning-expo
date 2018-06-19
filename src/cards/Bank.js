@@ -32,7 +32,8 @@ function rowToCard(row: CardRow, cardByCardId: {[number]: Card}): Card {
     return new Inf(
       row.cardId,
       assertString(content.es),
-      assertString(content.en),
+      assertString(content.enPresent),
+      assertString(content.enPast),
       assertInfCategory(content.infCategory))
   } else if (row.type === 'RegV') {
     return new RegV(

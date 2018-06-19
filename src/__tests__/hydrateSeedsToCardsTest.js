@@ -7,7 +7,8 @@ it('works', () => {
   const seeds = [
     { type: 'Inf',
       es: 'preguntar',
-      en: 'ask',
+      enPresent: 'ask',
+      enPast: 'asked',
       infCategory: 'AR',
     },
     { type: 'RegVPattern',
@@ -23,10 +24,10 @@ it('works', () => {
     },
   ]
   expect(hydrateSeedsToCards(seeds)).toEqual([
-    new Inf(1, 'preguntar', 'ask', 'AR'),
+    new Inf(1, 'preguntar', 'ask', 'asked', 'AR'),
     new RegVPattern(2, '-o', 'AR', 1, 1, 'PRES'),
     new RegV(3,
-      new Inf(1, 'preguntar', 'ask', 'AR'),
+      new Inf(1, 'preguntar', 'ask', 'asked', 'AR'),
       new RegVPattern(2, '-o', 'AR', 1, 1, 'PRES')
     ),
   ])

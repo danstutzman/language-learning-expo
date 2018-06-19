@@ -3,7 +3,7 @@ import RegVPattern from '../cards/verbs/RegVPattern'
 import RegV from '../cards/verbs/RegV'
 
 it('works', () => {
-  const preguntar = new Inf(1, 'preguntar', 'ask', 'AR')
+  const preguntar = new Inf(1, 'preguntar', 'ask', 'asked', 'AR')
   const endsWithA = new RegVPattern(2, '-a', 'AR', 1, 3, 'PRES')
   const regV = new RegV(3, preguntar, endsWithA)
 

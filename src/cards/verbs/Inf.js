@@ -14,25 +14,29 @@ export function assertInf(value: any): Inf {
 export default class Inf implements Card, LeafCard {
   cardId: number
   es: string
-  en: string
+  enPresent: string
+  enPast: string
   infCategory: InfCategory
 
   constructor(
     cardId: number,
     es: string,
-    en: string,
+    enPresent: string,
+    enPast: string,
     infCategory: InfCategory
   ) {
     this.cardId = cardId
     this.es = es
-    this.en = en
+    this.enPresent = enPresent
+    this.enPast = enPast
     this.infCategory = infCategory
   }
 
   getContentJson(): string {
     return JSON.stringify({
       es: this.es,
-      en: this.en,
+      enPresent: this.enPresent,
+      enPast: this.enPast,
       infCategory: this.infCategory,
     })
   }
@@ -41,14 +45,15 @@ export default class Inf implements Card, LeafCard {
     return {
       type: 'Inf',
       es: this.es,
-      en: this.en,
+      enPresent: this.enPresent,
+      enPast: this.enPast,
       infCategory: this.infCategory,
     }
   }
 
   getGlossRow(): GlossRow {
-    const { cardId, en, es } = this
-    return { cardId, en, es }
+    const { cardId, enPresent, es } = this
+    return { cardId, en: enPresent, es }
   }
 
   getGlossRows(): Array<GlossRow> {
@@ -60,6 +65,6 @@ export default class Inf implements Card, LeafCard {
   }
 
   getQuizQuestion(): string {
-    return `to ${this.en}`
+    return `to ${this.enPresent}`
   }
 }
