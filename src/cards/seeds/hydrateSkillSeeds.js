@@ -1,32 +1,12 @@
-import type { CardType } from './enums/CardType'
-import type { Card } from './Card'
-import Inf from './verbs/Inf'
-import RegV from './verbs/RegV'
-import RegVPattern from './verbs/RegVPattern'
-import type { Skill } from './Skill'
-
-type SkillSeed = {|
-  cardType: CardType,
-  cardKey: string,
-  mnemonic: string,
-|}
-
-const skillSeeds: Array<SkillSeed> = [
-  { cardType: 'Inf',
-    cardKey: 'preguntar',
-    mnemonic: '',
-  },
-  { cardType: 'RegVPattern',
-    cardKey: 'AR11PRES',
-    mnemonic: '',
-  },
-  { cardType: 'RegV',
-    cardKey: 'preguntarAR11PRES',
-    mnemonic: '',
-  },
-]
+import type { Card } from '../Card'
+import Inf from '../verbs/Inf'
+import RegV from '../verbs/RegV'
+import RegVPattern from '../verbs/RegVPattern'
+import type { Skill } from '../Skill'
+import type { SkillSeed } from './skillSeeds'
 
 export default function hydrateSkillSeeds(
+  skillSeeds: Array<SkillSeed>,
   cardByCardId: {[number]: Card}
 ): Array<Skill> {
   const cardByTypeAndKey = {

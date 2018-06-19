@@ -1,56 +1,12 @@
-import type { Card } from './Card'
-import Inf from './verbs/Inf'
-import type { InfCategory } from './enums/InfCategory'
-import type { Number } from './enums/Number'
-import type { Person } from './enums/Person'
-import type { Tense } from './enums/Tense'
-import RegV from './verbs/RegV'
-import RegVPattern from './verbs/RegVPattern'
+import type { Card } from '../Card'
+import type { CardSeed } from './cardSeeds'
+import Inf from '../verbs/Inf'
+import RegV from '../verbs/RegV'
+import RegVPattern from '../verbs/RegVPattern'
 
-type InfSeed = {|
-  type: 'Inf',
-  es: string,
-  en: string,
-  infCategory: InfCategory,
-|}
-
-type RegVSeed = {|
-  type: 'RegV',
-  infKey: string,
-  patternKey: string,
-|}
-
-type RegVPatternSeed = {|
-  type: 'RegVPattern',
-  es: string,
-  infCategory: InfCategory,
-  number: Number,
-  person: Person,
-  tense: Tense,
-|}
-
-type CardSeed = InfSeed | RegVSeed | RegVPatternSeed
-
-const cardSeeds: Array<CardSeed> = [
-  { type: 'Inf',
-    es: 'preguntar',
-    en: 'ask',
-    infCategory: 'AR',
-  },
-  { type: 'RegVPattern',
-    infCategory: 'AR',
-    number: 1,
-    person: 1,
-    tense: 'PRES',
-    es: '-o',
-  },
-  { type: 'RegV',
-    infKey: 'preguntar',
-    patternKey: 'AR11PRES',
-  },
-]
-
-export default function hydrateCardSeeds(): Array<Card> {
+export default function hydrateCardSeeds(
+  cardSeeds: Array<CardSeed>
+): Array<Card> {
   let cardId = 1
 
   const infByKey: {[string]: Inf} = {}
