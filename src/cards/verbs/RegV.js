@@ -70,10 +70,6 @@ export default class RegV implements Card {
     ]
   }
 
-  getKey(): string {
-    return `${this.inf.getKey()}${this.pattern.getKey()}`
-  }
-
   getQuizQuestion(): string {
     return `(${this.pattern.getEnPronoun()}) ${this.getEnVerb()}`
   }

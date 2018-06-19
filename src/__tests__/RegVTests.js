@@ -14,6 +14,5 @@ it('works', () => {
     {cardId: 1, en: 'asks', es: 'pregunt-'},
     {cardId: 2, en: '(he/she)', es: '-a'},
   ])
-  expect(regV.getKey()).toEqual('preguntarAR13PRES')
   expect(regV.getQuizQuestion()).toEqual('(he/she) asks')
 })
