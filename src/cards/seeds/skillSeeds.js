@@ -1,22 +1,10 @@
 import type { CardType } from '../enums/CardType'
 
-export type SkillSeed = {|
-  cardType: CardType,
-  cardKey: string,
-  mnemonic: string,
-|}
+// [0]: cardType, [1]: cardKey, [2]: mnemonic
+export type SkillSeed = [CardType, string, string]
 
 export default ([
-  { cardType: 'Inf',
-    cardKey: 'preguntar',
-    mnemonic: '',
-  },
-  { cardType: 'RegVPattern',
-    cardKey: 'AR11PRES',
-    mnemonic: '',
-  },
-  { cardType: 'RegV',
-    cardKey: 'preguntarAR11PRES',
-    mnemonic: '',
-  },
+  ['Inf','preguntar',''],
+  ['RegVPattern','AR11PRES',''],
+  ['RegV','preguntarAR11PRES',''],
 ]: Array<SkillSeed>)

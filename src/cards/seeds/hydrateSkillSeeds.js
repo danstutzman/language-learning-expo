@@ -26,21 +26,17 @@ export default function hydrateSkillSeeds(
     }
   }
 
-  return skillSeeds.map(seed => {
-    const cardByKey = cardByTypeAndKey[seed.cardType]
+  return skillSeeds.map(skillSeed => {
+    const [cardType, cardKey, mnemonic] = skillSeed
+    const cardByKey = cardByTypeAndKey[cardType]
     if (cardByKey === undefined) {
-      throw new Error(`Unexpected card type ${seed.cardType}`)
+      throw new Error(`Unexpected card type ${cardType}`)
     }
-    const card = cardByKey[seed.cardKey]
+    const card = cardByKey[cardKey]
     if (card === undefined) {
-      throw new Error(`Can't find card for ${JSON.stringify(seed)}`)
+      throw new Error(`Can't find card for ${JSON.stringify(skillSeed)}`)
     }
 
-    return {
-      card,
-      mnemonic: seed.mnemonic,
-      delay: 0,
-      endurance: 0,
-    }
+    return { card, mnemonic, delay: 0, endurance: 0 }
   })
 }
