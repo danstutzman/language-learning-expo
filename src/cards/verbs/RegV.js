@@ -10,6 +10,14 @@ function assertNonZero(value: number): number {
   return value
 }
 
+const NUMBER_AND_PERSON_TO_EN_VERB_SUFFIX = {
+  '11' : '',
+  '12' : '',
+  '13' : 's',
+  '21' : '',
+  '23' : '',
+}
+
 export default class RegV implements Card {
   cardId: number
   inf: Inf
@@ -28,6 +36,15 @@ export default class RegV implements Card {
     })
   }
 
+  getEnVerbSuffix(): string {
+    const suffix = NUMBER_AND_PERSON_TO_EN_VERB_SUFFIX[
+      `${this.pattern.number}${this.pattern.person}`]
+    if (suffix === undefined) {
+      throw new Error(`Unknown suffix for ${JSON.stringify(this)}`)
+    }
+    return suffix
+  }
+
   getExport(): {} {
     return {
       type: 'RegV',
@@ -40,7 +57,7 @@ export default class RegV implements Card {
     return [
       {
         cardId: this.inf.cardId,
-        en: this.inf.en,
+        en: this.inf.en + this.getEnVerbSuffix(),
         es: this.inf.es.substring(0, this.inf.es.length - 2) + '-',
       },
       this.pattern.getGlossRow(),
@@ -52,6 +69,7 @@ export default class RegV implements Card {
   }
 
   getQuizQuestion(): string {
-    return `(${this.pattern.getEnPronoun()}) ${this.inf.en}`
+    return `(${this.pattern.getEnPronoun()}) ${this.inf.en}${
+      this.getEnVerbSuffix()}`
   }
 }
