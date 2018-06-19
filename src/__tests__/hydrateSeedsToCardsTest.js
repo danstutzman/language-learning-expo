@@ -1,10 +1,10 @@
-import hydrateCardSeeds from '../cards/seeds/hydrateCardSeeds'
+import hydrateSeedsToCards from '../cards/seeds/hydrateSeedsToCards'
 import Inf from '../cards/verbs/Inf'
 import RegVPattern from '../cards/verbs/RegVPattern'
 import RegV from '../cards/verbs/RegV'
 
 it('works', () => {
-  const cardSeeds = [
+  const seeds = [
     { type: 'Inf',
       es: 'preguntar',
       en: 'ask',
@@ -22,7 +22,7 @@ it('works', () => {
       patternKey: 'AR11PRES',
     },
   ]
-  expect(hydrateCardSeeds(cardSeeds)).toEqual([
+  expect(hydrateSeedsToCards(seeds)).toEqual([
     new Inf(1, 'preguntar', 'ask', 'AR'),
     new RegVPattern(2, '-o', 'AR', 1, 1, 'PRES'),
     new RegV(3,

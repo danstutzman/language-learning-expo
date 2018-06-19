@@ -6,9 +6,8 @@ import { email } from 'react-native-communications'
 
 import Bank from './src/cards/Bank'
 import type { BankModel } from './src/cards/BankModel'
-import cardSeeds from './src/cards/seeds/cardSeeds'
 import RootNavigation from './src/navigation/RootNavigation'
-import skillSeeds from './src/cards/seeds/skillSeeds'
+import seeds from './src/cards/seeds/seeds'
 
 const styles = StyleSheet.create({
   container: {
@@ -59,7 +58,7 @@ export default class App extends React.PureComponent<Props, State> {
             email(null, null, null, 'Lang learning export', body)
           }}
           reseedDatabase={() =>
-            bank.reseedDatabase(cardSeeds, skillSeeds)
+            bank.reseedDatabase(seeds)
               .then(bankModel => this.setState({ bankModel }))
               .then(() => Alert.alert(
                 'Reseed finished',
@@ -85,7 +84,7 @@ export default class App extends React.PureComponent<Props, State> {
         // to remove this if you are not using it in your app
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
-      bank.init(cardSeeds, skillSeeds)
+      bank.init(seeds)
         .then(bankModel => this.setState({ bankModel }))
     ])
   }
