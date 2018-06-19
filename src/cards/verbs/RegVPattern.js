@@ -46,6 +46,10 @@ export default class RegVPattern implements Card, LeafCard {
     this.tense = tense
   }
 
+  getChildren(): Array<Card> {
+    return []
+  }
+
   getContentJson(): string {
     return JSON.stringify({
       es: this.es,

@@ -32,6 +32,10 @@ export default class Inf implements Card, LeafCard {
     this.infCategory = infCategory
   }
 
+  getChildren(): Array<Card> {
+    return []
+  }
+
   getContentJson(): string {
     return JSON.stringify({
       es: this.es,

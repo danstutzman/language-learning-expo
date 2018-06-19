@@ -29,6 +29,10 @@ export default class RegV implements Card {
     this.pattern = pattern
   }
 
+  getChildren(): Array<Card> {
+    return [this.inf, this.pattern]
+  }
+
   getContentJson(): string {
     return JSON.stringify({
       inf: assertNonZero(this.inf.cardId),
