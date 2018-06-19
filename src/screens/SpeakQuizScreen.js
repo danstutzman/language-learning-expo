@@ -8,19 +8,16 @@ import {
   View,
 } from 'react-native'
 
-import type { Card } from '../bank/Card'
-import type { Exposure } from '../model/Exposure'
-import type { ExposureType } from '../model/ExposureType'
-import type { Leaf } from '../model/Leaf'
+import type { LeafCard } from '../cards/LeafCard'
+import type { Skill } from '../cards/Skill'
 
 type Props = {|
-  card: Card,
-  addExposures: (exposures: Array<Exposure>) => void,
+  skill: Skill,
 |}
 
 type State = {|
-  recalledByLeafId: {[number]: boolean},
-  recalledAtMillis: number | null,
+  // recalledByLeafId: {[number]: boolean},
+  delay: number | null, // milliseconds to answer
 |}
 
 const styles = StyleSheet.create({
@@ -29,37 +26,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'stretch',
   },
-  leaf_english: {
+  cardEnglish: {
     fontVariant: ['small-caps'],
     fontSize: 40,
     marginTop: 10,
     alignSelf: 'center', // horizontal center
   },
-  gloss_table: {
+  glossTable: {
     flex: 1,
     justifyContent: 'center', // center vertically
   },
-  gloss_table_row: {
+  glossTableRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  gloss_table_english: {
+  glossTableEnglish: {
     fontVariant: ['small-caps'],
     fontSize: 40,
     marginLeft: 10,
   },
-  gloss_table_spanish: {
+  glossTableSpanish: {
     fontSize: 40,
     fontStyle: 'italic',
     textAlign: 'right',
     marginRight: 10,
     marginLeft: 'auto', // float right
-  },
-  not_recalled: {
-    color: 'red',
-  },
-  recalled: {
-    color: 'green',
   },
 })
 
@@ -69,89 +60,86 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props)
     this.timerStartedAtMillis = new Date().getTime()
-    this.state = { recalledByLeafId: {}, recalledAtMillis: null }
+    // this.state = { recalledByLeafId: {}, recalledAtMillis: null }
+    this.state = { delay: null }
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (this.props.card !== prevProps.card) {
+    if (this.props.skill.card.cardId !== prevProps.skill.card.cardId) {
       this.timerStartedAtMillis = new Date().getTime()
-      this.setState({ recalledByLeafId: {}, recalledAtMillis: null })
+      this.setState({ delay: null })
     }
   }
 
   revealAnswer = () => {
-    const recalledByLeafId = {}
-    for (const leaf of this.props.card.getLeafs()) {
-      recalledByLeafId[leaf.leafId] = true
-    }
+    // const recalledByLeafId = {}
+    // for (const leaf of this.props.card.getLeafs()) {
+    //   recalledByLeafId[leaf.leafId] = true
+    // }
 
-    this.setState({
-      recalledByLeafId,
-      recalledAtMillis: new Date().getTime(),
-    })
+    // this.setState({
+    //   recalledByLeafId,
+    //   recalledAtMillis: new Date().getTime(),
+    // })
   }
 
-  pressGlossTableRow = (leaf: Leaf) => {
+  pressGlossTableRow = (leaf: LeafCard) => {
     this.speakSpanish([leaf])
 
-    this.setState(prevState => ({
-      recalledByLeafId: {
-        ...prevState.recalledByLeafId,
-        [leaf.leafId]: !prevState.recalledByLeafId[leaf.leafId],
-      },
-    }))
+    // this.setState(prevState => ({
+    //   recalledByLeafId: {
+    //     ...prevState.recalledByLeafId,
+    //     [leaf.leafId]: !prevState.recalledByLeafId[leaf.leafId],
+    //   },
+    // }))
   }
 
   onNext = () => {
-    const { recalledByLeafId, recalledAtMillis } = this.state
-    const allLeafIds = this.props.card.getLeafs().map(leaf => leaf.leafId)
-    const nonRecalledLeafIds =
-      allLeafIds.filter(leafId => !recalledByLeafId[leafId])
+    // const { recalledByLeafId, recalledAtMillis } = this.state
+    // const allLeafIds = this.props.card.getLeafs().map(leaf => leaf.leafId)
+    // const nonRecalledLeafIds =
+    //   allLeafIds.filter(leafId => !recalledByLeafId[leafId])
 
-    let type: ExposureType
-    let leafIds: Array<number>
-    let delay: number | null
-    if (recalledAtMillis === null) {
-      type = 'DIDNT_RECALL_ES'
-      leafIds = allLeafIds
-      delay = null
-    } else if (nonRecalledLeafIds.length === 0) {
-      type = 'RECALLED_ES'
-      leafIds = allLeafIds
-      delay = recalledAtMillis - this.timerStartedAtMillis
-    } else {
-      type = 'DIDNT_RECALL_ES'
-      leafIds = nonRecalledLeafIds
-      delay = null
-    }
+    // let type: ExposureType
+    // let leafIds: Array<number>
+    // let delay: number | null
+    // if (recalledAtMillis === null) {
+    //   type = 'DIDNT_RECALL_ES'
+    //   leafIds = allLeafIds
+    //   delay = null
+    // } else if (nonRecalledLeafIds.length === 0) {
+    //   type = 'RECALLED_ES'
+    //   leafIds = allLeafIds
+    //   delay = recalledAtMillis - this.timerStartedAtMillis
+    // } else {
+    //   type = 'DIDNT_RECALL_ES'
+    //   leafIds = nonRecalledLeafIds
+    //   delay = null
+    // }
 
-    this.props.addExposures([{
-      exposureId: 0,
-      type,
-      leafIds,
-      createdAt: this.timerStartedAtMillis / 1000,
-      delay,
-    }])
+    // this.props.addExposures([{
+    //   exposureId: 0,
+    //   type,
+    //   leafIds,
+    //   createdAt: this.timerStartedAtMillis / 1000,
+    //   delay,
+    // }])
   }
 
-  speakSpanish = (leafs: Array<Leaf>) => {
+  speakSpanish = (leafs: Array<LeafCard>) => {
     const es = leafs.map(leaf => leaf.es).join(' ').replace(/- -/g, '')
     Speech.speak(es, { language: 'es', rate: 0.5 })
   }
 
   renderGlossTable() {
-    return this.props.card.getLeafs().map(leaf =>
+    return this.props.skill.card.getLeafCards().map(leafCard =>
       <TouchableOpacity
-        key={leaf.leafId}
-        style={styles.gloss_table_row}
-        onPress={() => this.pressGlossTableRow(leaf)}>
-        <Text style={styles.gloss_table_english}>{leaf.en}</Text>
-        <Text style={[
-          styles.gloss_table_spanish,
-          this.state.recalledByLeafId[leaf.leafId] ?
-            styles.recalled : styles.not_recalled,
-        ]}>
-          {leaf.es}
+        key={leafCard.cardId}
+        style={styles.glossTableRow}
+        onPress={() => this.pressGlossTableRow(leafCard)}>
+        <Text style={styles.glossTableEnglish}>{leafCard.getGloss()}</Text>
+        <Text style={[styles.glossTableSpanish]}>
+          {leafCard.es}
         </Text>
       </TouchableOpacity>
     )
@@ -159,11 +147,12 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
   render() {
     return <View style={styles.container}>
-      <Text style={styles.leaf_english}>
-        {this.props.card.getLeafs().map(leaf => leaf.en).join(' ')}
+      <Text style={styles.cardEnglish}>
+        {this.props.skill.card.getLeafCards().map(leafCard =>
+          leafCard.getGloss()).join(' ')}
       </Text>
-      <View style={styles.gloss_table}>
-        {this.state.recalledAtMillis === null
+      <View style={styles.glossTable}>
+        {this.state.delay === null
           ? <Button
             onPress={this.revealAnswer}
             title='Tap here when you remember' />

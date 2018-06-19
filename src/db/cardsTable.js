@@ -81,7 +81,7 @@ export function selectAll(db: any): Promise<Array<CardRow>> {
         [],
         (tx, { rows: { _array } }) => resolve(_array)
       ),
-      (e: Error) => reject(`Error from SELECT FROM exposures: ${e.message}`)
+      (e: Error) => reject(`Error from SELECT FROM cards: ${e.message}`)
     )
   )
 }
@@ -89,7 +89,7 @@ export function selectAll(db: any): Promise<Array<CardRow>> {
 export function drop(db: any): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
-      tx => tx.executeSql(`DROP TABLE cards`, [], () => resolve()),
+      tx => tx.executeSql(`DROP TABLE IF EXISTS cards`, [], () => resolve()),
       (e: Error) => reject(`Error from DROP TABLE cards: ${e.message}`)
     )
   )

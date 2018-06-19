@@ -38,19 +38,29 @@ export function create(db: any): Promise<void> {
   })
 }
 
-export function insert(db: any, skillRow: SkillRow): Promise<void> {
+export function insertRows(db: any, skillRows: Array<SkillRow>): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => {
-        tx.executeSql(
-          `INSERT INTO skills (cardId, mnemonic, delay, endurance)
-            VALUES (?,?,?,?)`,
-          [skillRow.cardId,
-            skillRow.mnemonic,
-            skillRow.delay,
-            skillRow.endurance],
-          () => resolve()
-        )
+        if (skillRows.length === 0) { return resolve() }
+
+        let sql = `INSERT INTO skills
+          (cardId, mnemonic, delay, endurance)
+          VALUES `
+        const values = []
+        for (let i = 0; i < skillRows.length; i++) {
+          const skillRow: SkillRow = skillRows[i]
+
+          if (i > 0) {
+            sql += ', '
+          }
+          sql += '(?,?,?,?)'
+          values.push(skillRow.cardId)
+          values.push(skillRow.mnemonic)
+          values.push(skillRow.delay)
+          values.push(skillRow.endurance)
+        }
+        tx.executeSql(sql, values, () => resolve())
       },
       (e: Error) => reject(`Error from INSERT INTO skills: ${e.message}`)
     )
@@ -73,7 +83,7 @@ export function selectAll(db: any): Promise<Array<SkillRow>> {
 export function drop(db: any): Promise<void> {
   return new Promise((resolve, reject) =>
     db.transaction(
-      tx => tx.executeSql(`DROP TABLE skills`, [], () => resolve()),
+      tx => tx.executeSql(`DROP TABLE IF EXISTS skills`, [], () => resolve()),
       (e: Error) => reject(`Error from DROP TABLE skills: ${e.message}`)
     )
   )

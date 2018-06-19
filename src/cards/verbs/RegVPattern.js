@@ -1,5 +1,6 @@
 import type { Card } from '../Card'
 import type { InfCategory } from '../enums/InfCategory'
+import type { LeafCard } from '../LeafCard'
 import type { Number } from '../enums/Number'
 import type { Person } from '../enums/Person'
 import type { Tense } from '../enums/Tense'
@@ -12,7 +13,7 @@ export function assertRegVPattern(value: any): RegVPattern {
   return value
 }
 
-export default class RegVPattern implements Card {
+export default class RegVPattern implements Card, LeafCard {
   cardId: number
   es: string
   infCategory: InfCategory
@@ -57,7 +58,15 @@ export default class RegVPattern implements Card {
     }
   }
 
+  getGloss(): string {
+    return `(${this.number}, ${this.person}, ${this.tense})`
+  }
+
   getKey(): string {
     return `${this.infCategory}${this.number}${this.person}${this.tense}`
+  }
+
+  getLeafCards(): Array<LeafCard> {
+    return [this]
   }
 }

@@ -9,8 +9,8 @@ import {
   View,
 } from 'react-native'
 
-import type { Exposure } from '../model/Exposure'
-import type { Leaf } from '../model/Leaf'
+import type { LeafCard } from '../cards/LeafCard'
+import type { Skill } from '../cards/Skill'
 
 const styles = StyleSheet.create({
   container: {
@@ -50,8 +50,8 @@ const styles = StyleSheet.create({
 })
 
 export type Props = {|
-  leaf: Leaf,
-  addExposures: (exposures: Array<Exposure>) => void,
+  leafCard: LeafCard,
+  skill: Skill,
   editMnemonic: (mnemonic: string) => void,
 |}
 
@@ -76,7 +76,7 @@ export default class SlowSpeakGameScreen
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (this.props.leaf.leafId !== prevProps.leaf.leafId) {
+    if (this.props.leafCard.cardId !== prevProps.leafCard.cardId) {
       this.timerStartedAtMillis = new Date().getTime()
       this.setState({
         newMnemonic: null,
@@ -87,7 +87,8 @@ export default class SlowSpeakGameScreen
   }
 
   speakMnemonicAndSpanish() {
-    const { es, mnemonic } = this.props.leaf
+    const es = this.props.leafCard.es
+    const mnemonic = this.props.skill.mnemonic
     if (mnemonic !== '') {
       Speech.speak(mnemonic, { language: 'en', onDone: () =>
         Speech.speak(es, { language: 'es', rate: 0.5 })
@@ -114,15 +115,15 @@ export default class SlowSpeakGameScreen
   pressNext = () => {
     Speech.stop()
 
-    const { recalled, recalledAtMillis } = this.state
-    this.props.addExposures([{
-      exposureId: 0,
-      type: this.state.recalled ? 'RECALLED_ES' : 'DIDNT_RECALL_ES',
-      createdAt: this.timerStartedAtMillis / 1000,
-      leafIds: [this.props.leaf.leafId],
-      delay: recalled && recalledAtMillis !== null
-        ? recalledAtMillis - this.timerStartedAtMillis : null,
-    }])
+    // const { recalled, recalledAtMillis } = this.state
+    // this.props.addExposures([{
+    //   exposureId: 0,
+    //   type: this.state.recalled ? 'RECALLED_ES' : 'DIDNT_RECALL_ES',
+    //   createdAt: this.timerStartedAtMillis / 1000,
+    //   leafIds: [this.props.leaf.leafId],
+    //   delay: recalled && recalledAtMillis !== null
+    //     ? recalledAtMillis - this.timerStartedAtMillis : null,
+    // }])
   }
 
   renderAnswer() {
@@ -140,14 +141,14 @@ export default class SlowSpeakGameScreen
         onSubmitEditing={() =>
           this.props.editMnemonic(this.state.newMnemonic || '')}
         value={this.state.newMnemonic !== null ?
-          this.state.newMnemonic : this.props.leaf.mnemonic} />
-      <Text style={styles.es}>{this.props.leaf.es}</Text>
+          this.state.newMnemonic : this.props.skill.mnemonic} />
+      <Text style={styles.es}>{this.props.leafCard.es}</Text>
     </View>
   }
 
   render() {
     return <View style={styles.container}>
-      <Text style={styles.en}>{this.props.leaf.en}</Text>
+      <Text style={styles.en}>{this.props.leafCard.getGloss()}</Text>
 
       {this.state.recalledAtMillis === null
         ? <Button onPress={this.toggleRecalled} title='Tap when you remember' />

@@ -1,13 +1,9 @@
-import type { Bank } from '../bank/Bank'
-import type { Exposure } from '../model/Exposure'
-import type { Leaf } from '../model/Leaf'
+import type { BankModel } from '../cards/BankModel'
+import type { Skill } from '../cards/Skill'
 
 export type ScreenProps = {|
-  addExposures: (exposures: Array<Exposure>) => void,
-  addLeaf: (leaf: Leaf) => void,
-  deleteLeaf: (leaf: Leaf) => void,
-  editLeaf: (leaf: Leaf) => void,
+  editSkill: (skill: Skill) => void,
   exportDatabase: () => void,
   reseedDatabase: () => Promise<void>,
-  bank: Bank,
+  bankModel: BankModel,
 |}

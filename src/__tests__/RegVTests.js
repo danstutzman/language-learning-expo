@@ -6,7 +6,8 @@ it('works', () => {
   const preguntar = new Inf(0, 'pregunt-', 'ask', 'AR')
   const endsWithO = new RegVPattern(0, '-o', 'AR', 1, 1, 'PRES')
   const regV = new RegV(0, preguntar, endsWithO)
-  expect(regV.getLeafs()).toEqual([preguntar, endsWithO])
-  const es = regV.getLeafs().map(leaf => leaf.es).join(' ').replace('- -', '')
+  expect(regV.getLeafCards()).toEqual([preguntar, endsWithO])
+  const es = regV.getLeafCards().map(leaf =>
+    leaf.es).join(' ').replace('- -', '')
   expect(es).toEqual('pregunto')
 })

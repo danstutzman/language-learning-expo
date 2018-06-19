@@ -6,7 +6,7 @@ it('works', done => {
   const bank = new Bank(db)
   bank.init()
     .then(() => bank.reseedDatabase())
-    .then(() => expect(bank.exportCards()).toEqual(
+    .then(() => expect(bank.exportDatabase()).toEqual(
       `Paste in src/cards/hydrateCardSeeds.js:
 
 [{"type":"Inf","es":"pregunt-","en":"ask","infCategory":"AR"},

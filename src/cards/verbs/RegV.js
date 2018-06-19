@@ -1,5 +1,6 @@
 import type { Card } from '../Card'
 import Inf from './Inf'
+import type { LeafCard } from '../LeafCard'
 import RegVPattern from './RegVPattern'
 
 function assertNonZero(value: number): number {
@@ -35,7 +36,11 @@ export default class RegV implements Card {
     }
   }
 
-  getLeafs(): Array<any> {
+  getKey(): string {
+    return `${this.inf.getKey()}${this.pattern.getKey()}`
+  }
+
+  getLeafCards(): Array<LeafCard> {
     return [this.inf, this.pattern]
   }
 }

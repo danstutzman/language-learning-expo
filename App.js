@@ -1,14 +1,11 @@
-import { AppLoading, Asset, Font } from 'expo'
+import { AppLoading, Asset, Font, SQLite } from 'expo'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
 import { Alert, Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { email } from 'react-native-communications'
 
-import type { Bank } from './src/bank/Bank'
-import DbModel from './src/model/DbModel'
-import type { Exposure } from './src/model/Exposure'
-import type { Leaf } from './src/model/Leaf'
-import rebuildBank from './src/bank/rebuildBank'
+import Bank from './src/cards/Bank'
+import type { BankModel } from './src/cards/BankModel'
 import RootNavigation from './src/navigation/RootNavigation'
 
 const styles = StyleSheet.create({
@@ -24,20 +21,20 @@ type Props = {
 
 type State = {
   isLoadingComplete: boolean,
-  bank: Bank,
+  bankModel: BankModel,
 }
 
-export default class App extends React.PureComponent<Props, State> {
-  dbModel: DbModel
+const db = SQLite.openDatabase('db.db')
+const bank = new Bank(db)
 
+export default class App extends React.PureComponent<Props, State> {
   constructor() {
     super()
-    this.dbModel = new DbModel()
     this.state = {
       isLoadingComplete: false,
-      bank: {
-        allLeafs: [],
-        speakCardsByCategory: {},
+      bankModel: {
+        cardByCardId: {},
+        skills: [],
       }
     }
   }
@@ -52,38 +49,23 @@ export default class App extends React.PureComponent<Props, State> {
       return <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <RootNavigation
-          addLeaf={(card: Leaf) => {
-            this.dbModel.addLeaf(card)
-              .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
-          }}
-          deleteLeaf={(card: Leaf) => {
-            this.dbModel.deleteLeaf(card)
-              .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
-          }}
-          editLeaf={(card: Leaf) => {
-            this.dbModel.editLeaf(card)
-              .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
-          }}
+          editSkill={() => {}} // TODO
           exportDatabase={() => {
-            const body = this.dbModel.serializeForEmail()
+            const body = bank.exportDatabase()
             // eslint-disable-next-line no-console
             console.warn('Email body', body)
             email(null, null, null, 'Lang learning export', body)
           }}
-          addExposures={(exposures: Array<Exposure>) => {
-            this.dbModel.addExposures(exposures)
-              .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
-          }}
           reseedDatabase={() =>
-            this.dbModel.reseedDatabase()
-              .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
+            bank.reseedDatabase()
+              .then(bankModel => this.setState({ bankModel }))
               .then(() => Alert.alert(
                 'Reseed finished',
                 'Reseed finished',
                 [{ text: 'OK' }],
                 { cancelable: false }))
           }
-          bank={this.state.bank} />
+          bankModel={this.state.bankModel} />
       </View>
     }
   }
@@ -101,8 +83,8 @@ export default class App extends React.PureComponent<Props, State> {
         // to remove this if you are not using it in your app
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
-      this.dbModel.init()
-        .then(() => this.setState({ bank: rebuildBank(this.dbModel) }))
+      bank.init()
+        .then(bankModel => this.setState({ bankModel }))
     ])
   }
 }

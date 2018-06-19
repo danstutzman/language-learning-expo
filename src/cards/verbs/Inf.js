@@ -1,5 +1,6 @@
 import type { Card } from '../Card'
 import type { InfCategory } from '../enums/InfCategory'
+import type { LeafCard } from '../LeafCard'
 
 export function assertInf(value: any): Inf {
   if (typeof value !== 'object' ||
@@ -9,7 +10,7 @@ export function assertInf(value: any): Inf {
   return value
 }
 
-export default class Inf implements Card {
+export default class Inf implements Card, LeafCard {
   cardId: number
   es: string
   en: string
@@ -44,7 +45,15 @@ export default class Inf implements Card {
     }
   }
 
+  getGloss(): string {
+    return this.en
+  }
+
   getKey(): string {
     return `${this.es}${this.infCategory}`
+  }
+
+  getLeafCards(): Array<LeafCard> {
+    return [this]
   }
 }
