@@ -1,4 +1,4 @@
-import type { CardType } from '../enums/CardType'
+import type { CardType } from '../cards/enums/CardType'
 
 export type CardRow = {|
   cardId: number,

@@ -1,9 +1,9 @@
 import type { Card } from './Card'
 import Inf from './verbs/Inf'
-import type { InfCategory } from '../enums/InfCategory'
-import type { Number } from '../enums/Number'
-import type { Person } from '../enums/Person'
-import type { Tense } from '../enums/Tense'
+import type { InfCategory } from './enums/InfCategory'
+import type { Number } from './enums/Number'
+import type { Person } from './enums/Person'
+import type { Tense } from './enums/Tense'
 import RegV from './verbs/RegV'
 import RegVPattern from './verbs/RegVPattern'
 

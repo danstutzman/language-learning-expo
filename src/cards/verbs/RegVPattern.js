@@ -1,8 +1,8 @@
 import type { Card } from '../Card'
-import type { InfCategory } from '../../enums/InfCategory'
-import type { Number } from '../../enums/Number'
-import type { Person } from '../../enums/Person'
-import type { Tense } from '../../enums/Tense'
+import type { InfCategory } from '../enums/InfCategory'
+import type { Number } from '../enums/Number'
+import type { Person } from '../enums/Person'
+import type { Tense } from '../enums/Tense'
 
 export function assertRegVPattern(value: any): RegVPattern {
   if (typeof value !== 'object' ||

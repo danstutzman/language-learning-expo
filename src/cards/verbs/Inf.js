@@ -1,5 +1,5 @@
 import type { Card } from '../Card'
-import type { InfCategory } from '../../enums/InfCategory'
+import type { InfCategory } from '../enums/InfCategory'
 
 export function assertInf(value: any): Inf {
   if (typeof value !== 'object' ||
