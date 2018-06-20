@@ -49,6 +49,20 @@ const styles = StyleSheet.create({
   },
 })
 
+function formatDuration(numSeconds: number): string {
+  if (numSeconds === 0) {
+    return ''
+  } else if (numSeconds < 60) {
+    return `${numSeconds}s`
+  } else if (numSeconds < 60 * 60) {
+    return `${Math.floor(numSeconds / 60)}m`
+  } else if (numSeconds < 24 * 60 * 60) {
+    return `${Math.floor(numSeconds / 60 * 60)}h`
+  } else {
+    return `${Math.floor(numSeconds / 24 * 60 * 60)}d`
+  }
+}
+
 export default class SpeakSummaryScreen extends React.PureComponent<Props> {
   renderListItem = (item: { item: Skill }) => {
     const skill = item.item
@@ -66,7 +80,9 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
           ? Math.floor(skill.delay / 1000)
           : Math.floor(skill.delay / 100) / 10}
       </Text>
-      <Text style={styles.listItemEndurance}>{skill.endurance}</Text>
+      <Text style={styles.listItemEndurance}>
+        {formatDuration(skill.endurance)}
+      </Text>
     </TouchableOpacity>
   }
 
