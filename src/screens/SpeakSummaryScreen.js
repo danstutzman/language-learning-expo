@@ -57,9 +57,9 @@ function formatDuration(numSeconds: number): string {
   } else if (numSeconds < 60 * 60) {
     return `${Math.floor(numSeconds / 60)}m`
   } else if (numSeconds < 24 * 60 * 60) {
-    return `${Math.floor(numSeconds / 60 * 60)}h`
+    return `${Math.floor(numSeconds / (60 * 60))}h`
   } else {
-    return `${Math.floor(numSeconds / 24 * 60 * 60)}d`
+    return `${Math.floor(numSeconds / (24 * 60 * 60))}d`
   }
 }
 
