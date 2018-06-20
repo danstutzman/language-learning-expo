@@ -12,6 +12,7 @@ import type { Card } from './Card'
 import type { CardRow } from '../db/cardsTable'
 import type { CardSeed } from './seeds/cardSeeds'
 import * as cardsTable from '../db/cardsTable'
+import { DELAY_THRESHOLD } from './Skill'
 import hydrateCardSeeds from './seeds/hydrateCardSeeds'
 import hydrateSkillSeeds from './seeds/hydrateSkillSeeds'
 import IClause from '../cards/IClause'
@@ -76,8 +77,8 @@ function rowToSkill(row: SkillRow, cardByCardId: {[number]: Card}): Skill {
     throw new Error(`Can't find Card for cardId ${row.cardId}`)
   }
 
-  const { mnemonic, delay, endurance, lastTestAt } = row
-  return { card, cardId: row.cardId, mnemonic, delay, endurance, lastTestAt }
+  const { mnemonic, delay, endurance, lastCorrectAt } = row
+  return { card, cardId: row.cardId, mnemonic, delay, endurance, lastCorrectAt }
 }
 
 export function cardToRow(card: Card): CardRow {
@@ -89,8 +90,8 @@ export function cardToRow(card: Card): CardRow {
 }
 
 export function skillToRow(skill: Skill): SkillRow {
-  const { cardId, mnemonic, delay, endurance, lastTestAt } = skill
-  return { cardId, mnemonic, delay, endurance, lastTestAt }
+  const { cardId, mnemonic, delay, endurance, lastCorrectAt } = skill
+  return { cardId, mnemonic, delay, endurance, lastCorrectAt }
 }
 
 export default class Bank {
@@ -185,13 +186,13 @@ export default class Bank {
     const skills = (Object.values(this.bankModel.skillByCardId): any)
     const skillsJson = JSON.stringify(skills.map(skill => {
       const { card } = skill
-      const { delay, endurance, lastTestAt, mnemonic } = skill
+      const { delay, endurance, lastCorrectAt, mnemonic } = skill
       return {
         cardType: card.constructor.name,
         cardKey: card.getKey(),
         delay,
         endurance,
-        lastTestAt,
+        lastCorrectAt,
         mnemonic,
       }
     })).replace(/,{"cardType"/g, ',\n{"cardType"')
@@ -214,27 +215,49 @@ export default class Bank {
   updateSkills = (baseUpdates: Array<SkillUpdate>): Promise<BankModel> => {
     const { parentCardsByCardId, skillByCardId } = this.bankModel
 
-    const allUpdates = []
-    for (const baseUpdate of baseUpdates) {
-      allUpdates.push(baseUpdate)
+    const updateByCardId: {[number]: SkillUpdate} = {}
+    let updatesToProcess = baseUpdates.slice() // copy
+    while (updatesToProcess.length > 0) {
+      const newUpdatesToProcess = []
+      for (const update of updatesToProcess) {
+        const { cardId, delay } = update
 
-      if (baseUpdate.delay !== undefined) {
-        const parentCards = parentCardsByCardId[baseUpdate.cardId] || []
-        for (const parent of parentCards) {
-          let totalDelay = 0
-          for (const sibling of parent.getChildren()) {
-            if (sibling.cardId === baseUpdate.cardId) {
-              totalDelay += baseUpdate.delay
-            } else {
-              totalDelay += skillByCardId[sibling.cardId].delay
+        updateByCardId[cardId] = update
+
+        if (delay !== undefined) {
+          for (const parent of parentCardsByCardId[cardId] || []) {
+            let totalDelay = 0
+            for (const sibling of parent.getChildren()) {
+              totalDelay += (updateByCardId[sibling.cardId] === undefined)
+                ? skillByCardId[sibling.cardId].delay
+                : (updateByCardId[sibling.cardId].delay ||
+                  skillByCardId[sibling.cardId].delay)
             }
+
+            let newUpdate
+            if (totalDelay >= DELAY_THRESHOLD) {
+              newUpdate = {
+                cardId: parent.cardId,
+                delay: totalDelay,
+                endurance: 0,
+                lastCorrectAt: 0,
+              }
+            } else {
+              newUpdate = {
+                cardId: parent.cardId,
+                delay: totalDelay,
+              }
+            }
+            newUpdatesToProcess.push(newUpdate)
+            updateByCardId[parent.cardId] = newUpdate
           }
-          allUpdates.push({ cardId: parent.cardId, delay: totalDelay })
         }
       }
+      updatesToProcess = newUpdatesToProcess
     }
+    const allUpdates: Array<SkillUpdate> = (Object.values(updateByCardId): any)
 
-    const newSkillByCardId = { ...this.bankModel.skillByCardId } // copy0
+    const newSkillByCardId = { ...this.bankModel.skillByCardId } // copy
     for (const update of allUpdates) {
       const oldSkill = skillByCardId[update.cardId]
       if (oldSkill === undefined) {

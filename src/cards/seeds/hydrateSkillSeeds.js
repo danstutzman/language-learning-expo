@@ -41,7 +41,7 @@ export default function hydrateSkillSeeds(
       mnemonic,
       delay,
       endurance,
-      lastTestAt,
+      lastCorrectAt,
     } = skillSeed
 
     const cardByKey = cardByTypeAndKey[cardType]
@@ -59,7 +59,7 @@ export default function hydrateSkillSeeds(
       mnemonic,
       delay,
       endurance,
-      lastTestAt,
+      lastCorrectAt,
     }
   })
 }

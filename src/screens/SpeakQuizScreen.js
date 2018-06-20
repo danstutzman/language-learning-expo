@@ -121,7 +121,12 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
       if (recalledByLeafCardId[card.cardId]) {
         return []
       } else {
-        return [{ cardId: card.cardId, delay: DELAY_THRESHOLD }]
+        return [{
+          cardId: card.cardId,
+          delay: DELAY_THRESHOLD,
+          lastCorrectAt: 0,
+          endurance: 0,
+        }]
       }
     } else {
       return children.map(child => this._gatherFailedSkillUpdates(child))
@@ -136,9 +141,9 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
       !recalledByLeafCardId[glossRow.cardId])
     if (incorrectRows.length === 0) {
       let enduranceUpdate = {}
-      if (skill.lastTestAt !== 0) {
+      if (skill.lastCorrectAt !== 0) {
         const newEndurance = Math.floor(
-          this.timerStartedAtMillis / 1000 - skill.lastTestAt)
+          this.timerStartedAtMillis / 1000 - skill.lastCorrectAt)
         if (newEndurance > skill.endurance) {
           enduranceUpdate = { endurance: newEndurance }
         }
@@ -147,7 +152,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
       updateSkills([{
         cardId: skill.cardId,
         delay: assertNotNull(delay),
-        lastTestAt: this.timerStartedAtMillis / 1000,
+        lastCorrectAt: this.timerStartedAtMillis / 1000,
         ...enduranceUpdate,
       }])
     } else {

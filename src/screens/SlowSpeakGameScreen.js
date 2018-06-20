@@ -129,19 +129,23 @@ export default class SlowSpeakGameScreen
     const { leafCard, skill } = this.props
 
     let enduranceUpdate = {}
-    if (skill.lastTestAt !== 0) {
-      const newEndurance =
-        Math.floor(timerStartedAtMillis / 1000 - skill.lastTestAt)
-      if (newEndurance > skill.endurance) {
-        enduranceUpdate = { endurance: newEndurance }
+    if (recalled) {
+      if (skill.lastCorrectAt !== 0) {
+        const newEndurance =
+          Math.floor(timerStartedAtMillis / 1000 - skill.lastCorrectAt)
+        if (newEndurance > skill.endurance) {
+          enduranceUpdate = { endurance: newEndurance }
+        }
       }
+    } else {
+      enduranceUpdate = { endurance: 0 }
     }
 
     this.props.updateSkills([{
       cardId: leafCard.cardId,
       delay: (recalled && recalledAtMillis !== null)
         ? recalledAtMillis - timerStartedAtMillis : DELAY_THRESHOLD,
-      lastTestAt: timerStartedAtMillis / 1000,
+      lastCorrectAt: recalled ? (timerStartedAtMillis / 1000) : 0,
       ...enduranceUpdate,
     }])
   }
