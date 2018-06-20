@@ -177,11 +177,11 @@ export default class SlowSpeakGameScreen
 
   render() {
     return <View style={styles.container}>
-        {this.props.leafCard instanceof RegVPattern
-          ? this.renderQuestionForRegVPattern()
-          : <Text style={styles.en}>
-              {this.props.leafCard.getQuizQuestion()}
-            </Text>}
+      {this.props.leafCard instanceof RegVPattern
+        ? this.renderQuestionForRegVPattern()
+        : <Text style={styles.en}>
+          {this.props.leafCard.getQuizQuestion()}
+        </Text>}
 
       {this.state.recalledAtMillis === null
         ? <Button onPress={this.toggleRecalled} title='Tap when you remember' />
