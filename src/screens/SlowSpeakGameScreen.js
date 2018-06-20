@@ -11,8 +11,11 @@ import {
 
 import { DELAY_THRESHOLD } from '../cards/Skill'
 import type { LeafCard } from '../cards/LeafCard'
+import { PERSON_TO_DESCRIPTION } from '../cards/enums/Person'
+import RegVPattern from '../cards/verbs/RegVPattern'
 import type { Skill } from '../cards/Skill'
 import type { SkillUpdate } from '../db/SkillUpdate'
+import { TENSE_TO_DESCRIPTION } from '../cards/enums/Tense'
 
 const styles = StyleSheet.create({
   container: {
@@ -162,9 +165,23 @@ export default class SlowSpeakGameScreen
     </View>
   }
 
+  renderQuestionForRegVPattern() {
+    const pattern: RegVPattern = (this.props.leafCard: any)
+    return <View>
+      <Text>What's the ending for</Text>
+      <Text>* {pattern.infCategory} verb</Text>
+      <Text>* {PERSON_TO_DESCRIPTION[pattern.person.toString()]} person</Text>
+      <Text>* {TENSE_TO_DESCRIPTION[pattern.tense]}</Text>
+    </View>
+  }
+
   render() {
     return <View style={styles.container}>
-      <Text style={styles.en}>{this.props.leafCard.getQuizQuestion()}</Text>
+        {this.props.leafCard instanceof RegVPattern
+          ? this.renderQuestionForRegVPattern()
+          : <Text style={styles.en}>
+              {this.props.leafCard.getQuizQuestion()}
+            </Text>}
 
       {this.state.recalledAtMillis === null
         ? <Button onPress={this.toggleRecalled} title='Tap when you remember' />
