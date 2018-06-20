@@ -168,7 +168,7 @@ export default class SlowSpeakGameScreen
   renderQuestionForRegVPattern() {
     const pattern: RegVPattern = (this.props.leafCard: any)
     return <View>
-      <Text>What's the ending for</Text>
+      <Text>Say the ending for:</Text>
       <Text>* {pattern.infCategory} verb</Text>
       <Text>* {PERSON_TO_DESCRIPTION[pattern.person.toString()]} person</Text>
       <Text>* {TENSE_TO_DESCRIPTION[pattern.tense]}</Text>
