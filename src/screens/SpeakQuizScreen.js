@@ -88,9 +88,13 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   revealAnswer = () => {
+    const glossRows = this.props.skill.card.getGlossRows()
+
+    this.speakSpanish(glossRows)
+
     const recalledByLeafCardId = {}
-    for (const leafCard of this.props.skill.card.getGlossRows()) {
-      recalledByLeafCardId[leafCard.cardId] = true
+    for (const glossRow of glossRows) {
+      recalledByLeafCardId[glossRow.cardId] = true
     }
 
     this.setState({
