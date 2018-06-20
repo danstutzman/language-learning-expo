@@ -3,6 +3,7 @@ import type { Card } from '../Card'
 import type { CardSeed } from './cardSeeds'
 import IClause from '../IClause'
 import Inf from '../verbs/Inf'
+import NP from '../NP'
 import RegV from '../verbs/RegV'
 import RegVPattern from '../verbs/RegVPattern'
 
@@ -54,17 +55,37 @@ export default function hydrateCardSeeds(
     }
   }
 
+  const npByKey: {[string]: NP} = {}
+  for (const seedUntyped of cardSeeds) {
+    if (seedUntyped.type === 'NP') {
+      const seed = (seedUntyped: any)
+      const { en, es } = seed
+
+      const np = new NP(cardId++, es, en)
+      npByKey[np.getKey()] = np
+    }
+  }
+
   const iClauseByKey: {[string]: IClause} = {}
   for (const seedUntyped of cardSeeds) {
     if (seedUntyped.type === 'IClause') {
       const seed = (seedUntyped: any)
-      const { vKey } = seed
+      const { agentKey, vKey } = seed
+
+      let agent = null
+      if (agentKey !== null) {
+        agent = npByKey[agentKey]
+        if (agent === undefined) {
+          throw new Error(`Can't find NP for key=${agentKey}`)
+        }
+      }
 
       const regV = regVByKey[vKey]
       if (regV === undefined) {
         throw new Error(`Can't find RegV for key=${vKey}`)
       }
-      const iClause = new IClause(cardId++, null, regV)
+
+      const iClause = new IClause(cardId++, agent, regV)
       iClauseByKey[iClause.getKey()] = iClause
     }
   }
@@ -72,6 +93,7 @@ export default function hydrateCardSeeds(
   return (Object.values(infByKey)
     .concat(Object.values(regVPatternByKey))
     .concat(Object.values(regVByKey))
+    .concat(Object.values(npByKey))
     .concat(Object.values(iClauseByKey))
   : any)
 }

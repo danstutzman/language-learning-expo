@@ -1,6 +1,7 @@
 import { assertCardType } from './enums/CardType'
 import { assertInf } from '../cards/verbs/Inf'
 import { assertInfCategory } from './enums/InfCategory'
+import { assertNP } from '../cards/NP'
 import { assertNumber } from './enums/Number'
 import { assertPerson } from './enums/Person'
 import { assertRegV } from '../cards/verbs/RegV'
@@ -15,6 +16,7 @@ import hydrateCardSeeds from './seeds/hydrateCardSeeds'
 import hydrateSkillSeeds from './seeds/hydrateSkillSeeds'
 import IClause from '../cards/IClause'
 import Inf from '../cards/verbs/Inf'
+import NP from '../cards/NP'
 import RegV from '../cards/verbs/RegV'
 import RegVPattern from '../cards/verbs/RegVPattern'
 import type { Skill } from './Skill'
@@ -39,6 +41,11 @@ function rowToCard(row: CardRow, cardByCardId: {[number]: Card}): Card {
       assertString(content.enPresent),
       assertString(content.enPast),
       assertInfCategory(content.infCategory))
+  } else if (row.type === 'NP') {
+    return new NP(
+      row.cardId,
+      assertString(content.es),
+      assertString(content.en))
   } else if (row.type === 'RegV') {
     return new RegV(
       row.cardId,
@@ -55,7 +62,7 @@ function rowToCard(row: CardRow, cardByCardId: {[number]: Card}): Card {
   } else if (row.type === 'IClause') {
     return new IClause(
       row.cardId,
-      null,
+      (content.agent === null) ? null : assertNP(cardByCardId[content.agent]),
       assertRegV(cardByCardId[content.v]),
     )
   } else {

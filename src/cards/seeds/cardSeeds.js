@@ -17,6 +17,12 @@ export type InfSeed = {|
   infCategory: InfCategory,
 |}
 
+export type NPSeed = {|
+  type: 'NP',
+  es: string,
+  en: string,
+|}
+
 export type RegVSeed = {|
   type: 'RegV',
   infKey: string,
@@ -32,7 +38,11 @@ export type RegVPatternSeed = {|
   tense: Tense,
 |}
 
-export type CardSeed = IClauseSeed | InfSeed | RegVSeed | RegVPatternSeed
+export type CardSeed = IClauseSeed
+  | InfSeed
+  | NPSeed
+  | RegVSeed
+  | RegVPatternSeed
 
 export default ([
   { type: 'Inf',
@@ -113,8 +123,12 @@ export default ([
     infKey: 'preguntar',
     patternKey: 'AR13PRET',
   },
+  { type: 'NP',
+    en: 'I',
+    es: 'yo',
+  },
   { type: 'IClause',
-    agentKey: null,
+    agentKey: 'yo',
     vKey: 'comerER11PRES',
   },
 ]: Array<CardSeed>)

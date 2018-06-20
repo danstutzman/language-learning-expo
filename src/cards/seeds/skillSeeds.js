@@ -28,7 +28,8 @@ export default (
 {"cardType":"RegV","cardKey":"comerER13PRES","delay":1101,"endurance":0,"lastTestAt":1529512778.916,"mnemonic":""},
 {"cardType":"RegV","cardKey":"preguntarAR11PRET","delay":1654,"endurance":0,"lastTestAt":1529512783.863,"mnemonic":""},
 {"cardType":"RegV","cardKey":"preguntarAR13PRET","delay":1413,"endurance":0,"lastTestAt":1529512788.423,"mnemonic":""},
-{"cardType":"IClause","cardKey":"agent= v=comerER11PRES","delay":0,"endurance":0,"lastTestAt":0,"mnemonic":""}]
+{"cardType":"NP","cardKey":"yo","delay":0,"endurance":0,"lastTestAt":0,"mnemonic":""},
+{"cardType":"IClause","cardKey":"agent=yo v=comerER11PRES","delay":0,"endurance":0,"lastTestAt":0,"mnemonic":""}]
 
 .map((partialSeed: any) => {
   const {

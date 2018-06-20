@@ -12,6 +12,13 @@ function capitalizeFirstLetterOfFirstWord(words: Array<string>): Array<string> {
   return [capitalizeFirstLetter(words[0])].concat(words.slice(1))
 }
 
+export function assertIClause(value: any): IClause {
+  if (!(value instanceof IClause)) {
+    throw new Error(`Expected IClause but got ${JSON.stringify(value)}`)
+  }
+  return value
+}
+
 export default class IClause implements Card {
   cardId: number
   agent: NP | null

@@ -2,6 +2,13 @@ import type { Card } from './Card'
 import type { GlossRow } from './GlossRow'
 import type { LeafCard } from './LeafCard'
 
+export function assertNP(value: any): NP {
+  if (!(value instanceof NP)) {
+    throw new Error(`Expected NP but got ${JSON.stringify(value)}`)
+  }
+  return value
+}
+
 export default class NP implements Card, LeafCard {
   cardId: number
   es: string

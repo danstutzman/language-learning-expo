@@ -1,6 +1,7 @@
 import type { Card } from '../Card'
 import IClause from '../IClause'
 import Inf from '../verbs/Inf'
+import NP from '../NP'
 import RegV from '../verbs/RegV'
 import RegVPattern from '../verbs/RegVPattern'
 import type { Skill } from '../Skill'
@@ -13,6 +14,7 @@ export default function hydrateSkillSeeds(
   const cardByTypeAndKey = {
     IClause: {},
     Inf: {},
+    NP: {},
     RegVPattern: {},
     RegV: {},
   }
@@ -21,6 +23,8 @@ export default function hydrateSkillSeeds(
       cardByTypeAndKey.IClause[card.getKey()] = card
     } else if (card instanceof Inf) {
       cardByTypeAndKey.Inf[card.getKey()] = card
+    } else if (card instanceof NP) {
+      cardByTypeAndKey.NP[card.getKey()] = card
     } else if (card instanceof RegVPattern) {
       cardByTypeAndKey.RegVPattern[card.getKey()] = card
     } else if (card instanceof RegV) {

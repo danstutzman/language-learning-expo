@@ -1,8 +1,13 @@
-export type CardType = 'Inf' | 'RegV' | 'RegVPattern'
+export type CardType = 'IClause'
+  | 'Inf'
+  | 'NP'
+  | 'RegV'
+  | 'RegVPattern'
 
 const CARD_TYPES = {
   IClause: true,
   Inf: true,
+  NP: true,
   RegV: true,
   RegVPattern: true,
 }
