@@ -8,11 +8,15 @@ import {
   View,
 } from 'react-native'
 
+import type { Card } from '../cards/Card'
+import { DELAY_THRESHOLD } from '../cards/Skill'
 import type { GlossRow } from '../cards/GlossRow'
 import type { Skill } from '../cards/Skill'
+import type { SkillUpdate } from '../db/SkillUpdate'
 
 type Props = {|
   skill: Skill,
+  updateSkills: (Array<SkillUpdate>) => Promise<void>,
 |}
 
 type State = {|
@@ -60,6 +64,13 @@ const styles = StyleSheet.create({
   },
 })
 
+function assertNotNull(value: number | null): number {
+  if (value === null) {
+    throw new Error('Unexpected null')
+  }
+  return value
+}
+
 export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   timerStartedAtMillis: number
 
@@ -70,7 +81,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (this.props.skill.card.cardId !== prevProps.skill.card.cardId) {
+    if (this.props.skill.cardId !== prevProps.skill.cardId) {
       this.timerStartedAtMillis = new Date().getTime()
       this.setState({ delay: null })
     }
@@ -84,7 +95,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
     this.setState({
       recalledByLeafCardId,
-      delay: new Date().getTime(),
+      delay: new Date().getTime() - this.timerStartedAtMillis,
     })
   }
 
@@ -99,36 +110,31 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
     }))
   }
 
+  _gatherFailedSkillUpdates(card: Card) {
+    const { recalledByLeafCardId } = this.state
+    const children = card.getChildren()
+    if (children.length === 0) {
+      if (recalledByLeafCardId[card.cardId]) {
+        return []
+      } else {
+        return [{ cardId: card.cardId, delay: DELAY_THRESHOLD }]
+      }
+    } else {
+      return children.map(child => this._gatherFailedSkillUpdates(child))
+        .reduce((accum, item) => accum.concat(item), [])
+    }
+  }
+
   onNext = () => {
-    // const { recalledByLeafId, recalledAtMillis } = this.state
-    // const allLeafIds = this.props.card.getLeafs().map(leaf => leaf.leafId)
-    // const nonRecalledLeafIds =
-    //   allLeafIds.filter(leafId => !recalledByLeafId[leafId])
-
-    // let type: ExposureType
-    // let leafIds: Array<number>
-    // let delay: number | null
-    // if (recalledAtMillis === null) {
-    //   type = 'DIDNT_RECALL_ES'
-    //   leafIds = allLeafIds
-    //   delay = null
-    // } else if (nonRecalledLeafIds.length === 0) {
-    //   type = 'RECALLED_ES'
-    //   leafIds = allLeafIds
-    //   delay = recalledAtMillis - this.timerStartedAtMillis
-    // } else {
-    //   type = 'DIDNT_RECALL_ES'
-    //   leafIds = nonRecalledLeafIds
-    //   delay = null
-    // }
-
-    // this.props.addExposures([{
-    //   exposureId: 0,
-    //   type,
-    //   leafIds,
-    //   createdAt: this.timerStartedAtMillis / 1000,
-    //   delay,
-    // }])
+    const { skill, updateSkills } = this.props
+    const { recalledByLeafCardId, delay } = this.state
+    const incorrectRows = skill.card.getGlossRows().filter(glossRow =>
+      !recalledByLeafCardId[glossRow.cardId])
+    if (incorrectRows.length === 0) {
+      updateSkills([{ cardId: skill.cardId, delay: assertNotNull(delay) }])
+    } else {
+      updateSkills(this._gatherFailedSkillUpdates(this.props.skill.card))
+    }
   }
 
   speakSpanish = (glossRows: Array<GlossRow>) => {

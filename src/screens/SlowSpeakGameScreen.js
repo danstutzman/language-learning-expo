@@ -9,8 +9,10 @@ import {
   View,
 } from 'react-native'
 
+import { DELAY_THRESHOLD } from '../cards/Skill'
 import type { LeafCard } from '../cards/LeafCard'
 import type { Skill } from '../cards/Skill'
+import type { SkillUpdate } from '../db/SkillUpdate'
 
 const styles = StyleSheet.create({
   container: {
@@ -52,7 +54,7 @@ const styles = StyleSheet.create({
 export type Props = {|
   leafCard: LeafCard,
   skill: Skill,
-  editMnemonic: (mnemonic: string) => void,
+  updateSkills: (Array<SkillUpdate>) => Promise<void>,
 |}
 
 export type State = {|
@@ -86,6 +88,9 @@ export default class SlowSpeakGameScreen
     }
   }
 
+  onMnemonicSubmitEditing = (mnemonic: string) =>
+    this.props.updateSkills([{ cardId: this.props.leafCard.cardId, mnemonic }])
+
   speakMnemonicAndSpanish() {
     const es = this.props.leafCard.getGlossRow().es
     const mnemonic = this.props.skill.mnemonic
@@ -116,15 +121,12 @@ export default class SlowSpeakGameScreen
   pressNext = () => {
     Speech.stop()
 
-    // const { recalled, recalledAtMillis } = this.state
-    // this.props.addExposures([{
-    //   exposureId: 0,
-    //   type: this.state.recalled ? 'RECALLED_ES' : 'DIDNT_RECALL_ES',
-    //   createdAt: this.timerStartedAtMillis / 1000,
-    //   leafIds: [this.props.leaf.leafId],
-    //   delay: recalled && recalledAtMillis !== null
-    //     ? recalledAtMillis - this.timerStartedAtMillis : null,
-    // }])
+    const { recalled, recalledAtMillis } = this.state
+    this.props.updateSkills([{
+      cardId: this.props.leafCard.cardId,
+      delay: recalled && recalledAtMillis !== null
+        ? recalledAtMillis - this.timerStartedAtMillis : DELAY_THRESHOLD,
+    }])
   }
 
   renderAnswer() {
@@ -139,8 +141,7 @@ export default class SlowSpeakGameScreen
         blurOnSubmit={true} // makes Return submit instead of insert LF
         onChangeText={(newMnemonic: string) =>
           this.setState({ newMnemonic })}
-        onSubmitEditing={() =>
-          this.props.editMnemonic(this.state.newMnemonic || '')}
+        onSubmitEditing={this.onMnemonicSubmitEditing}
         value={this.state.newMnemonic !== null ?
           this.state.newMnemonic : this.props.skill.mnemonic} />
       <Text style={styles.es}>{this.props.leafCard.getGlossRow().es}</Text>

@@ -1,9 +1,9 @@
+import type { SkillUpdate } from './SkillUpdate'
+
 export type SkillRow = {|
   cardId: number,
   mnemonic: string,
-  delay: number, // estimated milliseconds to recall; 0 if incorrect answer
-
-  // seconds between timestamp of 2nd last and last test; 0 if not two answers
+  delay: number,
   endurance: number,
 |}
 
@@ -76,6 +76,37 @@ export function selectAll(db: any): Promise<Array<SkillRow>> {
         (tx, { rows: { _array } }) => resolve(_array)
       ),
       (e: Error) => reject(`Error from SELECT FROM skills: ${e.message}`)
+    )
+  )
+}
+
+export function updateRow(db: any, skillUpdate: SkillUpdate): Promise<void> {
+  return new Promise((resolve, reject) =>
+    db.transaction(
+      tx => {
+        const fields = []
+        const values = []
+        if (skillUpdate.mnemonic !== undefined) {
+          fields.push('mnemonic=?')
+          values.push(skillUpdate.mnemonic)
+        }
+        if (skillUpdate.delay !== undefined) {
+          fields.push('delay=?')
+          values.push(skillUpdate.delay)
+        }
+        if (skillUpdate.endurance !== undefined) {
+          fields.push('endurance=?')
+          values.push(skillUpdate.endurance)
+        }
+        values.push(skillUpdate.cardId)
+
+        tx.executeSql(
+          `UPDATE skills SET ${fields.join(',')} WHERE cardId=?`,
+          values,
+          (tx, { rows: { _array } }) => resolve(_array)
+        )
+      },
+      (e: Error) => reject(`Error from UPDATE skills: ${e.message}`)
     )
   )
 }

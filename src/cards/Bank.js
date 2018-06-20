@@ -17,6 +17,7 @@ import RegVPattern from '../cards/verbs/RegVPattern'
 import type { Seed } from './seeds/seeds'
 import type { Skill } from './Skill'
 import type { SkillRow } from '../db/skillsTable'
+import type { SkillUpdate } from '../db/SkillUpdate'
 import * as skillsTable from '../db/skillsTable'
 
 function assertString(value: any): string {
@@ -60,7 +61,7 @@ function rowToSkill(row: SkillRow, cardByCardId: {[number]: Card}): Skill {
   }
 
   const { mnemonic, delay, endurance } = row
-  return { card, mnemonic, delay, endurance }
+  return { card, cardId: row.cardId, mnemonic, delay, endurance }
 }
 
 export function cardToRow(card: Card): CardRow {
@@ -121,34 +122,43 @@ export default class Bank {
   _loadFromCardsTable = (): Promise<void> =>
     cardsTable.selectAll(this.db)
       .then((rows: Array<CardRow>) => {
-        this.bankModel = {
-          cardByCardId: {},
-          skills: [],
-        }
-        const { cardByCardId } = this.bankModel
+        const cardByCardId: {[number]: Card} = {}
         for (const row of rows) {
-          this.bankModel.cardByCardId[row.cardId] = rowToCard(row, cardByCardId)
+          cardByCardId[row.cardId] = rowToCard(row, cardByCardId)
+        }
+
+        this.bankModel = {
+          cardByCardId,
+          parentCardsByCardId: {},
+          skillByCardId: {},
         }
       })
 
   _loadFromSkillsTable = (): Promise<void> =>
     skillsTable.selectAll(this.db)
       .then((skillRows: Array<SkillRow>) => {
-        this.bankModel.skills = skillRows.map(skillRow =>
-          rowToSkill(skillRow, this.bankModel.cardByCardId))
+        const skillByCardId: {[number]: Skill} = {}
+        for (const skillRow of skillRows) {
+          skillByCardId[skillRow.cardId] =
+            rowToSkill(skillRow, this.bankModel.cardByCardId)
+        }
+
+        const parentCardsByCardId: {[number]: Array<Card>} = {}
+        for (const card of (Object.values(this.bankModel.cardByCardId): any)) {
+          for (const childCard of card.getChildren()) {
+            if (parentCardsByCardId[childCard.cardId] === undefined) {
+              parentCardsByCardId[childCard.cardId] = []
+            }
+            parentCardsByCardId[childCard.cardId].push(card)
+          }
+        }
+
+        this.bankModel = {
+          ...this.bankModel,
+          skillByCardId,
+          parentCardsByCardId,
+        }
       })
-
-  // addCard = (card: Card): Promise<void> =>
-  //   cardsTable.insertRow(this.db, card)
-  //     .then(card => this.cardByCardId[card.cardId] = card)
-
-  // deleteCard = (card: Card): Promise<void> =>
-  //   cardsTable.deleteRow(this.db, card)
-  //     .then(() => delete this.cardByCardId[card.cardId])
-
-  // editCard = (card: Card): Promise<void> =>
-  //   cardsTable.updateRow(this.db, card)
-  //     .then(() => this.cardByCardId[card.cardId] = card)
 
   exportDatabase = (): string => {
     const cards: Array<Card> = (Object.values(this.bankModel.cardByCardId): any)
@@ -165,4 +175,45 @@ export default class Bank {
       .then(this._loadFromCardsTable)
       .then(this._loadFromSkillsTable)
       .then(() => this.bankModel)
+
+  updateSkills = (baseUpdates: Array<SkillUpdate>): Promise<BankModel> => {
+    const { parentCardsByCardId, skillByCardId } = this.bankModel
+
+    const allUpdates = []
+    for (const baseUpdate of baseUpdates) {
+      allUpdates.push(baseUpdate)
+
+      if (baseUpdate.delay !== undefined) {
+        const parentCards = parentCardsByCardId[baseUpdate.cardId]
+        if (parentCards === undefined) {
+          throw new Error(`Can't find parents for cardId ${baseUpdate.cardId}`)
+        }
+        for (const parent of parentCards) {
+          let totalDelay = 0
+          for (const sibling of parent.getChildren()) {
+            if (sibling.cardId === baseUpdate.cardId) {
+              totalDelay += baseUpdate.delay
+            } else {
+              totalDelay += skillByCardId[sibling.cardId].delay
+            }
+          }
+          allUpdates.push({ cardId: parent.cardId, delay: totalDelay })
+        }
+      }
+    }
+
+    const newSkillByCardId = { ...this.bankModel.skillByCardId } // copy0
+    for (const update of allUpdates) {
+      const oldSkill = skillByCardId[update.cardId]
+      if (oldSkill === undefined) {
+        throw new Error(`Can't find skill for cardId=${update.cardId}`)
+      }
+      newSkillByCardId[update.cardId] = { ...oldSkill, ...update }
+    }
+    this.bankModel = { ...this.bankModel, skillByCardId: newSkillByCardId }
+
+    return Promise.all(allUpdates.map(update =>
+      skillsTable.updateRow(this.db, update)))
+      .then(() => this.bankModel)
+  }
 }

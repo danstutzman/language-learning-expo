@@ -25,11 +25,9 @@ const SpeakStack = createStackNavigator({
   SpeakQuiz: {
     screen: (args: { navigation: any, screenProps: ScreenProps }) => {
       const { cardId } = args.navigation.state.params
-      const { bankModel, editSkill } = args.screenProps
+      const { bankModel, updateSkills } = args.screenProps
 
-      // const topSkill = bankModel.skills[0]
-      const topSkill = bankModel.skills.find(skill =>
-        skill.card.cardId === cardId)
+      const topSkill = bankModel.skillByCardId[cardId]
       if (topSkill === undefined) {
         return <Text>No skills</Text>
       } else if (typeof (topSkill.card: any).getGlossRow !== 'undefined') {
@@ -37,10 +35,11 @@ const SpeakStack = createStackNavigator({
         return <SlowSpeakGameScreen
           leafCard={leafCard}
           skill={topSkill}
-          editMnemonic={(mnemonic: string) =>
-            editSkill({ ...topSkill, mnemonic })} />
+          updateSkills={updateSkills} />
       } else {
-        return <SpeakQuizScreen skill={topSkill} />
+        return <SpeakQuizScreen
+          skill={topSkill}
+          updateSkills={updateSkills} />
       }
     },
     navigationOptions: (args: {navigation: any, screenProps: ScreenProps}) => {

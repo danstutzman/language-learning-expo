@@ -38,23 +38,24 @@ const styles = StyleSheet.create({
   listItemEn: {
     fontSize: 24,
     paddingRight: 10,
-    width: 40,
+    width: 100,
     textAlign: 'right',
   },
 })
 
 export default class SpeakSummaryScreen extends React.PureComponent<Props> {
   renderListItem = (item: { item: Skill }) => {
-    const { card } = item.item
-    const es = card.getGlossRows().map(row =>
+    const skill = item.item
+    const { cardId } = skill
+    const es = skill.card.getGlossRows().map(row =>
       row.es).join(' ').replace('- -', '')
+
     return <TouchableOpacity
-      key={card.cardId}
+      key={cardId}
       style={styles.listItem}
-      onPress={() => this.props.startSpeakQuiz(card.cardId)}>
-      <Text style={styles.listItemEs}>
-        {`${card.constructor.name} ${es}`}
-      </Text>
+      onPress={() => this.props.startSpeakQuiz(cardId)}>
+      <Text style={styles.listItemEs}>{cardId} {es}</Text>
+      <Text style={styles.listItemEn}>{skill.delay}</Text>
     </TouchableOpacity>
   }
 
@@ -62,7 +63,7 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
     return <View style={styles.container}>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <FlatList
-          data={this.props.bankModel.skills}
+          data={Object.values(this.props.bankModel.skillByCardId)}
           keyExtractor={item => item.card.cardId.toString()}
           renderItem={this.renderListItem} />
       </ScrollView>

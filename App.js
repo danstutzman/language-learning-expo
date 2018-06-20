@@ -35,7 +35,8 @@ export default class App extends React.PureComponent<Props, State> {
       isLoadingComplete: false,
       bankModel: {
         cardByCardId: {},
-        skills: [],
+        parentCardsByCardId: {},
+        skillByCardId: {},
       }
     }
   }
@@ -50,7 +51,6 @@ export default class App extends React.PureComponent<Props, State> {
       return <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <RootNavigation
-          editSkill={() => {}} // TODO
           exportDatabase={() => {
             const body = bank.exportDatabase()
             // eslint-disable-next-line no-console
@@ -66,6 +66,9 @@ export default class App extends React.PureComponent<Props, State> {
                 [{ text: 'OK' }],
                 { cancelable: false }))
           }
+          updateSkills={skillUpdates =>
+            bank.updateSkills(skillUpdates)
+              .then(bankModel => this.setState({ bankModel })) }
           bankModel={this.state.bankModel} />
       </View>
     }

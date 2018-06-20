@@ -1,9 +1,9 @@
 import type { BankModel } from '../cards/BankModel'
-import type { Skill } from '../cards/Skill'
+import type { SkillUpdate } from '../db/SkillUpdate'
 
 export type ScreenProps = {|
-  editSkill: (skill: Skill) => void,
   exportDatabase: () => void,
   reseedDatabase: () => Promise<void>,
+  updateSkills: (Array<SkillUpdate>) => Promise<void>,
   bankModel: BankModel,
 |}

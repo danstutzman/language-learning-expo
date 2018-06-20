@@ -3,5 +3,6 @@ import type { Skill } from './Skill'
 
 export type BankModel = {|
   cardByCardId: {[number]: Card},
-  skills: Array<Skill>,
+  parentCardsByCardId: {[number]: Array<Card>},
+  skillByCardId: {[number]: Skill},
 |}
