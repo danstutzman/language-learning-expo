@@ -60,8 +60,8 @@ function rowToSkill(row: SkillRow, cardByCardId: {[number]: Card}): Skill {
     throw new Error(`Can't find Card for cardId ${row.cardId}`)
   }
 
-  const { mnemonic, delay, endurance } = row
-  return { card, cardId: row.cardId, mnemonic, delay, endurance }
+  const { mnemonic, delay, endurance, lastTestAt } = row
+  return { card, cardId: row.cardId, mnemonic, delay, endurance, lastTestAt }
 }
 
 export function cardToRow(card: Card): CardRow {
@@ -73,13 +73,8 @@ export function cardToRow(card: Card): CardRow {
 }
 
 export function skillToRow(skill: Skill): SkillRow {
-  const { mnemonic, delay, endurance } = skill
-  return {
-    cardId: skill.card.cardId,
-    mnemonic,
-    delay,
-    endurance,
-  }
+  const { cardId, mnemonic, delay, endurance, lastTestAt } = skill
+  return { cardId, mnemonic, delay, endurance, lastTestAt }
 }
 
 export default class Bank {
@@ -184,10 +179,7 @@ export default class Bank {
       allUpdates.push(baseUpdate)
 
       if (baseUpdate.delay !== undefined) {
-        const parentCards = parentCardsByCardId[baseUpdate.cardId]
-        if (parentCards === undefined) {
-          throw new Error(`Can't find parents for cardId ${baseUpdate.cardId}`)
-        }
+        const parentCards = parentCardsByCardId[baseUpdate.cardId] || []
         for (const parent of parentCards) {
           let totalDelay = 0
           for (const sibling of parent.getChildren()) {

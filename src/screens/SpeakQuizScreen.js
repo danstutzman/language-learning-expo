@@ -131,7 +131,21 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
     const incorrectRows = skill.card.getGlossRows().filter(glossRow =>
       !recalledByLeafCardId[glossRow.cardId])
     if (incorrectRows.length === 0) {
-      updateSkills([{ cardId: skill.cardId, delay: assertNotNull(delay) }])
+      let enduranceUpdate = {}
+      if (skill.lastTestAt !== 0) {
+        const newEndurance = Math.floor(
+          this.timerStartedAtMillis / 1000 - skill.lastTestAt)
+        if (newEndurance > skill.endurance) {
+          enduranceUpdate = { endurance: newEndurance }
+        }
+      }
+
+      updateSkills([{
+        cardId: skill.cardId,
+        delay: assertNotNull(delay),
+        lastTestAt: this.timerStartedAtMillis / 1000,
+        ...enduranceUpdate,
+      }])
     } else {
       updateSkills(this._gatherFailedSkillUpdates(this.props.skill.card))
     }

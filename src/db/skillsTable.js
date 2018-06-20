@@ -5,6 +5,7 @@ export type SkillRow = {|
   mnemonic: string,
   delay: number,
   endurance: number,
+  lastTestAt: number,
 |}
 
 export function checkExists(db: any): Promise<boolean> {
@@ -28,7 +29,8 @@ export function create(db: any): Promise<void> {
           cardId INTEGER PRIMARY KEY NOT NULL,
           mnemonic TEXT NOT NULL,
           delay INTEGER NOT NULL,
-          endurance INTEGER NOT NULL
+          endurance INTEGER NOT NULL,
+          lastTestAt INTEGER NOT NULL
         )`,
         [],
         () => resolve()
@@ -45,7 +47,7 @@ export function insertRows(db: any, skillRows: Array<SkillRow>): Promise<void> {
         if (skillRows.length === 0) { return resolve() }
 
         let sql = `INSERT INTO skills
-          (cardId, mnemonic, delay, endurance)
+          (cardId, mnemonic, delay, endurance, lastTestAt)
           VALUES `
         const values = []
         for (let i = 0; i < skillRows.length; i++) {
@@ -54,11 +56,12 @@ export function insertRows(db: any, skillRows: Array<SkillRow>): Promise<void> {
           if (i > 0) {
             sql += ', '
           }
-          sql += '(?,?,?,?)'
+          sql += '(?,?,?,?,?)'
           values.push(skillRow.cardId)
           values.push(skillRow.mnemonic)
           values.push(skillRow.delay)
           values.push(skillRow.endurance)
+          values.push(skillRow.lastTestAt)
         }
         tx.executeSql(sql, values, () => resolve())
       },
@@ -71,7 +74,7 @@ export function selectAll(db: any): Promise<Array<SkillRow>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `SELECT cardId, mnemonic, delay, endurance FROM skills`,
+        `SELECT cardId, mnemonic, delay, endurance, lastTestAt FROM skills`,
         [],
         (tx, { rows: { _array } }) => resolve(_array)
       ),
@@ -97,6 +100,10 @@ export function updateRow(db: any, skillUpdate: SkillUpdate): Promise<void> {
         if (skillUpdate.endurance !== undefined) {
           fields.push('endurance=?')
           values.push(skillUpdate.endurance)
+        }
+        if (skillUpdate.lastTestAt !== undefined) {
+          fields.push('lastTestAt=?')
+          values.push(skillUpdate.lastTestAt)
         }
         values.push(skillUpdate.cardId)
 

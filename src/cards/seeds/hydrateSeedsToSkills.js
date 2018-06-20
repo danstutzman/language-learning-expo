@@ -18,6 +18,7 @@ export default function hydrateSeedsToSkills(
       delay: (card.getChildren().length === 0) ?
         DELAY_THRESHOLD : DELAY_THRESHOLD * 2,
       endurance: 0,
+      lastTestAt: 0,
     }
   })
 }

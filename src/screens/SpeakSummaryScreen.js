@@ -35,7 +35,13 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     flex: 1,
   },
-  listItemEn: {
+  listItemDelay: {
+    fontSize: 24,
+    paddingRight: 10,
+    width: 100,
+    textAlign: 'right',
+  },
+  listItemEndurance: {
     fontSize: 24,
     paddingRight: 10,
     width: 100,
@@ -55,7 +61,12 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
       style={styles.listItem}
       onPress={() => this.props.startSpeakQuiz(cardId)}>
       <Text style={styles.listItemEs}>{cardId} {es}</Text>
-      <Text style={styles.listItemEn}>{skill.delay}</Text>
+      <Text style={styles.listItemDelay}>
+        {skill.delay >= 1000
+          ? Math.floor(skill.delay / 1000)
+          : Math.floor(skill.delay / 100) / 10}
+      </Text>
+      <Text style={styles.listItemEndurance}>{skill.endurance}</Text>
     </TouchableOpacity>
   }
 
