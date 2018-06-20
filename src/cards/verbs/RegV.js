@@ -63,6 +63,10 @@ export default class RegV implements Card {
     }
   }
 
+  getKey(): string {
+    return `${this.inf.getKey()}${this.pattern.getKey()}`
+  }
+
   getGlossRows(): Array<GlossRow> {
     return [
       {

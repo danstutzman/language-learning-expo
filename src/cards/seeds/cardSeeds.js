@@ -9,14 +9,12 @@ export type InfSeed = {|
   enPresent: string,
   enPast: string,
   infCategory: InfCategory,
-  mnemonic?: string,
 |}
 
 export type RegVSeed = {|
   type: 'RegV',
   infKey: string,
   patternKey: string,
-  mnemonic?: string,
 |}
 
 export type RegVPatternSeed = {|
@@ -26,10 +24,9 @@ export type RegVPatternSeed = {|
   number: Number,
   person: Person,
   tense: Tense,
-  mnemonic?: string,
 |}
 
-export type Seed = InfSeed | RegVSeed | RegVPatternSeed
+export type CardSeed = InfSeed | RegVSeed | RegVPatternSeed
 
 export default ([
   { type: 'Inf',
@@ -110,4 +107,4 @@ export default ([
     infKey: 'preguntar',
     patternKey: 'AR13PRET',
   },
-]: Array<Seed>)
+]: Array<CardSeed>)

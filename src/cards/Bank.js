@@ -8,17 +8,18 @@ import { assertTense } from './enums/Tense'
 import type { BankModel } from './BankModel'
 import type { Card } from './Card'
 import type { CardRow } from '../db/cardsTable'
+import type { CardSeed } from './seeds/cardSeeds'
 import * as cardsTable from '../db/cardsTable'
-import hydrateSeedsToCards from './seeds/hydrateSeedsToCards'
-import hydrateSeedsToSkills from './seeds/hydrateSeedsToSkills'
+import hydrateCardSeeds from './seeds/hydrateCardSeeds'
+import hydrateSkillSeeds from './seeds/hydrateSkillSeeds'
 import Inf from '../cards/verbs/Inf'
 import RegV from '../cards/verbs/RegV'
 import RegVPattern from '../cards/verbs/RegVPattern'
-import type { Seed } from './seeds/seeds'
 import type { Skill } from './Skill'
 import type { SkillRow } from '../db/skillsTable'
-import type { SkillUpdate } from '../db/SkillUpdate'
+import type { SkillSeed } from './seeds/skillSeeds'
 import * as skillsTable from '../db/skillsTable'
+import type { SkillUpdate } from '../db/SkillUpdate'
 
 function assertString(value: any): string {
   if (typeof value !== 'string') {
@@ -85,13 +86,19 @@ export default class Bank {
     this.db = db
   }
 
-  init = (seeds: Array<Seed>): Promise<BankModel> =>
-    this._initTables(seeds)
+  init = (
+    cardSeeds: Array<CardSeed>,
+    skillSeeds: Array<SkillSeed>,
+  ): Promise<BankModel> =>
+    this._initTables(cardSeeds, skillSeeds)
       .then(this._loadFromCardsTable)
       .then(this._loadFromSkillsTable)
       .then(() => this.bankModel)
 
-  _initTables = (seeds: Array<Seed>): Promise<void> =>
+  _initTables = (
+    cardSeeds: Array<CardSeed>,
+    skillSeeds: Array<SkillSeed>,
+  ): Promise<void> =>
     Promise.all([
       cardsTable.checkExists(this.db),
       skillsTable.checkExists(this.db),
@@ -101,14 +108,14 @@ export default class Bank {
           .then(() => cardsTable.create(this.db))
           .then(() => {
             cardsTable.insertRows(this.db,
-              hydrateSeedsToCards(seeds).map(cardToRow))
+              hydrateCardSeeds(cardSeeds).map(cardToRow))
           })
           .then(() => this._loadFromCardsTable())
           .then(() => skillsTable.drop(this.db))
           .then(() => skillsTable.create(this.db))
           .then(() => {
-            const skills = hydrateSeedsToSkills(
-              seeds, this.bankModel.cardByCardId)
+            const skills = hydrateSkillSeeds(
+              skillSeeds, this.bankModel.cardByCardId)
             skillsTable.insertRows(this.db, skills.map(skillToRow))
           })
       }
@@ -160,13 +167,31 @@ export default class Bank {
     const cardsJson = JSON.stringify(cards.map(card => card.getExport()))
       .replace(/,{"type"/g, ',\n{"type"')
 
-    return `Paste in src/cards/seeds/seeds.js:\n\n${cardsJson}`
+    const skills = (Object.values(this.bankModel.skillByCardId): any)
+    const skillsJson = JSON.stringify(skills.map(skill => {
+      const { card } = skill
+      const { delay, endurance, lastTestAt, mnemonic } = skill
+      return {
+        cardType: card.constructor.name,
+        cardKey: card.getKey(),
+        delay,
+        endurance,
+        lastTestAt,
+        mnemonic,
+      }
+    })).replace(/,{"cardType"/g, ',\n{"cardType"')
+
+    return `Paste in src/cards/seeds/cardSeeds.js:\n\n${cardsJson}` +
+      `\n\nPaste in src/cards/seeds/skillSeeds.js:\n\n${skillsJson}`
   }
 
-  reseedDatabase = (seeds: Array<Seed>): Promise<BankModel> =>
+  reseedDatabase = (
+    cardSeeds: Array<CardSeed>,
+    skillSeeds: Array<SkillSeed>,
+  ): Promise<BankModel> =>
     cardsTable.drop(this.db)
       .then(() => skillsTable.drop(this.db))
-      .then(() => this._initTables(seeds))
+      .then(() => this._initTables(cardSeeds, skillSeeds))
       .then(this._loadFromCardsTable)
       .then(this._loadFromSkillsTable)
       .then(() => this.bankModel)

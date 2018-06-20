@@ -1,14 +1,16 @@
 import type { Card } from '../Card'
+import type { CardSeed } from './cardSeeds'
 import Inf from '../verbs/Inf'
 import RegV from '../verbs/RegV'
 import RegVPattern from '../verbs/RegVPattern'
-import type { Seed } from './seeds'
 
-export default function hydrateSeedsToCards(seeds: Array<Seed>): Array<Card> {
+export default function hydrateCardSeeds(
+  cardSeeds: Array<CardSeed>
+): Array<Card> {
   let cardId = 1
 
   const infByKey: {[string]: Inf} = {}
-  for (const seedUntyped of seeds) {
+  for (const seedUntyped of cardSeeds) {
     if (seedUntyped.type === 'Inf') {
       const seed = (seedUntyped: any)
       const { es, enPresent, enPast, infCategory } = seed
@@ -18,7 +20,7 @@ export default function hydrateSeedsToCards(seeds: Array<Seed>): Array<Card> {
   }
 
   const regVPatternByKey: {[string]: RegVPattern} = {}
-  for (const seedUntyped of seeds) {
+  for (const seedUntyped of cardSeeds) {
     if (seedUntyped.type === 'RegVPattern') {
       const seed = (seedUntyped: any)
       const { es, infCategory, number, person, tense } = seed
@@ -29,7 +31,7 @@ export default function hydrateSeedsToCards(seeds: Array<Seed>): Array<Card> {
   }
 
   const regVs: Array<RegV> = []
-  for (const seedUntyped of seeds) {
+  for (const seedUntyped of cardSeeds) {
     if (seedUntyped.type === 'RegV') {
       const seed = (seedUntyped: any)
       const { infKey, patternKey } = seed

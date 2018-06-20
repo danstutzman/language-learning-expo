@@ -5,6 +5,7 @@ export interface Card {
   getChildren(): Array<Card>,
   getContentJson(): string,
   getExport(): {},
+  getKey(): string,
   getGlossRows(): Array<GlossRow>,
   getQuizQuestion(): string,
 }
