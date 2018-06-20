@@ -1,4 +1,5 @@
 import type { Card } from '../Card'
+import IClause from '../IClause'
 import Inf from '../verbs/Inf'
 import RegV from '../verbs/RegV'
 import RegVPattern from '../verbs/RegVPattern'
@@ -10,12 +11,15 @@ export default function hydrateSkillSeeds(
   cardByCardId: {[number]: Card}
 ): Array<Skill> {
   const cardByTypeAndKey = {
+    IClause: {},
     Inf: {},
     RegVPattern: {},
     RegV: {},
   }
   for (const card of Object.values(cardByCardId)) {
-    if (card instanceof Inf) {
+    if (card instanceof IClause) {
+      cardByTypeAndKey.IClause[card.getKey()] = card
+    } else if (card instanceof Inf) {
       cardByTypeAndKey.Inf[card.getKey()] = card
     } else if (card instanceof RegVPattern) {
       cardByTypeAndKey.RegVPattern[card.getKey()] = card

@@ -67,14 +67,16 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
   renderListItem = (item: { item: Skill }) => {
     const skill = item.item
     const { cardId } = skill
-    const es = skill.card.getGlossRows().map(row =>
-      row.es).join(' ').replace('- -', '')
 
     return <TouchableOpacity
       key={cardId}
       style={styles.listItem}
       onPress={() => this.props.startSpeakQuiz(cardId)}>
-      <Text style={styles.listItemEs}>{cardId} {es}</Text>
+      <Text style={styles.listItemEs}>
+        {cardId}
+        {' '}
+        {skill.card.getEsWords().join(' ').replace(' .', '.')}
+      </Text>
       <Text style={styles.listItemDelay}>
         {skill.delay >= 1000
           ? Math.floor(skill.delay / 1000)

@@ -3,6 +3,12 @@ import type { Number } from '../enums/Number'
 import type { Person } from '../enums/Person'
 import type { Tense } from '../enums/Tense'
 
+export type IClauseSeed = {|
+  type: 'IClause',
+  agentKey: string | null,
+  vKey: string,
+|}
+
 export type InfSeed = {|
   type: 'Inf',
   es: string,
@@ -26,7 +32,7 @@ export type RegVPatternSeed = {|
   tense: Tense,
 |}
 
-export type CardSeed = InfSeed | RegVSeed | RegVPatternSeed
+export type CardSeed = IClauseSeed | InfSeed | RegVSeed | RegVPatternSeed
 
 export default ([
   { type: 'Inf',
@@ -106,5 +112,9 @@ export default ([
   { type: 'RegV',
     infKey: 'preguntar',
     patternKey: 'AR13PRET',
+  },
+  { type: 'IClause',
+    agentKey: null,
+    vKey: 'comerER11PRES',
   },
 ]: Array<CardSeed>)

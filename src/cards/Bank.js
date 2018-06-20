@@ -3,6 +3,7 @@ import { assertInf } from '../cards/verbs/Inf'
 import { assertInfCategory } from './enums/InfCategory'
 import { assertNumber } from './enums/Number'
 import { assertPerson } from './enums/Person'
+import { assertRegV } from '../cards/verbs/RegV'
 import { assertRegVPattern } from '../cards/verbs/RegVPattern'
 import { assertTense } from './enums/Tense'
 import type { BankModel } from './BankModel'
@@ -12,6 +13,7 @@ import type { CardSeed } from './seeds/cardSeeds'
 import * as cardsTable from '../db/cardsTable'
 import hydrateCardSeeds from './seeds/hydrateCardSeeds'
 import hydrateSkillSeeds from './seeds/hydrateSkillSeeds'
+import IClause from '../cards/IClause'
 import Inf from '../cards/verbs/Inf'
 import RegV from '../cards/verbs/RegV'
 import RegVPattern from '../cards/verbs/RegVPattern'
@@ -50,6 +52,12 @@ function rowToCard(row: CardRow, cardByCardId: {[number]: Card}): Card {
       assertNumber(content.number),
       assertPerson(content.person),
       assertTense(content.tense))
+  } else if (row.type === 'IClause') {
+    return new IClause(
+      row.cardId,
+      null,
+      assertRegV(cardByCardId[content.v]),
+    )
   } else {
     throw new Error(`Unknown card type ${row.type}`)
   }

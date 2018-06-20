@@ -1,5 +1,7 @@
+import { assertCardType } from '../enums/CardType'
 import type { Card } from '../Card'
 import type { CardSeed } from './cardSeeds'
+import IClause from '../IClause'
 import Inf from '../verbs/Inf'
 import RegV from '../verbs/RegV'
 import RegVPattern from '../verbs/RegVPattern'
@@ -8,6 +10,10 @@ export default function hydrateCardSeeds(
   cardSeeds: Array<CardSeed>
 ): Array<Card> {
   let cardId = 1
+
+  for (const seedUntyped of cardSeeds) {
+    assertCardType(seedUntyped.type)
+  }
 
   const infByKey: {[string]: Inf} = {}
   for (const seedUntyped of cardSeeds) {
@@ -30,7 +36,7 @@ export default function hydrateCardSeeds(
     }
   }
 
-  const regVs: Array<RegV> = []
+  const regVByKey: {[string]: RegV} = {}
   for (const seedUntyped of cardSeeds) {
     if (seedUntyped.type === 'RegV') {
       const seed = (seedUntyped: any)
@@ -43,11 +49,29 @@ export default function hydrateCardSeeds(
       if (pattern === undefined) {
         throw new Error(`Can't find RegVPattern for key=${patternKey}`)
       }
-      regVs.push(new RegV(cardId++, inf, pattern))
+      const regV = new RegV(cardId++, inf, pattern)
+      regVByKey[regV.getKey()] = regV
+    }
+  }
+
+  const iClauseByKey: {[string]: IClause} = {}
+  for (const seedUntyped of cardSeeds) {
+    if (seedUntyped.type === 'IClause') {
+      const seed = (seedUntyped: any)
+      const { vKey } = seed
+
+      const regV = regVByKey[vKey]
+      if (regV === undefined) {
+        throw new Error(`Can't find RegV for key=${vKey}`)
+      }
+      const iClause = new IClause(cardId++, null, regV)
+      iClauseByKey[iClause.getKey()] = iClause
     }
   }
 
   return (Object.values(infByKey)
     .concat(Object.values(regVPatternByKey))
-    .concat(Object.values(regVs)): any)
+    .concat(Object.values(regVByKey))
+    .concat(Object.values(iClauseByKey))
+  : any)
 }

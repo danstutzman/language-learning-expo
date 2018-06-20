@@ -45,6 +45,10 @@ export default class Inf implements Card, LeafCard {
     })
   }
 
+  getEsWords(): Array<string> {
+    return [this.es]
+  }
+
   getExport(): {} {
     return {
       type: 'Inf',

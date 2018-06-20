@@ -60,6 +60,10 @@ export default class RegVPattern implements Card, LeafCard {
     })
   }
 
+  getEsWords(): Array<string> {
+    return [this.es]
+  }
+
   getExport(): {} {
     return {
       type: 'RegVPattern',

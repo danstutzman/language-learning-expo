@@ -1,14 +1,8 @@
+import assertNonZero from '../assertNonZero'
 import type { Card } from '../Card'
 import type { GlossRow } from '../GlossRow'
 import Inf from './Inf'
 import RegVPattern from './RegVPattern'
-
-function assertNonZero(value: number): number {
-  if (value === 0) {
-    throw new Error(`Expected non-zero but got ${value}`)
-  }
-  return value
-}
 
 const NUMBER_AND_PERSON_TO_EN_VERB_SUFFIX = {
   '11' : '',
@@ -16,6 +10,14 @@ const NUMBER_AND_PERSON_TO_EN_VERB_SUFFIX = {
   '13' : 's',
   '21' : '',
   '23' : '',
+}
+
+export function assertRegV(value: any): RegV {
+  if (typeof value !== 'object' ||
+    value.constructor.name !== 'RegV') {
+    throw new Error(`Expected RegV but got ${JSON.stringify(value)}`)
+  }
+  return value
 }
 
 export default class RegV implements Card {
@@ -38,6 +40,12 @@ export default class RegV implements Card {
       inf: assertNonZero(this.inf.cardId),
       pattern: assertNonZero(this.pattern.cardId),
     })
+  }
+
+  getEsWords(): Array<string> {
+    const infEs = this.inf.es
+    const patternEs = this.pattern.es
+    return [infEs.substring(0, infEs.length - 2) + patternEs.substring(1)]
   }
 
   getEnVerb(): string {
