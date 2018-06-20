@@ -4,8 +4,7 @@ import type { InfCategory } from '../enums/InfCategory'
 import type { LeafCard } from '../LeafCard'
 
 export function assertInf(value: any): Inf {
-  if (typeof value !== 'object' ||
-    value.constructor.name !== 'Inf') {
+  if (!(value instanceof Inf)) {
     throw new Error(`Expected Inf but got ${JSON.stringify(value)}`)
   }
   return value

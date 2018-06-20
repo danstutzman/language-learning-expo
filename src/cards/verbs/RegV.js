@@ -13,8 +13,7 @@ const NUMBER_AND_PERSON_TO_EN_VERB_SUFFIX = {
 }
 
 export function assertRegV(value: any): RegV {
-  if (typeof value !== 'object' ||
-    value.constructor.name !== 'RegV') {
+  if (!(value instanceof RegV)) {
     throw new Error(`Expected RegV but got ${JSON.stringify(value)}`)
   }
   return value

@@ -7,8 +7,7 @@ import type { Person } from '../enums/Person'
 import type { Tense } from '../enums/Tense'
 
 export function assertRegVPattern(value: any): RegVPattern {
-  if (typeof value !== 'object' ||
-    value.constructor.name !== 'RegVPattern') {
+  if (!(value instanceof RegVPattern)) {
     throw new Error(`Expected RegVPattern but got ${JSON.stringify(value)}`)
   }
   return value
