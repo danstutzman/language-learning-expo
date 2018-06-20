@@ -10,7 +10,7 @@ export default function hydrateSeedsToSkills(
   let nextCardId = 1
   return seeds.map(seed => {
     const cardId = nextCardId++
-    const card =  cardByCardId[cardId]
+    const card = cardByCardId[cardId]
     return {
       cardId,
       card,

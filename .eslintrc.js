@@ -31,6 +31,7 @@ module.exports = {
     indent: ['error', 2],
     'linebreak-style': ['error', 'unix'],
     'no-console': ['error', { allow: ['warn', 'error'] }],
+    'no-multi-spaces': ['error'],
     'no-trailing-spaces': ['error'],
     quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
     'react/display-name': 'off',
