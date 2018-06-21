@@ -155,7 +155,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
       updateSkills([{
         cardId: skill.cardId,
         delay: assertNotNull(delay),
-        lastCorrectAt: Math.floor(this.timerStartedAtMillis / 1000),
+        lastSeenAt: Math.floor(this.timerStartedAtMillis / 1000),
         ...enduranceUpdate,
       }])
     } else {

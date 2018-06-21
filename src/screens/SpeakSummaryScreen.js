@@ -9,11 +9,10 @@ import {
 } from 'react-native'
 
 import type { BankModel } from '../cards/BankModel'
-import type { Skill } from '../cards/Skill'
 
 type Props = {|
   bankModel: BankModel,
-  startSpeakQuiz: (cardId: number) => void,
+  startSpeakQuiz: (category: string) => void,
 |}
 
 const styles = StyleSheet.create({
@@ -30,18 +29,12 @@ const styles = StyleSheet.create({
   listItemDisabled: {
     color: 'gray',
   },
-  listItemEs: {
+  listItemCategory: {
     fontSize: 20,
     paddingLeft: 10,
     flex: 1,
   },
-  listItemDelay: {
-    fontSize: 20,
-    paddingRight: 10,
-    width: 80,
-    textAlign: 'right',
-  },
-  listItemEndurance: {
+  listItemNumCards: {
     fontSize: 20,
     paddingRight: 10,
     width: 80,
@@ -49,43 +42,30 @@ const styles = StyleSheet.create({
   },
 })
 
-function formatDuration(numSeconds: number): string {
-  if (numSeconds === 0) {
-    return ''
-  } else if (numSeconds < 60) {
-    return `${numSeconds}s`
-  } else if (numSeconds < 60 * 60) {
-    return `${Math.floor(numSeconds / 60)}m`
-  } else if (numSeconds < 24 * 60 * 60) {
-    return `${Math.floor(numSeconds / (60 * 60))}h`
-  } else {
-    return `${Math.floor(numSeconds / (24 * 60 * 60))}d`
-  }
-}
+type ListItem = {|
+  category: string,
+  numCards: number,
+|}
 
 export default class SpeakSummaryScreen extends React.PureComponent<Props> {
-  renderListItem = (item: { item: Skill }) => {
-    const skill = item.item
-    const { cardId } = skill
-    const card = this.props.bankModel.cardByCardId[cardId]
+  summarizeListItems = (): Array<ListItem> => {
+    const { categoryToCardIds } = this.props.bankModel
+    const categoryToListItem: {[string]: ListItem} = {}
+    for (const category of Object.keys(categoryToCardIds)) {
+      const cardIds = categoryToCardIds[category]
+      categoryToListItem[category] = { category, numCards: cardIds.length }
+    }
+    return (Object.values(categoryToListItem): any)
+  }
 
+  renderListItem = (item: { item: ListItem }) => {
+    const { category, numCards } = item.item
     return <TouchableOpacity
-      key={cardId}
+      key={category}
       style={styles.listItem}
-      onPress={() => this.props.startSpeakQuiz(cardId)}>
-      <Text style={styles.listItemEs}>
-        {cardId}
-        {' '}
-        {card.esWords.join(' ').replace(' .', '.')}
-      </Text>
-      <Text style={styles.listItemDelay}>
-        {skill.delay >= 1000
-          ? Math.floor(skill.delay / 1000)
-          : Math.floor(skill.delay / 100) / 10}
-      </Text>
-      <Text style={styles.listItemEndurance}>
-        {formatDuration(skill.endurance)}
-      </Text>
+      onPress={() => this.props.startSpeakQuiz(category)}>
+      <Text style={styles.listItemCategory}>{category}</Text>
+      <Text style={styles.listItemNumCards}>{numCards}</Text>
     </TouchableOpacity>
   }
 
@@ -93,8 +73,8 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
     return <View style={styles.container}>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <FlatList
-          data={Object.values(this.props.bankModel.skillByCardId)}
-          keyExtractor={item => item.cardId.toString()}
+          data={this.summarizeListItems()}
+          keyExtractor={item => item.category}
           renderItem={this.renderListItem} />
       </ScrollView>
     </View>

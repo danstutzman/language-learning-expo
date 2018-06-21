@@ -18,6 +18,7 @@ export default class Bank {
     this._initTables(cards, skills)
       .then(this._loadFromCardsTable)
       .then(this._loadFromSkillsTable)
+      .then(this._redoCategoryToCardIds)
       .then(() => this.bankModel)
 
   _initTables = (cards: Array<Card>, skills: Array<Skill>): Promise<void> =>
@@ -55,6 +56,7 @@ export default class Bank {
 
         this.bankModel = {
           cardByCardId,
+          categoryToCardIds: {},
           parentCardIdsByCardId,
           skillByCardId: {},
         }
@@ -71,11 +73,48 @@ export default class Bank {
         this.bankModel = { ...this.bankModel, skillByCardId }
       })
 
+  _redoCategoryToCardIds = () => {
+    const { skillByCardId } = this.bankModel
+
+    const categoryToCardIds: {[string]: Array<number>} = {}
+    for (const skill of (Object.values(skillByCardId): any)) {
+      let category: string
+      if (skill.delay < DELAY_THRESHOLD) {
+        category = 'LEARNED'
+      } else if (skill.delay === DELAY_THRESHOLD) {
+        category = 'NOT TESTED YET'
+      } else if (skill.delay > DELAY_THRESHOLD) {
+        category = 'NOT READY'
+      } else {
+        throw new Error('Impossible')
+      }
+
+      if (categoryToCardIds[category] === undefined) {
+        categoryToCardIds[category] = []
+      }
+      categoryToCardIds[category].push(skill.cardId)
+    }
+
+    for (const category of Object.keys(categoryToCardIds)) {
+      const cardIds = categoryToCardIds[category]
+      cardIds.sort((cardId1: number, cardId2: number) => {
+        const skill1 = skillByCardId[cardId1]
+        const skill2 = skillByCardId[cardId2]
+        return skill1.lastSeenAt < skill2.lastSeenAt ? -1 : 1
+      })
+    }
+
+    this.bankModel = { ...this.bankModel, categoryToCardIds }
+  }
+
   deleteDatabase = (): Promise<BankModel> =>
-    skillsTable.drop(this.db)
-      // .then(() => this._initTables(cardSeeds, skillSeeds))
+    cardsTable.drop(this.db)
+      .then(() => skillsTable.drop(this.db))
+      .then(() => cardsTable.create(this.db))
+      .then(() => skillsTable.create(this.db))
       .then(this._loadFromCardsTable)
       .then(this._loadFromSkillsTable)
+      .then(this._redoCategoryToCardIds)
       .then(() => this.bankModel)
 
   replaceDatabase = (
@@ -87,6 +126,7 @@ export default class Bank {
       .then(() => this._initTables(cards, skills))
       .then(this._loadFromCardsTable)
       .then(this._loadFromSkillsTable)
+      .then(this._redoCategoryToCardIds)
       .then(() => this.bankModel)
 
   updateSkills = (baseUpdates: Array<SkillUpdate>): Promise<BankModel> => {
@@ -155,6 +195,7 @@ export default class Bank {
 
     return Promise.all(allUpdates.map(update =>
       skillsTable.updateRow(this.db, update)))
+      .then(this._redoCategoryToCardIds)
       .then(() => this.bankModel)
   }
 }

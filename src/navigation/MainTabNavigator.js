@@ -14,8 +14,8 @@ const SpeakStack = createStackNavigator({
     screen: (args: { navigation: any, screenProps: ScreenProps }) =>
       <SpeakSummaryScreen
         bankModel={args.screenProps.bankModel}
-        startSpeakQuiz={(cardId: number) => {
-          args.navigation.navigate('SpeakQuiz', { cardId })
+        startSpeakQuiz={(category: string) => {
+          args.navigation.navigate('SpeakQuiz', { category })
         }} />,
     navigationOptions: () => ({
       title: 'Speak in Spanish',
@@ -23,24 +23,27 @@ const SpeakStack = createStackNavigator({
   },
   SpeakQuiz: {
     screen: (args: { navigation: any, screenProps: ScreenProps }) => {
-      const { cardId } = args.navigation.state.params
+      const { category } = args.navigation.state.params
       const { bankModel, updateSkills } = args.screenProps
 
-      const topSkill = bankModel.skillByCardId[cardId]
-      const topCard = bankModel.cardByCardId[cardId]
-      if (topSkill === undefined || topCard === undefined) {
-        return <Text>No skill or card for cardId {cardId}</Text>
-      } else if (topCard.glossRows.length === 1) {
-        return <SlowSpeakGameScreen
-          card={topCard}
-          skill={topSkill}
-          updateSkills={updateSkills} />
+      const cardId = (bankModel.categoryToCardIds[category] || [])[0]
+      if (cardId === undefined) {
+        return <Text>No card for category {category}</Text>
       } else {
-        return <SpeakQuizScreen
-          bankModel={bankModel}
-          card={topCard}
-          skill={topSkill}
-          updateSkills={updateSkills} />
+        const topSkill = bankModel.skillByCardId[cardId]
+        const topCard = bankModel.cardByCardId[cardId]
+        if (topCard.glossRows.length === 1) {
+          return <SlowSpeakGameScreen
+            card={topCard}
+            skill={topSkill}
+            updateSkills={updateSkills} />
+        } else {
+          return <SpeakQuizScreen
+            bankModel={bankModel}
+            card={topCard}
+            skill={topSkill}
+            updateSkills={updateSkills} />
+        }
       }
     },
     navigationOptions: (args: {navigation: any, screenProps: ScreenProps}) => {

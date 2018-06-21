@@ -37,6 +37,7 @@ export default class App extends React.PureComponent<Props, State> {
       isLoadingComplete: false,
       bankModel: {
         cardByCardId: {},
+        categoryToCardIds: {},
         parentCardIdsByCardId: {},
         skillByCardId: {},
       }
