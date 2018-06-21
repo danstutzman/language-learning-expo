@@ -1,4 +1,4 @@
-export const DELAY_THRESHOLD = 10000
+export const DELAY_THRESHOLD = 100000
 
 export type Skill = {|
   cardId: number,
