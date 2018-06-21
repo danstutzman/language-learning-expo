@@ -16,10 +16,9 @@ export default class SettingsScreen extends React.PureComponent<Props> {
         '',
         [{ text: 'OK' }],
         { cancelable: false }
-      ))
-      .catch((e: Error) => Alert.alert(
+      )).catch((e: Error) => Alert.alert(
         'Delete failed',
-        e.message,
+        e,
         [{ text: 'OK' }],
         { cancelable: false }
       ))
@@ -31,8 +30,7 @@ export default class SettingsScreen extends React.PureComponent<Props> {
         '',
         [{ text: 'OK' }],
         { cancelable: false }
-      ))
-      .catch((e: Error) => Alert.alert(
+      )).catch((e: Error) => Alert.alert(
         'Download failed',
         e.message,
         [{ text: 'OK' }],
@@ -46,10 +44,9 @@ export default class SettingsScreen extends React.PureComponent<Props> {
         '',
         [{ text: 'OK' }],
         { cancelable: false }
-      ))
-      .catch((e: Error) => Alert.alert(
+      )).catch((e: Error) => Alert.alert(
         'Upload failed',
-        e.message,
+        e,
         [{ text: 'OK' }],
         { cancelable: false }
       ))
