@@ -196,10 +196,12 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
         {this.state.delay === null
           ? <Button
             onPress={this.revealAnswer}
-            title='Tap here when you remember' />
+            title='I remember' />
           : this.renderGlossTable()}
       </View>
-      <Button onPress={this.onNext} title='Next' />
+      <Button
+        onPress={this.onNext}
+        title={this.delay === 0 ? 'I forget' : 'Next card'} />
     </View>
   }
 }

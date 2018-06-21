@@ -174,12 +174,15 @@ export default class SlowSpeakGameScreen
       </Text>
 
       {this.state.recalledAtMillis === null
-        ? <Button onPress={this.toggleRecalled} title='Tap when you remember' />
+        ? <Button onPress={this.toggleRecalled} title='I remember' />
         : <TouchableOpacity onPress={this.toggleRecalled}>
           {this.renderAnswer()}
         </TouchableOpacity>}
 
-      <Button onPress={this.pressNext} title="Next" />
+      <Button
+        onPress={this.pressNext}
+        title={this.state.recalledAtMillis === null ? 'I forget' : 'Next card'}
+        />
     </View>
   }
 }
