@@ -32,7 +32,6 @@ export default class Backend {
             if (response.ok) {
               clearTimeout(timeout)
               try {
-                console.log('Got text', text)
                 const { cards, skills } = JSON.parse(text)
                 resolve({ cards, skills })
               } catch (e) {
