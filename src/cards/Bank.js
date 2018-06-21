@@ -127,7 +127,6 @@ export default class Bank {
                 cardId: parent.cardId,
                 delay: totalDelay,
                 endurance: 0,
-                lastCorrectAt: 0,
               }
             } else {
               newUpdate = {

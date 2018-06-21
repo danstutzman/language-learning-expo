@@ -126,7 +126,6 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
         return [{
           cardId: card.cardId,
           delay: DELAY_THRESHOLD,
-          lastCorrectAt: 0,
           endurance: 0,
         }]
       }
@@ -145,9 +144,9 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
       !recalledByLeafCardId[glossRow.cardId])
     if (incorrectRows.length === 0) {
       let enduranceUpdate = {}
-      if (skill.lastCorrectAt !== 0) {
+      if (skill.lastSeenAt !== 0 && skill.delay < DELAY_THRESHOLD) {
         const newEndurance = Math.floor(
-          this.timerStartedAtMillis / 1000 - skill.lastCorrectAt)
+          this.timerStartedAtMillis / 1000 - skill.lastSeenAt)
         if (newEndurance > skill.endurance) {
           enduranceUpdate = { endurance: newEndurance }
         }

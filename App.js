@@ -69,7 +69,7 @@ export default class App extends React.PureComponent<Props, State> {
                 cardKey: this.state.bankModel.cardByCardId[skill.cardId].key,
                 delay: skill.delay,
                 endurance: skill.endurance,
-                lastCorrectAt: skill.lastCorrectAt,
+                lastSeenAt: skill.lastSeenAt,
                 mnemonic: skill.mnemonic,
               }
             }))}

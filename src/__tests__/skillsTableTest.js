@@ -8,7 +8,7 @@ it('can create, seed, and drop', done => {
     mnemonic: 'this is the mnemonic',
     delay: 2,
     endurance: 3,
-    lastCorrectAt: 4,
+    lastSeenAt: 4,
   }
   skillsTable.checkExists(db)
     .then(exists => expect(exists).toBe(false))

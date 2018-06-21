@@ -9,7 +9,7 @@ type SkillExport = {|
   mnemonic: string,
   delay: number,
   endurance: number,
-  lastCorrectAt: number,
+  lastSeenAt: number,
 |}
 
 export default class Backend {

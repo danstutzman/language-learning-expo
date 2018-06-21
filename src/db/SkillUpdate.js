@@ -3,5 +3,5 @@ export type SkillUpdate = {|
   delay?: number,
   mnemonic?: string,
   endurance?: number,
-  lastCorrectAt?: number,
+  lastSeenAt?: number,
 |}

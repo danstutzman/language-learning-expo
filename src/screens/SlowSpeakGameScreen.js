@@ -127,9 +127,9 @@ export default class SlowSpeakGameScreen
 
     let enduranceUpdate = {}
     if (recalled) {
-      if (skill.lastCorrectAt !== 0) {
+      if (skill.lastSeenAt !== 0 && skill.delay < DELAY_THRESHOLD) {
         const newEndurance =
-          Math.floor(timerStartedAtMillis / 1000 - skill.lastCorrectAt)
+          Math.floor(timerStartedAtMillis / 1000 - skill.lastSeenAt)
         if (newEndurance > skill.endurance) {
           enduranceUpdate = { endurance: newEndurance }
         }
@@ -142,7 +142,7 @@ export default class SlowSpeakGameScreen
       cardId: card.cardId,
       delay: (recalled && recalledAtMillis !== null)
         ? recalledAtMillis - timerStartedAtMillis : DELAY_THRESHOLD,
-      lastCorrectAt: recalled ? Math.floor(timerStartedAtMillis / 1000) : 0,
+      lastSeenAt: Math.floor(timerStartedAtMillis / 1000),
       ...enduranceUpdate,
     }])
   }

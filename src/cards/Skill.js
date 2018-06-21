@@ -12,7 +12,6 @@ export type Skill = {|
   // seconds between timestamp of 2nd last and last test; 0 if not two answers
   endurance: number,
 
-  // if tested before and answered correctly: seconds since epoch for last test
-  // if never tested or test was incorrect: zero
-  lastCorrectAt: number,
+  // seconds since epoch for last test, or zero if never tested: zero
+  lastSeenAt: number
 |}

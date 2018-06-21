@@ -5,7 +5,7 @@ export type SkillRow = {|
   mnemonic: string,
   delay: number,
   endurance: number,
-  lastCorrectAt: number,
+  lastSeenAt: number,
 |}
 
 export function checkExists(db: any): Promise<boolean> {
@@ -30,7 +30,7 @@ export function create(db: any): Promise<void> {
           mnemonic TEXT NOT NULL,
           delay INTEGER NOT NULL,
           endurance INTEGER NOT NULL,
-          lastCorrectAt INTEGER NOT NULL
+          lastSeenAt INTEGER NOT NULL
         )`,
         [],
         () => resolve()
@@ -47,7 +47,7 @@ export function insertRows(db: any, skillRows: Array<SkillRow>): Promise<void> {
         if (skillRows.length === 0) { return resolve() }
 
         let sql = `INSERT INTO skills
-          (cardId, mnemonic, delay, endurance, lastCorrectAt)
+          (cardId, mnemonic, delay, endurance, lastSeenAt)
           VALUES `
         const values = []
         for (let i = 0; i < skillRows.length; i++) {
@@ -61,7 +61,7 @@ export function insertRows(db: any, skillRows: Array<SkillRow>): Promise<void> {
           values.push(skillRow.mnemonic)
           values.push(skillRow.delay)
           values.push(skillRow.endurance)
-          values.push(skillRow.lastCorrectAt)
+          values.push(skillRow.lastSeenAt)
         }
         tx.executeSql(sql, values, () => resolve())
       },
@@ -74,7 +74,7 @@ export function selectAll(db: any): Promise<Array<SkillRow>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `SELECT cardId, mnemonic, delay, endurance, lastCorrectAt FROM skills`,
+        `SELECT cardId, mnemonic, delay, endurance, lastSeenAt FROM skills`,
         [],
         (tx, { rows: { _array } }) => resolve(_array)
       ),
@@ -101,9 +101,9 @@ export function updateRow(db: any, skillUpdate: SkillUpdate): Promise<void> {
           fields.push('endurance=?')
           values.push(skillUpdate.endurance)
         }
-        if (skillUpdate.lastCorrectAt !== undefined) {
-          fields.push('lastCorrectAt=?')
-          values.push(skillUpdate.lastCorrectAt)
+        if (skillUpdate.lastSeenAt !== undefined) {
+          fields.push('lastSeenAt=?')
+          values.push(skillUpdate.lastSeenAt)
         }
         values.push(skillUpdate.cardId)
 
