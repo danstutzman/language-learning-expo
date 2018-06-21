@@ -31,20 +31,20 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   listItemEs: {
-    fontSize: 24,
+    fontSize: 20,
     paddingLeft: 10,
     flex: 1,
   },
   listItemDelay: {
-    fontSize: 24,
+    fontSize: 20,
     paddingRight: 10,
-    width: 100,
+    width: 80,
     textAlign: 'right',
   },
   listItemEndurance: {
-    fontSize: 24,
+    fontSize: 20,
     paddingRight: 10,
-    width: 100,
+    width: 80,
     textAlign: 'right',
   },
 })
