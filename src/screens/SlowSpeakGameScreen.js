@@ -142,7 +142,7 @@ export default class SlowSpeakGameScreen
       cardId: card.cardId,
       delay: (recalled && recalledAtMillis !== null)
         ? recalledAtMillis - timerStartedAtMillis : DELAY_THRESHOLD,
-      lastCorrectAt: recalled ? (timerStartedAtMillis / 1000) : 0,
+      lastCorrectAt: recalled ? Math.floor(timerStartedAtMillis / 1000) : 0,
       ...enduranceUpdate,
     }])
   }

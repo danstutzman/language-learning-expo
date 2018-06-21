@@ -28,7 +28,7 @@ type State = {
 
 const db = SQLite.openDatabase('db.db')
 const bank = new Bank(db)
-const backend = new Backend('https://e54eb2bc.ngrok.io')
+const backend = new Backend('https://4a886732.ngrok.io')
 
 export default class App extends React.PureComponent<Props, State> {
   constructor() {
@@ -61,6 +61,8 @@ export default class App extends React.PureComponent<Props, State> {
               .then((pair: { cards: Array<Card>, skills: Array<Skill> }) =>
                 bank.replaceDatabase(pair.cards, pair.skills))
               .then(bankModel => this.setState({ bankModel }))}
+          uploadDatabase={() =>
+            backend.uploadSkills(this.state.bankModel.skillByCardId)}
           updateSkills={skillUpdates =>
             bank.updateSkills(skillUpdates)
               .then(bankModel => this.setState({ bankModel }))}

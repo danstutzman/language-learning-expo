@@ -68,7 +68,8 @@ const SettingsStack = createStackNavigator({
     screen: (args: { navigation: any, screenProps: ScreenProps }) =>
       <SettingsScreen
         deleteDatabase={args.screenProps.deleteDatabase}
-        downloadDatabase={args.screenProps.downloadDatabase} />,
+        downloadDatabase={args.screenProps.downloadDatabase}
+        uploadDatabase={args.screenProps.uploadDatabase} />,
     navigationOptions: () => ({
       title: 'Settings',
     }),
