@@ -160,6 +160,7 @@ export default class SlowSpeakGameScreen
         onChangeText={(newMnemonic: string) =>
           this.setState({ newMnemonic })}
         onSubmitEditing={this.onMnemonicSubmitEditing}
+        autoCapitalize="none"
         value={this.state.newMnemonic !== null ?
           this.state.newMnemonic : this.props.skill.mnemonic} />
       <Text style={styles.es}>{this.props.card.glossRows[0].es}</Text>
