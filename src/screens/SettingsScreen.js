@@ -12,13 +12,13 @@ export default class SettingsScreen extends React.PureComponent<Props> {
   onPressDeleteDatabase = () =>
     this.props.deleteDatabase()
       .then(() => Alert.alert(
-        'Delete database',
-        'Delete was successful',
+        'Delete succeeded',
+        '',
         [{ text: 'OK' }],
         { cancelable: false }
       ))
       .catch((e: Error) => Alert.alert(
-        'Delete database',
+        'Delete failed',
         e.message,
         [{ text: 'OK' }],
         { cancelable: false }
@@ -27,13 +27,13 @@ export default class SettingsScreen extends React.PureComponent<Props> {
   onPressDownloadDatabase = () =>
     this.props.downloadDatabase()
       .then(() => Alert.alert(
-        'Download database',
-        'Download was successful',
+        'Download succeeded',
+        '',
         [{ text: 'OK' }],
         { cancelable: false }
       ))
       .catch((e: Error) => Alert.alert(
-        'Download database',
+        'Download failed',
         e.message,
         [{ text: 'OK' }],
         { cancelable: false }
@@ -42,13 +42,13 @@ export default class SettingsScreen extends React.PureComponent<Props> {
   onPressUploadDatabase = () =>
     this.props.uploadDatabase()
       .then(() => Alert.alert(
-        'Upload database',
-        'Upload was successful',
+        'Upload succeeded',
+        '',
         [{ text: 'OK' }],
         { cancelable: false }
       ))
       .catch((e: Error) => Alert.alert(
-        'Upload database',
+        'Upload failed',
         e.message,
         [{ text: 'OK' }],
         { cancelable: false }
