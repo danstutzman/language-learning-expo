@@ -61,8 +61,18 @@ export default class App extends React.PureComponent<Props, State> {
               .then((pair: { cards: Array<Card>, skills: Array<Skill> }) =>
                 bank.replaceDatabase(pair.cards, pair.skills))
               .then(bankModel => this.setState({ bankModel }))}
-          uploadDatabase={() =>
-            backend.uploadSkills(this.state.bankModel.skillByCardId)}
+          uploadDatabase={() => backend.uploadSkills(
+            Object.values(this.state.bankModel.skillByCardId).map(skillMixed=> {
+              const skill: Skill = (skillMixed: any)
+              return {
+                cardType: this.state.bankModel.cardByCardId[skill.cardId].type,
+                cardKey: this.state.bankModel.cardByCardId[skill.cardId].key,
+                delay: skill.delay,
+                endurance: skill.endurance,
+                lastCorrectAt: skill.lastCorrectAt,
+                mnemonic: skill.mnemonic,
+              }
+            }))}
           updateSkills={skillUpdates =>
             bank.updateSkills(skillUpdates)
               .then(bankModel => this.setState({ bankModel }))}

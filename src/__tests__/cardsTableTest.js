@@ -5,6 +5,7 @@ it('can create, seed, and drop', done => {
   const cards = [{
     cardId: 1,
     type: 'Inf',
+    key: 'preguntar',
     childrenCardIds: [],
     glossRows: [{ cardId: 1, en: 'ask', es: 'preguntar' }],
     esWords: ['preguntar'],

@@ -20,6 +20,7 @@ export function create(db: any): Promise<void> {
         `CREATE TABLE cards (
           cardId INTEGER PRIMARY KEY NOT NULL,
           type TEXT NOT NULL,
+          key TEXT NOT NULL,
           childrenCardIdsJson TEXT NOT NULL,
           glossRowsJson TEXT NOT NULL,
           esWordsJson TEXT NOT NULL,
@@ -42,6 +43,7 @@ export function insertRows(db: any, cards: Array<Card>): Promise<Array<Card>> {
         let sql = `INSERT INTO cards
             (cardId,
             type,
+            key,
             childrenCardIdsJson,
             glossRowsJson,
             esWordsJson,
@@ -54,9 +56,10 @@ export function insertRows(db: any, cards: Array<Card>): Promise<Array<Card>> {
           if (i > 0) {
             sql += ', '
           }
-          sql += '(?,?,?,?,?,?)'
+          sql += '(?,?,?,?,?,?,?)'
           values.push(card.cardId)
           values.push(card.type)
+          values.push(card.key)
           values.push(JSON.stringify(card.childrenCardIds))
           values.push(JSON.stringify(card.glossRows))
           values.push(JSON.stringify(card.esWords))
@@ -75,6 +78,7 @@ export function selectAll(db: any): Promise<Array<Card>> {
       tx => tx.executeSql(
         `SELECT cardId,
             type,
+            key,
             childrenCardIdsJson,
             glossRowsJson,
             esWordsJson,
@@ -85,6 +89,7 @@ export function selectAll(db: any): Promise<Array<Card>> {
         (tx, { rows: { _array } }) => resolve(_array.map(row => ({
           cardId: row.cardId,
           type: row.type,
+          key: row.key,
           childrenCardIds: JSON.parse(row.childrenCardIdsJson),
           glossRows: JSON.parse(row.glossRowsJson),
           esWords: JSON.parse(row.esWordsJson),

@@ -3,6 +3,15 @@ import type { Skill } from '../cards/Skill'
 
 const FETCH_TIMEOUT_MILLIS = 5000
 
+type SkillExport = {|
+  cardType: string,
+  cardKey: string,
+  mnemonic: string,
+  delay: number,
+  endurance: number,
+  lastCorrectAt: number,
+|}
+
 export default class Backend {
   baseUrl: string
 
@@ -23,6 +32,7 @@ export default class Backend {
             if (response.ok) {
               clearTimeout(timeout)
               try {
+                console.log('Got text', text)
                 const { cards, skills } = JSON.parse(text)
                 resolve({ cards, skills })
               } catch (e) {
@@ -37,14 +47,14 @@ export default class Backend {
         })
     })
 
-  uploadSkills = (skillByCardId: {[number]: Skill}): Promise<void> =>
+  uploadSkills = (skillExports: Array<SkillExport>): Promise<void> =>
     new Promise((resolve, reject) => {
       const timeout = setTimeout(
         () => reject(new Error(`Timeout from ${this.baseUrl}`)),
         FETCH_TIMEOUT_MILLIS
       )
       fetch(this.baseUrl, {
-        body: JSON.stringify({ skillByCardId }),
+        body: JSON.stringify({ skillExports }),
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
