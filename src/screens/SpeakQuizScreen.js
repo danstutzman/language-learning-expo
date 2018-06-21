@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native'
 
+import type { BankModel } from '../cards/BankModel'
 import type { Card } from '../cards/Card'
 import { DELAY_THRESHOLD } from '../cards/Skill'
 import type { GlossRow } from '../cards/GlossRow'
@@ -15,6 +16,8 @@ import type { Skill } from '../cards/Skill'
 import type { SkillUpdate } from '../db/SkillUpdate'
 
 type Props = {|
+  bankModel: BankModel,
+  card: Card,
   skill: Skill,
   updateSkills: (Array<SkillUpdate>) => Promise<void>,
 |}
@@ -88,7 +91,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   revealAnswer = () => {
-    const glossRows = this.props.skill.card.getGlossRows()
+    const { glossRows } = this.props.card
 
     this.speakSpanish(glossRows)
 
@@ -116,8 +119,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
   _gatherFailedSkillUpdates(card: Card) {
     const { recalledByLeafCardId } = this.state
-    const children = card.getChildren()
-    if (children.length === 0) {
+    if (card.childrenCardIds.length === 0) {
       if (recalledByLeafCardId[card.cardId]) {
         return []
       } else {
@@ -129,15 +131,17 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
         }]
       }
     } else {
-      return children.map(child => this._gatherFailedSkillUpdates(child))
+      return card.childrenCardIds
+        .map(childCardId => this._gatherFailedSkillUpdates(
+          this.props.bankModel.cardByCardId[childCardId]))
         .reduce((accum, item) => accum.concat(item), [])
     }
   }
 
   onNext = () => {
-    const { skill, updateSkills } = this.props
+    const { card, skill, updateSkills } = this.props
     const { recalledByLeafCardId, delay } = this.state
-    const incorrectRows = skill.card.getGlossRows().filter(glossRow =>
+    const incorrectRows = card.glossRows.filter(glossRow =>
       !recalledByLeafCardId[glossRow.cardId])
     if (incorrectRows.length === 0) {
       let enduranceUpdate = {}
@@ -156,7 +160,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
         ...enduranceUpdate,
       }])
     } else {
-      updateSkills(this._gatherFailedSkillUpdates(this.props.skill.card))
+      updateSkills(this._gatherFailedSkillUpdates(this.props.card))
     }
   }
 
@@ -167,7 +171,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   renderGlossTable() {
-    return this.props.skill.card.getGlossRows().map(glossRow => {
+    return this.props.card.glossRows.map(glossRow => {
       const { cardId, en, es } = glossRow
       return <TouchableOpacity
         key={cardId}
@@ -187,7 +191,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   render() {
     return <View style={styles.container}>
       <Text style={styles.cardEnglish}>
-        {this.props.skill.card.getQuizQuestion()}
+        {this.props.card.quizQuestion}
       </Text>
       <View style={styles.glossTable}>
         {this.state.delay === null

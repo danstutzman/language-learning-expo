@@ -1,14 +1,14 @@
 import { AppLoading, Asset, Font, SQLite } from 'expo'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
-import { Alert, Platform, StatusBar, StyleSheet, View } from 'react-native'
-import { email } from 'react-native-communications'
+import { Platform, StatusBar, StyleSheet, View } from 'react-native'
 
+import Backend from './src/backend/Backend'
 import Bank from './src/cards/Bank'
 import type { BankModel } from './src/cards/BankModel'
-import cardSeeds from './src/cards/seeds/cardSeeds'
+import type { Card } from './src/cards/Card'
 import RootNavigation from './src/navigation/RootNavigation'
-import skillSeeds from './src/cards/seeds/skillSeeds'
+import type { Skill } from './src/cards/Skill'
 
 const styles = StyleSheet.create({
   container: {
@@ -28,6 +28,7 @@ type State = {
 
 const db = SQLite.openDatabase('db.db')
 const bank = new Bank(db)
+const backend = new Backend('https://e54eb2bc.ngrok.io')
 
 export default class App extends React.PureComponent<Props, State> {
   constructor() {
@@ -36,7 +37,7 @@ export default class App extends React.PureComponent<Props, State> {
       isLoadingComplete: false,
       bankModel: {
         cardByCardId: {},
-        parentCardsByCardId: {},
+        parentCardIdsByCardId: {},
         skillByCardId: {},
       }
     }
@@ -52,24 +53,17 @@ export default class App extends React.PureComponent<Props, State> {
       return <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <RootNavigation
-          exportDatabase={() => {
-            const body = bank.exportDatabase()
-            // eslint-disable-next-line no-console
-            console.warn('Email body', body)
-            email(null, null, null, 'Lang learning export', body)
-          }}
-          reseedDatabase={() =>
-            bank.reseedDatabase(cardSeeds, skillSeeds)
-              .then(bankModel => this.setState({ bankModel }))
-              .then(() => Alert.alert(
-                'Reseed finished',
-                'Reseed finished',
-                [{ text: 'OK' }],
-                { cancelable: false }))
-          }
+          deleteDatabase={() =>
+            bank.deleteDatabase()
+              .then(bankModel => this.setState({ bankModel }))}
+          downloadDatabase={() =>
+            backend.downloadDatabase()
+              .then((pair: { cards: Array<Card>, skills: Array<Skill> }) =>
+                bank.replaceDatabase(pair.cards, pair.skills))
+              .then(bankModel => this.setState({ bankModel }))}
           updateSkills={skillUpdates =>
             bank.updateSkills(skillUpdates)
-              .then(bankModel => this.setState({ bankModel })) }
+              .then(bankModel => this.setState({ bankModel }))}
           bankModel={this.state.bankModel} />
       </View>
     }
@@ -88,7 +82,7 @@ export default class App extends React.PureComponent<Props, State> {
         // to remove this if you are not using it in your app
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
-      bank.init(cardSeeds, skillSeeds)
+      bank.init([], [])
         .then(bankModel => this.setState({ bankModel }))
     ])
   }

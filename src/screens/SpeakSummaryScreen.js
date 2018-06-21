@@ -67,6 +67,7 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
   renderListItem = (item: { item: Skill }) => {
     const skill = item.item
     const { cardId } = skill
+    const card = this.props.bankModel.cardByCardId[cardId]
 
     return <TouchableOpacity
       key={cardId}
@@ -75,7 +76,7 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
       <Text style={styles.listItemEs}>
         {cardId}
         {' '}
-        {skill.card.getEsWords().join(' ').replace(' .', '.')}
+        {card.esWords.join(' ').replace(' .', '.')}
       </Text>
       <Text style={styles.listItemDelay}>
         {skill.delay >= 1000
@@ -93,7 +94,7 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <FlatList
           data={Object.values(this.props.bankModel.skillByCardId)}
-          keyExtractor={item => item.card.cardId.toString()}
+          keyExtractor={item => item.cardId.toString()}
           renderItem={this.renderListItem} />
       </ScrollView>
     </View>

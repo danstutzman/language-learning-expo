@@ -2,13 +2,12 @@ import React from 'react'
 import { Platform, Text } from 'react-native'
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation'
 
-import type { LeafCard } from '../cards/LeafCard'
-import TabBarIcon from '../components/TabBarIcon'
 import SlowSpeakGameScreen from '../screens/SlowSpeakGameScreen'
 import type { ScreenProps } from './ScreenProps'
 import SettingsScreen from '../screens/SettingsScreen'
 import SpeakSummaryScreen from '../screens/SpeakSummaryScreen'
 import SpeakQuizScreen from '../screens/SpeakQuizScreen'
+import TabBarIcon from '../components/TabBarIcon'
 
 const SpeakStack = createStackNavigator({
   SpeakSummary: {
@@ -28,16 +27,18 @@ const SpeakStack = createStackNavigator({
       const { bankModel, updateSkills } = args.screenProps
 
       const topSkill = bankModel.skillByCardId[cardId]
-      if (topSkill === undefined) {
-        return <Text>No skills</Text>
-      } else if (typeof (topSkill.card: any).getGlossRow !== 'undefined') {
-        const leafCard: LeafCard = (topSkill.card: any)
+      const topCard = bankModel.cardByCardId[cardId]
+      if (topSkill === undefined || topCard === undefined) {
+        return <Text>No skill or card for cardId {cardId}</Text>
+      } else if (topCard.glossRows.length === 1) {
         return <SlowSpeakGameScreen
-          leafCard={leafCard}
+          card={topCard}
           skill={topSkill}
           updateSkills={updateSkills} />
       } else {
         return <SpeakQuizScreen
+          bankModel={bankModel}
+          card={topCard}
           skill={topSkill}
           updateSkills={updateSkills} />
       }
@@ -66,8 +67,8 @@ const SettingsStack = createStackNavigator({
   Settings: {
     screen: (args: { navigation: any, screenProps: ScreenProps }) =>
       <SettingsScreen
-        exportDatabase={args.screenProps.exportDatabase}
-        reseedDatabase={args.screenProps.reseedDatabase} />,
+        deleteDatabase={args.screenProps.deleteDatabase}
+        downloadDatabase={args.screenProps.downloadDatabase} />,
     navigationOptions: () => ({
       title: 'Settings',
     }),

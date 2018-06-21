@@ -9,13 +9,10 @@ import {
   View,
 } from 'react-native'
 
+import type { Card } from '../cards/Card'
 import { DELAY_THRESHOLD } from '../cards/Skill'
-import type { LeafCard } from '../cards/LeafCard'
-import { PERSON_TO_DESCRIPTION } from '../cards/enums/Person'
-import RegVPattern from '../cards/verbs/RegVPattern'
 import type { Skill } from '../cards/Skill'
 import type { SkillUpdate } from '../db/SkillUpdate'
-import { TENSE_TO_DESCRIPTION } from '../cards/enums/Tense'
 
 const styles = StyleSheet.create({
   container: {
@@ -55,7 +52,7 @@ const styles = StyleSheet.create({
 })
 
 export type Props = {|
-  leafCard: LeafCard,
+  card: Card,
   skill: Skill,
   updateSkills: (Array<SkillUpdate>) => Promise<void>,
 |}
@@ -81,7 +78,7 @@ export default class SlowSpeakGameScreen
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (this.props.leafCard.cardId !== prevProps.leafCard.cardId) {
+    if (this.props.card.cardId !== prevProps.card.cardId) {
       this.timerStartedAtMillis = new Date().getTime()
       this.setState({
         newMnemonic: null,
@@ -92,10 +89,10 @@ export default class SlowSpeakGameScreen
   }
 
   onMnemonicSubmitEditing = (mnemonic: string) =>
-    this.props.updateSkills([{ cardId: this.props.leafCard.cardId, mnemonic }])
+    this.props.updateSkills([{ cardId: this.props.card.cardId, mnemonic }])
 
   speakMnemonicAndSpanish() {
-    const es = this.props.leafCard.getGlossRow().es
+    const es = this.props.card.glossRows[0].es
     const mnemonic = this.props.skill.mnemonic
 
     if (mnemonic !== '') {
@@ -126,7 +123,7 @@ export default class SlowSpeakGameScreen
 
     const { timerStartedAtMillis } = this
     const { recalled, recalledAtMillis } = this.state
-    const { leafCard, skill } = this.props
+    const { card, skill } = this.props
 
     let enduranceUpdate = {}
     if (recalled) {
@@ -142,7 +139,7 @@ export default class SlowSpeakGameScreen
     }
 
     this.props.updateSkills([{
-      cardId: leafCard.cardId,
+      cardId: card.cardId,
       delay: (recalled && recalledAtMillis !== null)
         ? recalledAtMillis - timerStartedAtMillis : DELAY_THRESHOLD,
       lastCorrectAt: recalled ? (timerStartedAtMillis / 1000) : 0,
@@ -165,27 +162,15 @@ export default class SlowSpeakGameScreen
         onSubmitEditing={this.onMnemonicSubmitEditing}
         value={this.state.newMnemonic !== null ?
           this.state.newMnemonic : this.props.skill.mnemonic} />
-      <Text style={styles.es}>{this.props.leafCard.getGlossRow().es}</Text>
-    </View>
-  }
-
-  renderQuestionForRegVPattern() {
-    const pattern: RegVPattern = (this.props.leafCard: any)
-    return <View>
-      <Text>Say the ending for:</Text>
-      <Text>* {pattern.infCategory} verb</Text>
-      <Text>* {PERSON_TO_DESCRIPTION[pattern.person.toString()]} person</Text>
-      <Text>* {TENSE_TO_DESCRIPTION[pattern.tense]}</Text>
+      <Text style={styles.es}>{this.props.card.glossRows[0].es}</Text>
     </View>
   }
 
   render() {
     return <View style={styles.container}>
-      {this.props.leafCard instanceof RegVPattern
-        ? this.renderQuestionForRegVPattern()
-        : <Text style={styles.en}>
-          {this.props.leafCard.getQuizQuestion()}
-        </Text>}
+      <Text style={styles.en}>
+        {this.props.card.quizQuestion}
+      </Text>
 
       {this.state.recalledAtMillis === null
         ? <Button onPress={this.toggleRecalled} title='Tap when you remember' />

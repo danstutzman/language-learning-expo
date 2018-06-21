@@ -1,10 +1,4 @@
-import type { CardType } from '../cards/enums/CardType'
-
-export type CardRow = {|
-  cardId: number,
-  type: CardType,
-  contentJson: string,
-|}
+import type { Card } from '../cards/Card'
 
 export function checkExists(db: any): Promise<boolean> {
   return new Promise((resolve, reject) =>
@@ -26,7 +20,10 @@ export function create(db: any): Promise<void> {
         `CREATE TABLE cards (
           cardId INTEGER PRIMARY KEY NOT NULL,
           type TEXT NOT NULL,
-          contentJson TEXT NOT NULL
+          childrenCardIdsJson TEXT NOT NULL,
+          glossRowsJson TEXT NOT NULL,
+          esWordsJson TEXT NOT NULL,
+          quizQuestion TEXT NOT NULL
         )`,
         [],
         () => resolve()
@@ -36,50 +33,63 @@ export function create(db: any): Promise<void> {
   })
 }
 
-export function insertRows(
-  db: any,
-  cardRows: Array<CardRow>
-): Promise<Array<CardRow>> {
+export function insertRows(db: any, cards: Array<Card>): Promise<Array<Card>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => {
-        if (cardRows.length === 0) { return resolve() }
+        if (cards.length === 0) { return resolve() }
 
         let sql = `INSERT INTO cards
-          (type, contentJson)
+            (cardId,
+            type,
+            childrenCardIdsJson,
+            glossRowsJson,
+            esWordsJson,
+            quizQuestion)
           VALUES `
         const values = []
-        for (let i = 0; i < cardRows.length; i++) {
-          const cardRow: CardRow = cardRows[i]
+        for (let i = 0; i < cards.length; i++) {
+          const card: Card = cards[i]
 
           if (i > 0) {
             sql += ', '
           }
-          sql += '(?,?)'
-          values.push(cardRow.type)
-          values.push(cardRow.contentJson)
+          sql += '(?,?,?,?,?,?)'
+          values.push(card.cardId)
+          values.push(card.type)
+          values.push(JSON.stringify(card.childrenCardIds))
+          values.push(JSON.stringify(card.glossRows))
+          values.push(JSON.stringify(card.esWords))
+          values.push(card.quizQuestion)
         }
-        tx.executeSql(sql, values, (tx: any, result: any) => {
-          let cardId = result.insertId - cardRows.length + 1
-          for (const cardRow of cardRows) {
-            cardRow.cardId = cardId
-            cardId += 1
-          }
-          resolve(cardRows)
-        })
+        tx.executeSql(sql, values, () => resolve())
       },
       (e: Error) => reject(`Error from INSERT INTO cards: ${e.message}`)
     )
   )
 }
 
-export function selectAll(db: any): Promise<Array<CardRow>> {
+export function selectAll(db: any): Promise<Array<Card>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `SELECT cardId, type, contentJson FROM cards ORDER BY cardId`,
+        `SELECT cardId,
+            type,
+            childrenCardIdsJson,
+            glossRowsJson,
+            esWordsJson,
+            quizQuestion
+          FROM cards
+          ORDER BY cardId`,
         [],
-        (tx, { rows: { _array } }) => resolve(_array)
+        (tx, { rows: { _array } }) => resolve(_array.map(row => ({
+          cardId: row.cardId,
+          type: row.type,
+          childrenCardIds: JSON.parse(row.childrenCardIdsJson),
+          glossRows: JSON.parse(row.glossRowsJson),
+          esWords: JSON.parse(row.esWordsJson),
+          quizQuestion: row.quizQuestion,
+        })))
       ),
       (e: Error) => reject(`Error from SELECT FROM cards: ${e.message}`)
     )

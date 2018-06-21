@@ -1,9 +1,6 @@
-import type { Card } from './Card'
-
 export const DELAY_THRESHOLD = 10000
 
 export type Skill = {|
-  card: Card,
   cardId: number,
   mnemonic: string,
 

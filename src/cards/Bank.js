@@ -1,98 +1,10 @@
-import { assertCardType } from './enums/CardType'
-import { assertInf } from '../cards/verbs/Inf'
-import { assertInfCategory } from './enums/InfCategory'
-import { assertNP } from '../cards/NP'
-import { assertNumber } from './enums/Number'
-import { assertPerson } from './enums/Person'
-import { assertRegV } from '../cards/verbs/RegV'
-import { assertRegVPattern } from '../cards/verbs/RegVPattern'
-import { assertTense } from './enums/Tense'
 import type { BankModel } from './BankModel'
 import type { Card } from './Card'
-import type { CardRow } from '../db/cardsTable'
-import type { CardSeed } from './seeds/cardSeeds'
 import * as cardsTable from '../db/cardsTable'
 import { DELAY_THRESHOLD } from './Skill'
-import hydrateCardSeeds from './seeds/hydrateCardSeeds'
-import hydrateSkillSeeds from './seeds/hydrateSkillSeeds'
-import IClause from '../cards/IClause'
-import Inf from '../cards/verbs/Inf'
-import NP from '../cards/NP'
-import RegV from '../cards/verbs/RegV'
-import RegVPattern from '../cards/verbs/RegVPattern'
 import type { Skill } from './Skill'
-import type { SkillRow } from '../db/skillsTable'
-import type { SkillSeed } from './seeds/skillSeeds'
 import * as skillsTable from '../db/skillsTable'
 import type { SkillUpdate } from '../db/SkillUpdate'
-
-function assertString(value: any): string {
-  if (typeof value !== 'string') {
-    throw new Error(`Unexpected non-string ${JSON.stringify(value)}`)
-  }
-  return value
-}
-
-function rowToCard(row: CardRow, cardByCardId: {[number]: Card}): Card {
-  const content = JSON.parse(row.contentJson)
-  if (row.type === 'Inf') {
-    return new Inf(
-      row.cardId,
-      assertString(content.es),
-      assertString(content.enPresent),
-      assertString(content.enPast),
-      assertInfCategory(content.infCategory))
-  } else if (row.type === 'NP') {
-    return new NP(
-      row.cardId,
-      assertString(content.es),
-      assertString(content.en))
-  } else if (row.type === 'RegV') {
-    return new RegV(
-      row.cardId,
-      assertInf(cardByCardId[content.inf]),
-      assertRegVPattern(cardByCardId[content.pattern]))
-  } else if (row.type === 'RegVPattern') {
-    return new RegVPattern(
-      row.cardId,
-      assertString(content.es),
-      assertInfCategory(content.infCategory),
-      assertNumber(content.number),
-      assertPerson(content.person),
-      assertTense(content.tense))
-  } else if (row.type === 'IClause') {
-    return new IClause(
-      row.cardId,
-      (content.agent === null) ? null : assertNP(cardByCardId[content.agent]),
-      assertRegV(cardByCardId[content.v]),
-    )
-  } else {
-    throw new Error(`Unknown card type ${row.type}`)
-  }
-}
-
-function rowToSkill(row: SkillRow, cardByCardId: {[number]: Card}): Skill {
-  const card = cardByCardId[row.cardId]
-  if (card === undefined) {
-    throw new Error(`Can't find Card for cardId ${row.cardId}`)
-  }
-
-  const { mnemonic, delay, endurance, lastCorrectAt } = row
-  return { card, cardId: row.cardId, mnemonic, delay, endurance, lastCorrectAt }
-}
-
-export function cardToRow(card: Card): CardRow {
-  return {
-    cardId: card.cardId,
-    type: assertCardType(card.constructor.name),
-    contentJson: card.getContentJson(),
-  }
-}
-
-export function skillToRow(skill: Skill): SkillRow {
-  const { cardId, mnemonic, delay, endurance, lastCorrectAt } = skill
-  return { cardId, mnemonic, delay, endurance, lastCorrectAt }
-}
 
 export default class Bank {
   bankModel: BankModel
@@ -102,19 +14,13 @@ export default class Bank {
     this.db = db
   }
 
-  init = (
-    cardSeeds: Array<CardSeed>,
-    skillSeeds: Array<SkillSeed>,
-  ): Promise<BankModel> =>
-    this._initTables(cardSeeds, skillSeeds)
+  init = (cards: Array<Card>, skills: Array<Skill>): Promise<BankModel> =>
+    this._initTables(cards, skills)
       .then(this._loadFromCardsTable)
       .then(this._loadFromSkillsTable)
       .then(() => this.bankModel)
 
-  _initTables = (
-    cardSeeds: Array<CardSeed>,
-    skillSeeds: Array<SkillSeed>,
-  ): Promise<void> =>
+  _initTables = (cards: Array<Card>, skills: Array<Skill>): Promise<void> =>
     Promise.all([
       cardsTable.checkExists(this.db),
       skillsTable.checkExists(this.db),
@@ -122,98 +28,73 @@ export default class Bank {
       if (!exists[0] || !exists[1]) {
         return cardsTable.drop(this.db)
           .then(() => cardsTable.create(this.db))
-          .then(() => {
-            cardsTable.insertRows(this.db,
-              hydrateCardSeeds(cardSeeds).map(cardToRow))
-          })
-          .then(() => this._loadFromCardsTable())
+          .then(() => cardsTable.insertRows(this.db, cards))
           .then(() => skillsTable.drop(this.db))
           .then(() => skillsTable.create(this.db))
-          .then(() => {
-            const skills = hydrateSkillSeeds(
-              skillSeeds, this.bankModel.cardByCardId)
-            skillsTable.insertRows(this.db, skills.map(skillToRow))
-          })
+          .then(() => skillsTable.insertRows(this.db, skills))
       }
     })
 
   _loadFromCardsTable = (): Promise<void> =>
     cardsTable.selectAll(this.db)
-      .then((rows: Array<CardRow>) => {
+      .then((cards: Array<Card>) => {
         const cardByCardId: {[number]: Card} = {}
-        for (const row of rows) {
-          cardByCardId[row.cardId] = rowToCard(row, cardByCardId)
+        for (const card of cards) {
+          cardByCardId[card.cardId] = card
+        }
+
+        const parentCardIdsByCardId: {[number]: Array<number>} = {}
+        for (const card of (Object.values(cardByCardId): any)) {
+          for (const childCardId of card.childrenCardIds) {
+            if (parentCardIdsByCardId[childCardId] === undefined) {
+              parentCardIdsByCardId[childCardId] = []
+            }
+            parentCardIdsByCardId[childCardId].push(card.cardId)
+          }
         }
 
         this.bankModel = {
           cardByCardId,
-          parentCardsByCardId: {},
+          parentCardIdsByCardId,
           skillByCardId: {},
         }
       })
 
   _loadFromSkillsTable = (): Promise<void> =>
     skillsTable.selectAll(this.db)
-      .then((skillRows: Array<SkillRow>) => {
+      .then((skills: Array<Skill>) => {
         const skillByCardId: {[number]: Skill} = {}
-        for (const skillRow of skillRows) {
-          skillByCardId[skillRow.cardId] =
-            rowToSkill(skillRow, this.bankModel.cardByCardId)
+        for (const skill of skills) {
+          skillByCardId[skill.cardId] = skill
         }
 
-        const parentCardsByCardId: {[number]: Array<Card>} = {}
-        for (const card of (Object.values(this.bankModel.cardByCardId): any)) {
-          for (const childCard of card.getChildren()) {
-            if (parentCardsByCardId[childCard.cardId] === undefined) {
-              parentCardsByCardId[childCard.cardId] = []
-            }
-            parentCardsByCardId[childCard.cardId].push(card)
-          }
-        }
-
-        this.bankModel = {
-          ...this.bankModel,
-          skillByCardId,
-          parentCardsByCardId,
-        }
+        this.bankModel = { ...this.bankModel, skillByCardId }
       })
 
-  exportDatabase = (): string => {
-    const cards: Array<Card> = (Object.values(this.bankModel.cardByCardId): any)
-    const cardsJson = JSON.stringify(cards.map(card => card.getExport()))
-      .replace(/,{"type"/g, ',\n{"type"')
+  deleteDatabase = (): Promise<BankModel> =>
+    skillsTable.drop(this.db)
+      // .then(() => this._initTables(cardSeeds, skillSeeds))
+      .then(this._loadFromCardsTable)
+      .then(this._loadFromSkillsTable)
+      .then(() => this.bankModel)
 
-    const skills = (Object.values(this.bankModel.skillByCardId): any)
-    const skillsJson = JSON.stringify(skills.map(skill => {
-      const { card } = skill
-      const { delay, endurance, lastCorrectAt, mnemonic } = skill
-      return {
-        cardType: card.constructor.name,
-        cardKey: card.getKey(),
-        delay,
-        endurance,
-        lastCorrectAt,
-        mnemonic,
-      }
-    })).replace(/,{"cardType"/g, ',\n{"cardType"')
-
-    return `Paste in src/cards/seeds/cardSeeds.js:\n\n${cardsJson}` +
-      `\n\nPaste in src/cards/seeds/skillSeeds.js:\n\n${skillsJson}`
-  }
-
-  reseedDatabase = (
-    cardSeeds: Array<CardSeed>,
-    skillSeeds: Array<SkillSeed>,
+  replaceDatabase = (
+    cards: Array<Card>,
+    skills: Array<Skill>,
   ): Promise<BankModel> =>
     cardsTable.drop(this.db)
       .then(() => skillsTable.drop(this.db))
-      .then(() => this._initTables(cardSeeds, skillSeeds))
+      .then(() => this._initTables(cards, skills))
       .then(this._loadFromCardsTable)
       .then(this._loadFromSkillsTable)
       .then(() => this.bankModel)
 
   updateSkills = (baseUpdates: Array<SkillUpdate>): Promise<BankModel> => {
-    const { parentCardsByCardId, skillByCardId } = this.bankModel
+    const {
+      cardByCardId,
+      parentCardIdsByCardId,
+      skillByCardId
+    } = this.bankModel
 
     const updateByCardId: {[number]: SkillUpdate} = {}
     let updatesToProcess = baseUpdates.slice() // copy
@@ -225,13 +106,19 @@ export default class Bank {
         updateByCardId[cardId] = update
 
         if (delay !== undefined) {
-          for (const parent of parentCardsByCardId[cardId] || []) {
+          for (const parentCardId of parentCardIdsByCardId[cardId] || []) {
+            const parent = cardByCardId[parentCardId]
+            if (parent === undefined) {
+              throw new Error(
+                `Can't find card for parentCardId ${parentCardId}`)
+            }
+
             let totalDelay = 0
-            for (const sibling of parent.getChildren()) {
-              totalDelay += (updateByCardId[sibling.cardId] === undefined)
-                ? skillByCardId[sibling.cardId].delay
-                : (updateByCardId[sibling.cardId].delay ||
-                  skillByCardId[sibling.cardId].delay)
+            for (const siblingCardId of parent.childrenCardIds) {
+              totalDelay += (updateByCardId[siblingCardId] === undefined)
+                ? skillByCardId[siblingCardId].delay
+                : (updateByCardId[siblingCardId].delay ||
+                  skillByCardId[siblingCardId].delay)
             }
 
             let newUpdate

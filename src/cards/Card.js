@@ -1,12 +1,10 @@
 import type { GlossRow } from './GlossRow'
 
-export interface Card {
+export type Card = {|
   cardId: number,
-  getChildren(): Array<Card>,
-  getContentJson(): string,
-  getEsWords(): Array<string>,
-  getExport(): {},
-  getKey(): string,
-  getGlossRows(): Array<GlossRow>,
-  getQuizQuestion(): string,
-}
+  type: string,
+  childrenCardIds: Array<number>,
+  esWords: Array<string>,
+  glossRows: Array<GlossRow>,
+  quizQuestion: string,
+|}
