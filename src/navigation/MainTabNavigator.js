@@ -2,6 +2,7 @@ import React from 'react'
 import { Platform, Text } from 'react-native'
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation'
 
+import type { Category } from '../cards/Category'
 import SlowSpeakGameScreen from '../screens/SlowSpeakGameScreen'
 import type { ScreenProps } from './ScreenProps'
 import SettingsScreen from '../screens/SettingsScreen'
@@ -14,7 +15,7 @@ const SpeakStack = createStackNavigator({
     screen: (args: { navigation: any, screenProps: ScreenProps }) =>
       <SpeakSummaryScreen
         bankModel={args.screenProps.bankModel}
-        startSpeakQuiz={(category: string) => {
+        startSpeakQuiz={(category: Category) => {
           args.navigation.navigate('SpeakQuiz', { category })
         }} />,
     navigationOptions: () => ({

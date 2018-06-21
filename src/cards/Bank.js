@@ -1,6 +1,7 @@
 import type { BankModel } from './BankModel'
 import type { Card } from './Card'
 import * as cardsTable from '../db/cardsTable'
+import type { Category } from './Category'
 import { DELAY_THRESHOLD } from './Skill'
 import type { Skill } from './Skill'
 import * as skillsTable from '../db/skillsTable'
@@ -76,13 +77,23 @@ export default class Bank {
   _redoCategoryToCardIds = () => {
     const { skillByCardId } = this.bankModel
 
-    const categoryToCardIds: {[string]: Array<number>} = {}
+    const categoryToCardIds: {[Category]: Array<number>} = {}
     for (const skill of (Object.values(skillByCardId): any)) {
-      let category: string
-      if (skill.delay < DELAY_THRESHOLD) {
-        category = 'LEARNED'
-      } else if (skill.delay === DELAY_THRESHOLD) {
-        category = 'NOT TESTED YET'
+      let category: Category
+      if (skill.delay === DELAY_THRESHOLD) {
+        if (skill.lastSeenAt === 0) {
+          category = 'NOT TESTED YET'
+        } else {
+          category = 'WRONG'
+        }
+      } else if (skill.delay < DELAY_THRESHOLD) {
+        if (skill.endurance < 60 * 60) {
+          category = 'JUST_STARTED'
+        } else if (skill.endurance < 24 * 60 * 60) {
+          category = 'ENDURANCE >= 1H'
+        } else {
+          category = 'ENDURANCE >= 1D'
+        }
       } else if (skill.delay > DELAY_THRESHOLD) {
         category = 'NOT READY'
       } else {

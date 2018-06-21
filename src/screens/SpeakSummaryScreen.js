@@ -8,11 +8,13 @@ import {
   View,
 } from 'react-native'
 
+import { ALL_CATEGORIES } from '../cards/Category'
 import type { BankModel } from '../cards/BankModel'
+import type { Category } from '../cards/Category'
 
 type Props = {|
   bankModel: BankModel,
-  startSpeakQuiz: (category: string) => void,
+  startSpeakQuiz: (category: Category) => void,
 |}
 
 const styles = StyleSheet.create({
@@ -43,7 +45,7 @@ const styles = StyleSheet.create({
 })
 
 type ListItem = {|
-  category: string,
+  category: Category,
   numCards: number,
 |}
 
@@ -51,8 +53,8 @@ export default class SpeakSummaryScreen extends React.PureComponent<Props> {
   summarizeListItems = (): Array<ListItem> => {
     const { categoryToCardIds } = this.props.bankModel
     const categoryToListItem: {[string]: ListItem} = {}
-    for (const category of Object.keys(categoryToCardIds)) {
-      const cardIds = categoryToCardIds[category]
+    for (const category of ALL_CATEGORIES) {
+      const cardIds = categoryToCardIds[category] || []
       categoryToListItem[category] = { category, numCards: cardIds.length }
     }
     return (Object.values(categoryToListItem): any)
