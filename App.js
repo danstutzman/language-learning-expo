@@ -28,7 +28,7 @@ type State = {
 
 const db = SQLite.openDatabase('db.db')
 const bank = new Bank(db)
-const backend = new Backend('https://4a886732.ngrok.io')
+const backend = new Backend('https://e9e9e1f0.ngrok.io/api')
 
 export default class App extends React.PureComponent<Props, State> {
   constructor() {
