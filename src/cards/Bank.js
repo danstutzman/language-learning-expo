@@ -166,10 +166,13 @@ export default class Bank {
 
             let totalDelay = 0
             for (const siblingCardId of parent.childrenCardIds) {
+              const skill = skillByCardId[siblingCardId]
+              if (skill === undefined) {
+                throw new Error(`Can't find skill for cardId ${siblingCardId}`)
+              }
               totalDelay += (updateByCardId[siblingCardId] === undefined)
-                ? skillByCardId[siblingCardId].delay
-                : (updateByCardId[siblingCardId].delay ||
-                  skillByCardId[siblingCardId].delay)
+                ? skill.delay
+                : (updateByCardId[siblingCardId].delay || skill.delay)
             }
 
             let newUpdate
