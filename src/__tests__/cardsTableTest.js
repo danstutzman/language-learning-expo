@@ -8,7 +8,6 @@ it('can create, seed, and drop', done => {
     key: 'preguntar',
     childrenCardIds: [],
     glossRows: [{ cardId: 1, en: 'ask', es: 'preguntar' }],
-    esWords: ['preguntar'],
     quizQuestion: 'to ask',
   }]
 

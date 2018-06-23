@@ -23,7 +23,6 @@ export function create(db: any): Promise<void> {
           key TEXT NOT NULL,
           childrenCardIdsJson TEXT NOT NULL,
           glossRowsJson TEXT NOT NULL,
-          esWordsJson TEXT NOT NULL,
           quizQuestion TEXT NOT NULL
         )`,
         [],
@@ -46,7 +45,6 @@ export function insertRows(db: any, cards: Array<Card>): Promise<Array<Card>> {
             key,
             childrenCardIdsJson,
             glossRowsJson,
-            esWordsJson,
             quizQuestion)
           VALUES `
         const values = []
@@ -56,13 +54,12 @@ export function insertRows(db: any, cards: Array<Card>): Promise<Array<Card>> {
           if (i > 0) {
             sql += ', '
           }
-          sql += '(?,?,?,?,?,?,?)'
+          sql += '(?,?,?,?,?,?)'
           values.push(card.cardId)
           values.push(card.type)
           values.push(card.key)
           values.push(JSON.stringify(card.childrenCardIds))
           values.push(JSON.stringify(card.glossRows))
-          values.push(JSON.stringify(card.esWords))
           values.push(card.quizQuestion)
         }
         tx.executeSql(sql, values, () => resolve())
@@ -81,7 +78,6 @@ export function selectAll(db: any): Promise<Array<Card>> {
             key,
             childrenCardIdsJson,
             glossRowsJson,
-            esWordsJson,
             quizQuestion
           FROM cards
           ORDER BY cardId`,
@@ -92,7 +88,6 @@ export function selectAll(db: any): Promise<Array<Card>> {
           key: row.key,
           childrenCardIds: JSON.parse(row.childrenCardIdsJson),
           glossRows: JSON.parse(row.glossRowsJson),
-          esWords: JSON.parse(row.esWordsJson),
           quizQuestion: row.quizQuestion,
         })))
       ),
