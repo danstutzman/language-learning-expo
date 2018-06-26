@@ -10,20 +10,19 @@ import {
 
 import type { BankModel } from '../cards/BankModel'
 import type { Card } from '../cards/Card'
-import { DELAY_THRESHOLD } from '../cards/Skill'
+import type { CardUpdate } from '../cards/CardUpdate'
 import type { GlossRow } from '../cards/GlossRow'
-import type { Skill } from '../cards/Skill'
-import type { SkillUpdate } from '../db/SkillUpdate'
+import { STAGE2_WRONG } from '../cards/Stage'
+import { STAGE3_PASSED } from '../cards/Stage'
 
 type Props = {|
   bankModel: BankModel,
   card: Card,
-  skill: Skill,
-  updateSkills: (Array<SkillUpdate>) => Promise<void>,
+  updateCards: (Array<CardUpdate>) => Promise<void>,
 |}
 
 type State = {|
-  recalledByLeafCardId: {[number]: boolean},
+  recalledByLeafId: {[number]: boolean},
   delay: number | null, // milliseconds to answer
 |}
 
@@ -67,24 +66,17 @@ const styles = StyleSheet.create({
   },
 })
 
-function assertNotNull(value: number | null): number {
-  if (value === null) {
-    throw new Error('Unexpected null')
-  }
-  return value
-}
-
 export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   timerStartedAtMillis: number
 
   constructor(props: Props) {
     super(props)
     this.timerStartedAtMillis = new Date().getTime()
-    this.state = { recalledByLeafCardId: {}, delay: null }
+    this.state = { recalledByLeafId: {}, delay: null }
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (this.props.skill.cardId !== prevProps.skill.cardId) {
+    if (this.props.card.leafIdsCsv !== prevProps.card.leafIdsCsv) {
       this.timerStartedAtMillis = new Date().getTime()
       this.setState({ delay: null })
     }
@@ -95,13 +87,13 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
     this.speakSpanish(glossRows)
 
-    const recalledByLeafCardId = {}
+    const recalledByLeafId = {}
     for (const glossRow of glossRows) {
-      recalledByLeafCardId[glossRow.cardId] = true
+      recalledByLeafId[glossRow.leafId] = true
     }
 
     this.setState({
-      recalledByLeafCardId,
+      recalledByLeafId,
       delay: new Date().getTime() - this.timerStartedAtMillis,
     })
   }
@@ -110,56 +102,31 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
     this.speakSpanish([glossRow])
 
     this.setState(prevState => ({
-      recalledByLeafCardId: {
-        ...prevState.recalledByLeafCardId,
-        [glossRow.cardId]: !prevState.recalledByLeafCardId[glossRow.cardId],
+      recalledByLeafId: {
+        ...prevState.recalledByLeafId,
+        [glossRow.leafId]: !prevState.recalledByLeafId[glossRow.leafId],
       },
     }))
   }
 
-  _gatherFailedSkillUpdates(card: Card) {
-    const { recalledByLeafCardId } = this.state
-    if (card.childrenCardIds.length === 0) {
-      if (recalledByLeafCardId[card.cardId]) {
-        return []
-      } else {
-        return [{
-          cardId: card.cardId,
-          delay: DELAY_THRESHOLD,
-          endurance: 0,
-        }]
-      }
-    } else {
-      return card.childrenCardIds
-        .map(childCardId => this._gatherFailedSkillUpdates(
-          this.props.bankModel.cardByCardId[childCardId]))
-        .reduce((accum, item) => accum.concat(item), [])
-    }
-  }
-
   onNext = () => {
-    const { card, skill, updateSkills } = this.props
-    const { recalledByLeafCardId, delay } = this.state
+    const { card, updateCards } = this.props
+    const { recalledByLeafId, delay } = this.state
     const incorrectRows = card.glossRows.filter(glossRow =>
-      !recalledByLeafCardId[glossRow.cardId])
+      !recalledByLeafId[glossRow.leafId])
+    const lastSeenAt = Math.floor(this.timerStartedAtMillis / 1000)
     if (incorrectRows.length === 0) {
-      let enduranceUpdate = {}
-      if (skill.lastSeenAt !== 0 && skill.delay < DELAY_THRESHOLD) {
-        const newEndurance = Math.floor(
-          this.timerStartedAtMillis / 1000 - skill.lastSeenAt)
-        if (newEndurance > skill.endurance) {
-          enduranceUpdate = { endurance: newEndurance }
-        }
-      }
-
-      updateSkills([{
-        cardId: skill.cardId,
-        delay: assertNotNull(delay),
-        lastSeenAt: Math.floor(this.timerStartedAtMillis / 1000),
-        ...enduranceUpdate,
+      updateCards([{
+        lastSeenAt,
+        leafIdsCsv: card.leafIdsCsv,
+        stage: STAGE3_PASSED,
       }])
     } else {
-      updateSkills(this._gatherFailedSkillUpdates(this.props.card))
+      updateCards(incorrectRows.map(glossRow => ({
+        lastSeenAt,
+        leafIdsCsv: glossRow.leafId.toString(),
+        stage: STAGE2_WRONG,
+      })))
     }
   }
 
@@ -171,15 +138,15 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
 
   renderGlossTable() {
     return this.props.card.glossRows.map(glossRow => {
-      const { cardId, en, es } = glossRow
+      const { leafId, en, es } = glossRow
       return <TouchableOpacity
-        key={cardId}
+        key={leafId}
         style={styles.glossTableRow}
         onPress={() => this.pressGlossTableRow(glossRow)}>
         <Text style={styles.glossTableEnglish}>{en}</Text>
         <Text style={[
           styles.glossTableSpanish,
-          this.state.recalledByLeafCardId[cardId]
+          this.state.recalledByLeafId[leafId]
             ? styles.glossTableSpanishRemembered
             : styles.glossTableSpanishForgotten,
         ]}>{es}</Text>
@@ -190,7 +157,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   render() {
     return <View style={styles.container}>
       <Text style={styles.cardEnglish}>
-        {this.props.card.quizQuestion}
+        {this.props.card.prompt}
       </Text>
       <View style={styles.glossTable}>
         {this.state.delay === null
@@ -201,7 +168,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
       </View>
       <Button
         onPress={this.onNext}
-        title={this.delay === 0 ? 'I forget' : 'Next card'} />
+        title={this.state.delay === 0 ? 'I forget' : 'Next card'} />
     </View>
   }
 }

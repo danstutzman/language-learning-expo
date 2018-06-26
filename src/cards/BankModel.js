@@ -1,10 +1,8 @@
 import type { Card } from './Card'
-import type { Category } from './Category'
-import type { Skill } from './Skill'
 
 export type BankModel = {|
-  cardByCardId: {[number]: Card},
-  categoryToCardIds: {[Category]: Array<number>},
-  parentCardIdsByCardId: {[number]: Array<number>},
-  skillByCardId: {[number]: Skill},
+  ancestorLeafIdsCsvsByLeafIdCsv: {[string]: Array<string>},
+  descendantLeafIdsCsvsByLeafIdCsv: {[string]: Array<string>},
+  cardByLeafIdsCsv: {[string]: Card},
+  stageToLeafIdsCsvs: {[number]: Array<string>},
 |}

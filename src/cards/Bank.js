@@ -1,11 +1,11 @@
 import type { BankModel } from './BankModel'
 import type { Card } from './Card'
 import * as cardsTable from '../db/cardsTable'
-import type { Category } from './Category'
-import { DELAY_THRESHOLD } from './Skill'
-import type { Skill } from './Skill'
-import * as skillsTable from '../db/skillsTable'
-import type { SkillUpdate } from '../db/SkillUpdate'
+import type { CardUpdate } from './CardUpdate'
+import { STAGE0_NOT_READY_TO_TEST } from '../cards/Stage'
+import { STAGE1_READY_TO_TEST } from '../cards/Stage'
+import { STAGE2_WRONG } from '../cards/Stage'
+import { STAGE3_PASSED } from '../cards/Stage'
 
 export default class Bank {
   bankModel: BankModel
@@ -15,201 +15,163 @@ export default class Bank {
     this.db = db
   }
 
-  init = (cards: Array<Card>, skills: Array<Skill>): Promise<BankModel> =>
-    this._initTables(cards, skills)
+  init = (cards: Array<Card>): Promise<BankModel> =>
+    this._initTables(cards)
       .then(this._loadFromCardsTable)
-      .then(this._loadFromSkillsTable)
-      .then(this._redoCategoryToCardIds)
       .then(() => this.bankModel)
 
-  _initTables = (cards: Array<Card>, skills: Array<Skill>): Promise<void> =>
+  _initTables = (cards: Array<Card>): Promise<void> =>
     Promise.all([
       cardsTable.checkExists(this.db),
-      skillsTable.checkExists(this.db),
-    ]).then((exists: [boolean, boolean]) => {
-      if (!exists[0] || !exists[1]) {
+    ]).then((exists: [boolean]) => {
+      if (!exists[0]) {
         return cardsTable.drop(this.db)
           .then(() => cardsTable.create(this.db))
-          .then(() => cardsTable.insertRows(this.db, cards))
-          .then(() => skillsTable.drop(this.db))
-          .then(() => skillsTable.create(this.db))
-          .then(() => skillsTable.insertRows(this.db, skills))
+          .then(() => cardsTable.insert(this.db, cards))
       }
     })
 
   _loadFromCardsTable = (): Promise<void> =>
     cardsTable.selectAll(this.db)
       .then((cards: Array<Card>) => {
-        const cardByCardId: {[number]: Card} = {}
+        const cardByLeafIdsCsv: {[string]: Card} = {}
         for (const card of cards) {
-          cardByCardId[card.cardId] = card
+          cardByLeafIdsCsv[card.leafIdsCsv] = card
         }
 
-        const parentCardIdsByCardId: {[number]: Array<number>} = {}
-        for (const card of (Object.values(cardByCardId): any)) {
-          for (const childCardId of card.childrenCardIds) {
-            if (parentCardIdsByCardId[childCardId] === undefined) {
-              parentCardIdsByCardId[childCardId] = []
+        const ancestorLeafIdsCsvsByLeafIdCsv: {[string]: Array<string>} = {}
+        for (const card of cards) {
+          ancestorLeafIdsCsvsByLeafIdCsv[card.leafIdsCsv] = []
+        }
+        const descendantLeafIdsCsvsByLeafIdCsv: {[string]: Array<string>} = {}
+        for (const card of cards) {
+          descendantLeafIdsCsvsByLeafIdCsv[card.leafIdsCsv] = []
+        }
+
+        for (const card1 of cards) {
+          const leafIdsCsv1 = card1.leafIdsCsv
+          for (const card2 of cards) {
+            const leafIdsCsv2 = card2.leafIdsCsv
+            if (leafIdsCsv1 !== leafIdsCsv2) {
+              if (leafIdsCsv1.indexOf(leafIdsCsv2) !== -1) {
+                if (leafIdsCsv1.startsWith(`${leafIdsCsv2},`) ||
+                  leafIdsCsv1.endsWith(`,${leafIdsCsv2}`) ||
+                  leafIdsCsv1.indexOf(`,${leafIdsCsv2},`) !== -1) {
+                  ancestorLeafIdsCsvsByLeafIdCsv[leafIdsCsv2].push(leafIdsCsv1)
+                  descendantLeafIdsCsvsByLeafIdCsv[leafIdsCsv1].push(
+                    leafIdsCsv2)
+                }
+              }
             }
-            parentCardIdsByCardId[childCardId].push(card.cardId)
           }
         }
 
         this.bankModel = {
-          cardByCardId,
-          categoryToCardIds: {},
-          parentCardIdsByCardId,
-          skillByCardId: {},
+          ancestorLeafIdsCsvsByLeafIdCsv,
+          cardByLeafIdsCsv,
+          descendantLeafIdsCsvsByLeafIdCsv,
+          stageToLeafIdsCsvs: {},
         }
+        this._recalcStageToLeafIdsCsvs()
       })
 
-  _loadFromSkillsTable = (): Promise<void> =>
-    skillsTable.selectAll(this.db)
-      .then((skills: Array<Skill>) => {
-        const skillByCardId: {[number]: Skill} = {}
-        for (const skill of skills) {
-          skillByCardId[skill.cardId] = skill
-        }
+  _recalcStageToLeafIdsCsvs = (): BankModel => {
+    const cards: Array<Card> =
+      (Object.values(this.bankModel.cardByLeafIdsCsv): any)
+    cards.sort((card1: Card, card2: Card) => {
+      if (card1.lastSeenAt === null) { return -1 }
+      if (card2.lastSeenAt === null) { return 1 }
+      return (card1.lastSeenAt < card2.lastSeenAt) ? -1 : 1
+    })
 
-        this.bankModel = { ...this.bankModel, skillByCardId }
-      })
-
-  _redoCategoryToCardIds = () => {
-    const { skillByCardId } = this.bankModel
-
-    const categoryToCardIds: {[Category]: Array<number>} = {}
-    for (const skill of (Object.values(skillByCardId): any)) {
-      let category: Category
-      if (skill.delay === DELAY_THRESHOLD) {
-        if (skill.lastSeenAt === 0) {
-          category = 'NOT TESTED YET'
-        } else {
-          category = 'WRONG'
-        }
-      } else if (skill.delay < DELAY_THRESHOLD) {
-        if (skill.endurance < 60 * 60) {
-          category = 'JUST_STARTED'
-        } else if (skill.endurance < 24 * 60 * 60) {
-          category = 'ENDURANCE >= 1H'
-        } else {
-          category = 'ENDURANCE >= 1D'
-        }
-      } else if (skill.delay > DELAY_THRESHOLD) {
-        category = 'NOT READY'
-      } else {
-        throw new Error('Impossible')
+    const stageToLeafIdsCsvs: {[number]: Array<string>} = {}
+    for (const card: Card of cards) {
+      if (stageToLeafIdsCsvs[card.stage] === undefined) {
+        stageToLeafIdsCsvs[card.stage] = []
       }
-
-      if (categoryToCardIds[category] === undefined) {
-        categoryToCardIds[category] = []
-      }
-      categoryToCardIds[category].push(skill.cardId)
+      stageToLeafIdsCsvs[card.stage].push(card.leafIdsCsv)
     }
-
-    for (const category of Object.keys(categoryToCardIds)) {
-      const cardIds = categoryToCardIds[category]
-      cardIds.sort((cardId1: number, cardId2: number) => {
-        const skill1 = skillByCardId[cardId1]
-        const skill2 = skillByCardId[cardId2]
-        return skill1.lastSeenAt < skill2.lastSeenAt ? -1 : 1
-      })
-    }
-
-    this.bankModel = { ...this.bankModel, categoryToCardIds }
+    this.bankModel = { ...this.bankModel, stageToLeafIdsCsvs }
+    return this.bankModel
   }
 
   deleteDatabase = (): Promise<BankModel> =>
     cardsTable.drop(this.db)
-      .then(() => skillsTable.drop(this.db))
       .then(() => cardsTable.create(this.db))
-      .then(() => skillsTable.create(this.db))
       .then(this._loadFromCardsTable)
-      .then(this._loadFromSkillsTable)
-      .then(this._redoCategoryToCardIds)
       .then(() => this.bankModel)
 
   replaceDatabase = (
-    cards: Array<Card>,
-    skills: Array<Skill>,
+    cards: Array<Card>
   ): Promise<BankModel> =>
     cardsTable.drop(this.db)
-      .then(() => skillsTable.drop(this.db))
-      .then(() => this._initTables(cards, skills))
+      .then(() => this._initTables(cards))
       .then(this._loadFromCardsTable)
-      .then(this._loadFromSkillsTable)
-      .then(this._redoCategoryToCardIds)
       .then(() => this.bankModel)
 
-  updateSkills = (baseUpdates: Array<SkillUpdate>): Promise<BankModel> => {
+  updateCards = (triggeringCardUpdates: Array<CardUpdate>):
+    Promise<BankModel> => {
     const {
-      cardByCardId,
-      parentCardIdsByCardId,
-      skillByCardId
+      ancestorLeafIdsCsvsByLeafIdCsv,
+      cardByLeafIdsCsv,
+      descendantLeafIdsCsvsByLeafIdCsv,
     } = this.bankModel
 
-    const updateByCardId: {[number]: SkillUpdate} = {}
-    let updatesToProcess = baseUpdates.slice() // copy
-    while (updatesToProcess.length > 0) {
-      const newUpdatesToProcess = []
-      for (const update of updatesToProcess) {
-        const { cardId, delay } = update
+    const triggeringCardUpdateByLeafCardId: {[string]: CardUpdate} = {}
+    for (const triggeringCardUpdate of triggeringCardUpdates) {
+      triggeringCardUpdateByLeafCardId[triggeringCardUpdate.leafIdsCsv] =
+        triggeringCardUpdate
+    }
 
-        updateByCardId[cardId] = update
+    const bubbledCardUpdateByLeafCardId: {[string]: CardUpdate} = {}
+    for (const triggeringCardUpdate of triggeringCardUpdates) {
+      const triggeredLeafIdsCsv = triggeringCardUpdate.leafIdsCsv
 
-        if (delay !== undefined) {
-          for (const parentCardId of parentCardIdsByCardId[cardId] || []) {
-            const parent = cardByCardId[parentCardId]
-            if (parent === undefined) {
-              throw new Error(
-                `Can't find card for parentCardId ${parentCardId}`)
-            }
-
-            let totalDelay = 0
-            for (const siblingCardId of parent.childrenCardIds) {
-              const skill = skillByCardId[siblingCardId]
-              if (skill === undefined) {
-                throw new Error(`Can't find skill for cardId ${siblingCardId}`)
-              }
-              totalDelay += (updateByCardId[siblingCardId] === undefined)
-                ? skill.delay
-                : (updateByCardId[siblingCardId].delay || skill.delay)
-            }
-
-            let newUpdate
-            if (totalDelay >= DELAY_THRESHOLD) {
-              newUpdate = {
-                cardId: parent.cardId,
-                delay: totalDelay,
-                endurance: 0,
-              }
-            } else {
-              newUpdate = {
-                cardId: parent.cardId,
-                delay: totalDelay,
-              }
-            }
-            newUpdatesToProcess.push(newUpdate)
-            updateByCardId[parent.cardId] = newUpdate
+      for (const ancestorLeafIdsCsv of
+        ancestorLeafIdsCsvsByLeafIdCsv[triggeredLeafIdsCsv]) {
+        let readyToTest: boolean = true
+        for (const descendantOfAncestorLeafIdsCsv of
+          descendantLeafIdsCsvsByLeafIdCsv[ancestorLeafIdsCsv]) {
+          const descendantOfAncestorCard =
+            triggeringCardUpdateByLeafCardId[descendantOfAncestorLeafIdsCsv] ||
+            cardByLeafIdsCsv[descendantOfAncestorLeafIdsCsv]
+          const descendantStage = descendantOfAncestorCard.stage
+          if (descendantStage === STAGE0_NOT_READY_TO_TEST ||
+            descendantStage === STAGE1_READY_TO_TEST ||
+            descendantStage === STAGE2_WRONG) {
+            readyToTest = false
           }
         }
-      }
-      updatesToProcess = newUpdatesToProcess
-    }
-    const allUpdates: Array<SkillUpdate> = (Object.values(updateByCardId): any)
 
-    const newSkillByCardId = { ...this.bankModel.skillByCardId } // copy
-    for (const update of allUpdates) {
-      const oldSkill = skillByCardId[update.cardId]
-      if (oldSkill === undefined) {
-        throw new Error(`Can't find skill for cardId=${update.cardId}`)
-      }
-      newSkillByCardId[update.cardId] = { ...oldSkill, ...update }
-    }
-    this.bankModel = { ...this.bankModel, skillByCardId: newSkillByCardId }
+        const ancestorCard =
+          triggeringCardUpdateByLeafCardId[ancestorLeafIdsCsv] ||
+          cardByLeafIdsCsv[ancestorLeafIdsCsv]
+        let newAncestorStage = ancestorCard.stage
+        if (readyToTest && newAncestorStage === STAGE0_NOT_READY_TO_TEST) {
+          newAncestorStage = STAGE1_READY_TO_TEST
+        } else if (!readyToTest) {
+          newAncestorStage = STAGE0_NOT_READY_TO_TEST
+        }
 
-    return Promise.all(allUpdates.map(update =>
-      skillsTable.updateRow(this.db, update)))
-      .then(this._redoCategoryToCardIds)
+        bubbledCardUpdateByLeafCardId[ancestorLeafIdsCsv] =
+          { leafIdsCsv: ancestorLeafIdsCsv, stage: newAncestorStage }
+      }
+    }
+    const allCardUpdates: Array<CardUpdate> = triggeringCardUpdates.concat(
+      (Object.values(bubbledCardUpdateByLeafCardId): any))
+
+    const newCardByLeafIdsCsv = { ...this.bankModel.cardByLeafIdsCsv } // copy
+    for (const cardUpdate of allCardUpdates) {
+      newCardByLeafIdsCsv[cardUpdate.leafIdsCsv] = {
+        ...newCardByLeafIdsCsv[cardUpdate.leafIdsCsv],
+        ...cardUpdate,
+      }
+    }
+    this.bankModel.cardByLeafIdsCsv = newCardByLeafIdsCsv
+
+    this._recalcStageToLeafIdsCsvs()
+
+    return cardsTable.updateCards(this.db, allCardUpdates)
       .then(() => this.bankModel)
   }
 }

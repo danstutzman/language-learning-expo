@@ -1,14 +1,11 @@
 import type { Card } from '../cards/Card'
-import type { Skill } from '../cards/Skill'
 
 const FETCH_TIMEOUT_MILLIS = 5000
 
-type SkillExport = {|
-  cardType: string,
-  cardKey: string,
+type CardUpload = {|
+  leafIds: Array<number>,
   mnemonic: string,
-  delay: number,
-  endurance: number,
+  stage: number,
   lastSeenAt: number,
 |}
 
@@ -19,8 +16,7 @@ export default class Backend {
     this.baseUrl = baseUrl
   }
 
-  downloadDatabase = ():
-    Promise<{cards: Array<Card>, skills: Array<Skill>}> =>
+  downloadDatabase = (): Promise<{cards: Array<Card>}> =>
     new Promise((resolve, reject) => {
       const timeout = setTimeout(
         () => reject(new Error(`Timeout from ${this.baseUrl}`)),
@@ -32,8 +28,8 @@ export default class Backend {
             if (response.ok) {
               clearTimeout(timeout)
               try {
-                const { cards, skills } = JSON.parse(text)
-                resolve({ cards, skills })
+                const { cardDownloads } = JSON.parse(text)
+                resolve({ cards: cardDownloads })
               } catch (e) {
                 console.error('Error parsing JSON', text, e)
                 reject(e)
@@ -46,29 +42,29 @@ export default class Backend {
         })
     })
 
-  uploadSkills = (skillExports: Array<SkillExport>): Promise<void> =>
-    new Promise((resolve, reject) => {
-      const timeout = setTimeout(
-        () => reject(new Error(`Timeout from ${this.baseUrl}`)),
-        FETCH_TIMEOUT_MILLIS
-      )
-      fetch(this.baseUrl, {
-        body: JSON.stringify({ skillExports }),
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }).then(response => {
-        return response.text().then(text => {
-          clearTimeout(timeout)
-          if (response.ok) {
-            resolve()
-          } else {
-            reject(new Error(
-              `Got status ${response.status} and response ${text} from ${
-                this.baseUrl}`))
-          }
-        })
-      })
-    })
+  // uploadSkills = (skillExports: Array<SkillExport>): Promise<void> =>
+  //   new Promise((resolve, reject) => {
+  //     const timeout = setTimeout(
+  //       () => reject(new Error(`Timeout from ${this.baseUrl}`)),
+  //       FETCH_TIMEOUT_MILLIS
+  //     )
+  //     fetch(this.baseUrl, {
+  //       body: JSON.stringify({ skillExports }),
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //     }).then(response => {
+  //       return response.text().then(text => {
+  //         clearTimeout(timeout)
+  //         if (response.ok) {
+  //           resolve()
+  //         } else {
+  //           reject(new Error(
+  //             `Got status ${response.status} and response ${text} from ${
+  //               this.baseUrl}`))
+  //         }
+  //       })
+  //     })
+  //   })
 }

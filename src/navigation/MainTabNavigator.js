@@ -2,7 +2,6 @@ import React from 'react'
 import { Platform, Text } from 'react-native'
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation'
 
-import type { Category } from '../cards/Category'
 import SlowSpeakGameScreen from '../screens/SlowSpeakGameScreen'
 import type { ScreenProps } from './ScreenProps'
 import SettingsScreen from '../screens/SettingsScreen'
@@ -15,8 +14,8 @@ const SpeakStack = createStackNavigator({
     screen: (args: { navigation: any, screenProps: ScreenProps }) =>
       <SpeakSummaryScreen
         bankModel={args.screenProps.bankModel}
-        startSpeakQuiz={(category: Category) => {
-          args.navigation.navigate('SpeakQuiz', { category })
+        startSpeakQuiz={(stage: number) => {
+          args.navigation.navigate('SpeakQuiz', { stage })
         }} />,
     navigationOptions: () => ({
       title: 'Speak in Spanish',
@@ -24,32 +23,29 @@ const SpeakStack = createStackNavigator({
   },
   SpeakQuiz: {
     screen: (args: { navigation: any, screenProps: ScreenProps }) => {
-      const { category } = args.navigation.state.params
-      const { bankModel, updateSkills } = args.screenProps
+      const { stage } = args.navigation.state.params
+      const { bankModel, updateCards } = args.screenProps
 
-      const cardId = (bankModel.categoryToCardIds[category] || [])[0]
-      if (cardId === undefined) {
-        return <Text>No card for category {category}</Text>
+      const leafIdsCsv = (bankModel.stageToLeafIdsCsvs[stage] || [])[0]
+      if (leafIdsCsv === undefined) {
+        return <Text>No card for stage {stage}</Text>
       } else {
-        const topSkill = bankModel.skillByCardId[cardId]
-        const topCard = bankModel.cardByCardId[cardId]
-        if (topCard.glossRows.length === 1) {
+        const card = bankModel.cardByLeafIdsCsv[leafIdsCsv]
+        if (card.glossRows.length === 1) {
           return <SlowSpeakGameScreen
-            card={topCard}
-            skill={topSkill}
-            updateSkills={updateSkills} />
+            card={card}
+            updateCards={updateCards} />
         } else {
           return <SpeakQuizScreen
             bankModel={bankModel}
-            card={topCard}
-            skill={topSkill}
-            updateSkills={updateSkills} />
+            card={card}
+            updateCards={updateCards} />
         }
       }
     },
     navigationOptions: (args: {navigation: any, screenProps: ScreenProps}) => {
-      const { category } = args.navigation.state.params
-      return { title: `Speak: ${category}` }
+      const { stage } = args.navigation.state.params
+      return { title: `Speak: ${stage}` }
     },
   }
 })

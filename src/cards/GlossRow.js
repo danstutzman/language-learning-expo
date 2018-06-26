@@ -1,5 +1,5 @@
 export type GlossRow = {|
-  cardId: number,
+  leafId: number,
   en: string,
   es: string,
 |}

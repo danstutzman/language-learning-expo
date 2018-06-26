@@ -7,8 +7,8 @@ import Backend from './src/backend/Backend'
 import Bank from './src/cards/Bank'
 import type { BankModel } from './src/cards/BankModel'
 import type { Card } from './src/cards/Card'
+import type { CardUpdate } from './src/cards/CardUpdate'
 import RootNavigation from './src/navigation/RootNavigation'
-import type { Skill } from './src/cards/Skill'
 
 const styles = StyleSheet.create({
   container: {
@@ -28,7 +28,7 @@ type State = {
 
 const db = SQLite.openDatabase('db.db')
 const bank = new Bank(db)
-const backend = new Backend('https://e9e9e1f0.ngrok.io/api')
+const backend = new Backend('https://19c6e841.ngrok.io/api')
 
 export default class App extends React.PureComponent<Props, State> {
   constructor() {
@@ -36,11 +36,11 @@ export default class App extends React.PureComponent<Props, State> {
     this.state = {
       isLoadingComplete: false,
       bankModel: {
-        cardByCardId: {},
-        categoryToCardIds: {},
-        parentCardIdsByCardId: {},
-        skillByCardId: {},
-      }
+        ancestorLeafIdsCsvsByLeafIdCsv: {},
+        cardByLeafIdsCsv: {},
+        descendantLeafIdsCsvsByLeafIdCsv: {},
+        stageToLeafIdsCsvs: {},
+      },
     }
   }
 
@@ -59,24 +59,13 @@ export default class App extends React.PureComponent<Props, State> {
               .then(bankModel => this.setState({ bankModel }))}
           downloadDatabase={() =>
             backend.downloadDatabase()
-              .then((pair: { cards: Array<Card>, skills: Array<Skill> }) =>
-                bank.replaceDatabase(pair.cards, pair.skills))
+              .then((download: { cards: Array<Card> }) =>
+                bank.replaceDatabase(download.cards))
               .then(bankModel => this.setState({ bankModel }))}
-          uploadDatabase={() => backend.uploadSkills(
-            Object.values(this.state.bankModel.skillByCardId).map(skillMixed=> {
-              const skill: Skill = (skillMixed: any)
-              return {
-                cardType: this.state.bankModel.cardByCardId[skill.cardId].type,
-                cardKey: this.state.bankModel.cardByCardId[skill.cardId].key,
-                delay: skill.delay,
-                endurance: skill.endurance,
-                lastSeenAt: skill.lastSeenAt,
-                mnemonic: skill.mnemonic,
-              }
-            }))}
-          updateSkills={skillUpdates =>
-            bank.updateSkills(skillUpdates)
+          updateCards={(cardUpdates: Array<CardUpdate>) =>
+            bank.updateCards(cardUpdates)
               .then(bankModel => this.setState({ bankModel }))}
+          uploadDatabase={() => Promise.resolve()} // TODO
           bankModel={this.state.bankModel} />
       </View>
     }
@@ -95,7 +84,7 @@ export default class App extends React.PureComponent<Props, State> {
         // to remove this if you are not using it in your app
         'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
-      bank.init([], [])
+      bank.init([])
         .then(bankModel => this.setState({ bankModel }))
     ])
   }

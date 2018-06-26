@@ -10,9 +10,9 @@ import {
 } from 'react-native'
 
 import type { Card } from '../cards/Card'
-import { DELAY_THRESHOLD } from '../cards/Skill'
-import type { Skill } from '../cards/Skill'
-import type { SkillUpdate } from '../db/SkillUpdate'
+import type { CardUpdate } from '../cards/CardUpdate'
+import { STAGE2_WRONG } from '../cards/Stage'
+import { STAGE3_PASSED } from '../cards/Stage'
 
 const styles = StyleSheet.create({
   container: {
@@ -53,8 +53,7 @@ const styles = StyleSheet.create({
 
 export type Props = {|
   card: Card,
-  skill: Skill,
-  updateSkills: (Array<SkillUpdate>) => Promise<void>,
+  updateCards: (cardUpdates: Array<CardUpdate>) => Promise<void>,
 |}
 
 export type State = {|
@@ -78,7 +77,7 @@ export default class SlowSpeakGameScreen
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (this.props.card.cardId !== prevProps.card.cardId) {
+    if (this.props.card.leafIdsCsv !== prevProps.card.leafIdsCsv) {
       this.timerStartedAtMillis = new Date().getTime()
       this.setState({
         newMnemonic: null,
@@ -89,11 +88,14 @@ export default class SlowSpeakGameScreen
   }
 
   onMnemonicSubmitEditing = (mnemonic: string) =>
-    this.props.updateSkills([{ cardId: this.props.card.cardId, mnemonic }])
+    this.props.updateCards([{
+      leafIdsCsv: this.props.card.leafIdsCsv,
+      mnemonic,
+    }])
 
   speakMnemonicAndSpanish() {
     const es = this.props.card.glossRows[0].es
-    const mnemonic = this.props.skill.mnemonic
+    const mnemonic = this.props.card.mnemonic
 
     if (mnemonic !== '') {
       Speech.speak(mnemonic, { language: 'en', onDone: () =>
@@ -123,27 +125,12 @@ export default class SlowSpeakGameScreen
 
     const { timerStartedAtMillis } = this
     const { recalled, recalledAtMillis } = this.state
-    const { card, skill } = this.props
+    const { card } = this.props
 
-    let enduranceUpdate = {}
-    if (recalled) {
-      if (skill.lastSeenAt !== 0 && skill.delay < DELAY_THRESHOLD) {
-        const newEndurance =
-          Math.floor(timerStartedAtMillis / 1000 - skill.lastSeenAt)
-        if (newEndurance > skill.endurance) {
-          enduranceUpdate = { endurance: newEndurance }
-        }
-      }
-    } else {
-      enduranceUpdate = { endurance: 0 }
-    }
-
-    this.props.updateSkills([{
-      cardId: card.cardId,
-      delay: (recalled && recalledAtMillis !== null)
-        ? recalledAtMillis - timerStartedAtMillis : DELAY_THRESHOLD,
+    this.props.updateCards([{
+      leafIdsCsv: card.leafIdsCsv,
       lastSeenAt: Math.floor(timerStartedAtMillis / 1000),
-      ...enduranceUpdate,
+      stage: recalled ? STAGE3_PASSED : STAGE2_WRONG,
     }])
   }
 
@@ -162,7 +149,7 @@ export default class SlowSpeakGameScreen
         onSubmitEditing={this.onMnemonicSubmitEditing}
         autoCapitalize="none"
         value={this.state.newMnemonic !== null ?
-          this.state.newMnemonic : this.props.skill.mnemonic} />
+          this.state.newMnemonic : this.props.card.mnemonic} />
       <Text style={styles.es}>{this.props.card.glossRows[0].es}</Text>
     </View>
   }
@@ -170,7 +157,7 @@ export default class SlowSpeakGameScreen
   render() {
     return <View style={styles.container}>
       <Text style={styles.en}>
-        {this.props.card.quizQuestion}
+        {this.props.card.prompt}
       </Text>
 
       {this.state.recalledAtMillis === null
@@ -182,7 +169,7 @@ export default class SlowSpeakGameScreen
       <Button
         onPress={this.pressNext}
         title={this.state.recalledAtMillis === null ? 'I forget' : 'Next card'}
-        />
+      />
     </View>
   }
 }
