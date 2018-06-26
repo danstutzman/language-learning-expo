@@ -76,7 +76,7 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (this.props.card.leafIdsCsv !== prevProps.card.leafIdsCsv) {
+    if (this.props.card.cardId !== prevProps.card.cardId) {
       this.timerStartedAtMillis = new Date().getTime()
       this.setState({ delay: null })
     }
@@ -110,21 +110,21 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   onNext = () => {
-    const { card, updateCards } = this.props
+    const { bankModel, card, updateCards } = this.props
     const { recalledByLeafId, delay } = this.state
     const incorrectRows = card.glossRows.filter(glossRow =>
       !recalledByLeafId[glossRow.leafId])
     const lastSeenAt = Math.floor(this.timerStartedAtMillis / 1000)
     if (incorrectRows.length === 0) {
       updateCards([{
+        cardId: card.cardId,
         lastSeenAt,
-        leafIdsCsv: card.leafIdsCsv,
         stage: STAGE3_PASSED,
       }])
     } else {
       updateCards(incorrectRows.map(glossRow => ({
+        cardId: bankModel.leafIdToLeafCardId[glossRow.leafId],
         lastSeenAt,
-        leafIdsCsv: glossRow.leafId.toString(),
         stage: STAGE2_WRONG,
       })))
     }

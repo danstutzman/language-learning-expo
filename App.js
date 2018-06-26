@@ -36,10 +36,11 @@ export default class App extends React.PureComponent<Props, State> {
     this.state = {
       isLoadingComplete: false,
       bankModel: {
-        ancestorLeafIdsCsvsByLeafIdCsv: {},
-        cardByLeafIdsCsv: {},
-        descendantLeafIdsCsvsByLeafIdCsv: {},
-        stageToLeafIdsCsvs: {},
+        ancestorCardIdsByCardId: {},
+        cardByCardId: {},
+        descendantCardIdsByCardId: {},
+        leafIdToLeafCardId: {},
+        stageToCardIds: {},
       },
     }
   }

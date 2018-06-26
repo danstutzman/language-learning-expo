@@ -19,9 +19,10 @@ export function create(db: any): Promise<void> {
     db.transaction(
       tx => tx.executeSql(
         `CREATE TABLE cards (
+          cardId INTEGER PRIMARY KEY NOT NULL,
           glossRowsJson TEXT NOT NULL,
           lastSeenAt INTEGER,
-          leafIdsCsv TEXT PRIMARY KEY NOT NULL,
+          leafIdsCsv TEXT NOT NULL,
           mnemonic TEXT NOT NULL,
           prompt TEXT NOT NULL,
           stage INTEGER NOT NULL
@@ -41,7 +42,8 @@ export function insert(db: any, cards: Array<Card>): Promise<void> {
         if (cards.length === 0) { return resolve() }
 
         let sql = `INSERT INTO cards
-            (glossRowsJson,
+            (cardId,
+            glossRowsJson,
             lastSeenAt,
             leafIdsCsv,
             mnemonic,
@@ -55,7 +57,8 @@ export function insert(db: any, cards: Array<Card>): Promise<void> {
           if (i > 0) {
             sql += ', '
           }
-          sql += '(?,?,?,?,?,?)'
+          sql += '(?,?,?,?,?,?,?)'
+          values.push(card.cardId)
           values.push(JSON.stringify(card.glossRows))
           values.push(card.lastSeenAt)
           values.push(card.leafIdsCsv)
@@ -74,7 +77,8 @@ export function selectAll(db: any): Promise<Array<Card>> {
   return new Promise((resolve, reject) =>
     db.transaction(
       tx => tx.executeSql(
-        `SELECT glossRowsJson,
+        `SELECT cardId,
+            glossRowsJson,
             lastSeenAt,
             leafIdsCsv,
             mnemonic,
@@ -83,6 +87,7 @@ export function selectAll(db: any): Promise<Array<Card>> {
           FROM cards`,
         [],
         (tx, { rows: { _array } }) => resolve(_array.map(row => ({
+          cardId: row.cardId,
           glossRows: JSON.parse(row.glossRowsJson),
           lastSeenAt: row.lastSeenAt,
           leafIdsCsv: row.leafIdsCsv,
@@ -112,10 +117,10 @@ function updateCard(tx: any, cardUpdate: CardUpdate): Promise<void> {
       fields.push('stage=?')
       values.push(cardUpdate.stage)
     }
-    values.push(cardUpdate.leafIdsCsv)
+    values.push(cardUpdate.cardId)
 
     tx.executeSql(
-      `UPDATE cards SET ${fields.join(',')} WHERE leafIdsCsv=?`,
+      `UPDATE cards SET ${fields.join(',')} WHERE cardId=?`,
       values,
       (tx, { rows: { _array } }) => resolve(_array)
     )

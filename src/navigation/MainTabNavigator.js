@@ -26,11 +26,11 @@ const SpeakStack = createStackNavigator({
       const { stage } = args.navigation.state.params
       const { bankModel, updateCards } = args.screenProps
 
-      const leafIdsCsv = (bankModel.stageToLeafIdsCsvs[stage] || [])[0]
-      if (leafIdsCsv === undefined) {
+      const cardId = (bankModel.stageToCardIds[stage] || [])[0]
+      if (cardId === undefined) {
         return <Text>No card for stage {stage}</Text>
       } else {
-        const card = bankModel.cardByLeafIdsCsv[leafIdsCsv]
+        const card = bankModel.cardByCardId[cardId]
         if (card.glossRows.length === 1) {
           return <SlowSpeakGameScreen
             card={card}

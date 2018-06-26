@@ -51,11 +51,11 @@ type ListItem = {|
 
 export default class SpeakSummaryScreen extends React.PureComponent<Props> {
   summarizeListItems = (): Array<ListItem> => {
-    const { stageToLeafIdsCsvs } = this.props.bankModel
+    const { stageToCardIds } = this.props.bankModel
     const stageToListItem: {[number]: ListItem} = {}
     for (const stage of ALL_STAGES) {
-      const leafIdsCsvs = stageToLeafIdsCsvs[stage] || []
-      stageToListItem[stage] = { stage, numCards: leafIdsCsvs.length }
+      const cardIds = stageToCardIds[stage] || []
+      stageToListItem[stage] = { stage, numCards: cardIds.length }
     }
     return (Object.values(stageToListItem): any)
   }

@@ -77,7 +77,7 @@ export default class SlowSpeakGameScreen
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (this.props.card.leafIdsCsv !== prevProps.card.leafIdsCsv) {
+    if (this.props.card.cardId !== prevProps.card.cardId) {
       this.timerStartedAtMillis = new Date().getTime()
       this.setState({
         newMnemonic: null,
@@ -89,7 +89,7 @@ export default class SlowSpeakGameScreen
 
   onMnemonicSubmitEditing = (mnemonic: string) =>
     this.props.updateCards([{
-      leafIdsCsv: this.props.card.leafIdsCsv,
+      cardId: this.props.card.cardId,
       mnemonic,
     }])
 
@@ -128,7 +128,7 @@ export default class SlowSpeakGameScreen
     const { card } = this.props
 
     this.props.updateCards([{
-      leafIdsCsv: card.leafIdsCsv,
+      cardId: card.cardId,
       lastSeenAt: Math.floor(timerStartedAtMillis / 1000),
       stage: recalled ? STAGE3_PASSED : STAGE2_WRONG,
     }])

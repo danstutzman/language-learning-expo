@@ -1,8 +1,9 @@
 import type { Card } from './Card'
 
 export type BankModel = {|
-  ancestorLeafIdsCsvsByLeafIdCsv: {[string]: Array<string>},
-  descendantLeafIdsCsvsByLeafIdCsv: {[string]: Array<string>},
-  cardByLeafIdsCsv: {[string]: Card},
-  stageToLeafIdsCsvs: {[number]: Array<string>},
+  ancestorCardIdsByCardId: {[number]: Array<number>},
+  descendantCardIdsByCardId: {[number]: Array<number>},
+  cardByCardId: {[number]: Card},
+  leafIdToLeafCardId: {[number]: number},
+  stageToCardIds: {[number]: Array<number>},
 |}

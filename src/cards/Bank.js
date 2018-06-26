@@ -34,64 +34,69 @@ export default class Bank {
   _loadFromCardsTable = (): Promise<void> =>
     cardsTable.selectAll(this.db)
       .then((cards: Array<Card>) => {
-        const cardByLeafIdsCsv: {[string]: Card} = {}
+        const cardByCardId: {[number]: Card} = {}
         for (const card of cards) {
-          cardByLeafIdsCsv[card.leafIdsCsv] = card
+          cardByCardId[card.cardId] = card
         }
 
-        const ancestorLeafIdsCsvsByLeafIdCsv: {[string]: Array<string>} = {}
+        const ancestorCardIdsByCardId: {[number]: Array<number>} = {}
         for (const card of cards) {
-          ancestorLeafIdsCsvsByLeafIdCsv[card.leafIdsCsv] = []
+          ancestorCardIdsByCardId[card.cardId] = []
         }
-        const descendantLeafIdsCsvsByLeafIdCsv: {[string]: Array<string>} = {}
+        const descendantCardIdsByCardId: {[number]: Array<number>} = {}
         for (const card of cards) {
-          descendantLeafIdsCsvsByLeafIdCsv[card.leafIdsCsv] = []
+          descendantCardIdsByCardId[card.cardId] = []
         }
 
         for (const card1 of cards) {
-          const leafIdsCsv1 = card1.leafIdsCsv
+          const cardId1 = card1.cardId
+          const leafIdsCsv1Surrounded = `,${card1.leafIdsCsv},`
           for (const card2 of cards) {
+            const cardId2 = card2.cardId
             const leafIdsCsv2 = card2.leafIdsCsv
-            if (leafIdsCsv1 !== leafIdsCsv2) {
-              if (leafIdsCsv1.indexOf(leafIdsCsv2) !== -1) {
-                if (leafIdsCsv1.startsWith(`${leafIdsCsv2},`) ||
-                  leafIdsCsv1.endsWith(`,${leafIdsCsv2}`) ||
-                  leafIdsCsv1.indexOf(`,${leafIdsCsv2},`) !== -1) {
-                  ancestorLeafIdsCsvsByLeafIdCsv[leafIdsCsv2].push(leafIdsCsv1)
-                  descendantLeafIdsCsvsByLeafIdCsv[leafIdsCsv1].push(
-                    leafIdsCsv2)
-                }
+            if (cardId1 !== cardId2) {
+              if (leafIdsCsv1Surrounded.indexOf(leafIdsCsv2) !== -1) {
+                ancestorCardIdsByCardId[cardId2].push(cardId1)
+                descendantCardIdsByCardId[cardId1].push(cardId2)
               }
             }
           }
         }
 
-        this.bankModel = {
-          ancestorLeafIdsCsvsByLeafIdCsv,
-          cardByLeafIdsCsv,
-          descendantLeafIdsCsvsByLeafIdCsv,
-          stageToLeafIdsCsvs: {},
+        const leafIdToLeafCardId: {[number]: number} = {}
+        for (const card of cards) {
+          if (card.glossRows.length === 1) {
+            leafIdToLeafCardId[card.glossRows[0].leafId] = card.cardId
+          }
         }
-        this._recalcStageToLeafIdsCsvs()
+
+        this.bankModel = {
+          ancestorCardIdsByCardId,
+          cardByCardId,
+          descendantCardIdsByCardId,
+          leafIdToLeafCardId,
+          stageToCardIds: {},
+        }
+        this._recalcStageToCardIds()
       })
 
-  _recalcStageToLeafIdsCsvs = (): BankModel => {
+  _recalcStageToCardIds = (): BankModel => {
     const cards: Array<Card> =
-      (Object.values(this.bankModel.cardByLeafIdsCsv): any)
+      (Object.values(this.bankModel.cardByCardId): any)
     cards.sort((card1: Card, card2: Card) => {
       if (card1.lastSeenAt === null) { return -1 }
       if (card2.lastSeenAt === null) { return 1 }
       return (card1.lastSeenAt < card2.lastSeenAt) ? -1 : 1
     })
 
-    const stageToLeafIdsCsvs: {[number]: Array<string>} = {}
+    const stageToCardIds: {[number]: Array<number>} = {}
     for (const card: Card of cards) {
-      if (stageToLeafIdsCsvs[card.stage] === undefined) {
-        stageToLeafIdsCsvs[card.stage] = []
+      if (stageToCardIds[card.stage] === undefined) {
+        stageToCardIds[card.stage] = []
       }
-      stageToLeafIdsCsvs[card.stage].push(card.leafIdsCsv)
+      stageToCardIds[card.stage].push(card.cardId)
     }
-    this.bankModel = { ...this.bankModel, stageToLeafIdsCsvs }
+    this.bankModel = { ...this.bankModel, stageToCardIds }
     return this.bankModel
   }
 
@@ -112,30 +117,30 @@ export default class Bank {
   updateCards = (triggeringCardUpdates: Array<CardUpdate>):
     Promise<BankModel> => {
     const {
-      ancestorLeafIdsCsvsByLeafIdCsv,
-      cardByLeafIdsCsv,
-      descendantLeafIdsCsvsByLeafIdCsv,
+      ancestorCardIdsByCardId,
+      cardByCardId,
+      descendantCardIdsByCardId,
     } = this.bankModel
 
-    const triggeringCardUpdateByLeafCardId: {[string]: CardUpdate} = {}
+    const triggeringCardUpdateByCardId: {[number]: CardUpdate} = {}
     for (const triggeringCardUpdate of triggeringCardUpdates) {
-      triggeringCardUpdateByLeafCardId[triggeringCardUpdate.leafIdsCsv] =
+      triggeringCardUpdateByCardId[triggeringCardUpdate.cardId] =
         triggeringCardUpdate
     }
 
-    const bubbledCardUpdateByLeafCardId: {[string]: CardUpdate} = {}
+    const bubbledCardUpdateByLeafCardId: {[number]: CardUpdate} = {}
     for (const triggeringCardUpdate of triggeringCardUpdates) {
-      const triggeredLeafIdsCsv = triggeringCardUpdate.leafIdsCsv
+      const triggeredCardId = triggeringCardUpdate.cardId
 
-      for (const ancestorLeafIdsCsv of
-        ancestorLeafIdsCsvsByLeafIdCsv[triggeredLeafIdsCsv]) {
+      for (const ancestorCardId of
+        ancestorCardIdsByCardId[triggeredCardId]) {
         let readyToTest: boolean = true
-        for (const descendantOfAncestorLeafIdsCsv of
-          descendantLeafIdsCsvsByLeafIdCsv[ancestorLeafIdsCsv]) {
-          const descendantOfAncestorCard =
-            triggeringCardUpdateByLeafCardId[descendantOfAncestorLeafIdsCsv] ||
-            cardByLeafIdsCsv[descendantOfAncestorLeafIdsCsv]
-          const descendantStage = descendantOfAncestorCard.stage
+        for (const descendantCardId of
+          descendantCardIdsByCardId[ancestorCardId]) {
+          const descendantCard =
+            triggeringCardUpdateByCardId[descendantCardId] ||
+            cardByCardId[descendantCardId]
+          const descendantStage = descendantCard.stage
           if (descendantStage === STAGE0_NOT_READY_TO_TEST ||
             descendantStage === STAGE1_READY_TO_TEST ||
             descendantStage === STAGE2_WRONG) {
@@ -144,8 +149,8 @@ export default class Bank {
         }
 
         const ancestorCard =
-          triggeringCardUpdateByLeafCardId[ancestorLeafIdsCsv] ||
-          cardByLeafIdsCsv[ancestorLeafIdsCsv]
+          triggeringCardUpdateByCardId[ancestorCardId] ||
+          cardByCardId[ancestorCardId]
         let newAncestorStage = ancestorCard.stage
         if (readyToTest && newAncestorStage === STAGE0_NOT_READY_TO_TEST) {
           newAncestorStage = STAGE1_READY_TO_TEST
@@ -153,23 +158,23 @@ export default class Bank {
           newAncestorStage = STAGE0_NOT_READY_TO_TEST
         }
 
-        bubbledCardUpdateByLeafCardId[ancestorLeafIdsCsv] =
-          { leafIdsCsv: ancestorLeafIdsCsv, stage: newAncestorStage }
+        bubbledCardUpdateByLeafCardId[ancestorCardId] =
+          { cardId: ancestorCardId, stage: newAncestorStage }
       }
     }
     const allCardUpdates: Array<CardUpdate> = triggeringCardUpdates.concat(
       (Object.values(bubbledCardUpdateByLeafCardId): any))
 
-    const newCardByLeafIdsCsv = { ...this.bankModel.cardByLeafIdsCsv } // copy
+    const newCardByCardId = { ...this.bankModel.cardByCardId } // copy
     for (const cardUpdate of allCardUpdates) {
-      newCardByLeafIdsCsv[cardUpdate.leafIdsCsv] = {
-        ...newCardByLeafIdsCsv[cardUpdate.leafIdsCsv],
+      newCardByCardId[cardUpdate.cardId] = {
+        ...newCardByCardId[cardUpdate.cardId],
         ...cardUpdate,
       }
     }
-    this.bankModel.cardByLeafIdsCsv = newCardByLeafIdsCsv
+    this.bankModel.cardByCardId = newCardByCardId
 
-    this._recalcStageToLeafIdsCsvs()
+    this._recalcStageToCardIds()
 
     return cardsTable.updateCards(this.db, allCardUpdates)
       .then(() => this.bankModel)

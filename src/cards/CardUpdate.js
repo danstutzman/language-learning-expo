@@ -1,5 +1,5 @@
 export type CardUpdate = {|
-  leafIdsCsv: string,
+  cardId: number,
   mnemonic?: string,
   lastSeenAt?: number,
   stage?: number
