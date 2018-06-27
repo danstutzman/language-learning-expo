@@ -66,7 +66,8 @@ export default class App extends React.PureComponent<Props, State> {
           updateCards={(cardUpdates: Array<CardUpdate>) =>
             bank.updateCards(cardUpdates)
               .then(bankModel => this.setState({ bankModel }))}
-          uploadDatabase={() => Promise.resolve()} // TODO
+          uploadDatabase={() => backend.uploadCards(
+            (Object.values(this.state.bankModel.cardByCardId): any))}
           bankModel={this.state.bankModel} />
       </View>
     }

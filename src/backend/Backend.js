@@ -42,29 +42,29 @@ export default class Backend {
         })
     })
 
-  // uploadSkills = (skillExports: Array<SkillExport>): Promise<void> =>
-  //   new Promise((resolve, reject) => {
-  //     const timeout = setTimeout(
-  //       () => reject(new Error(`Timeout from ${this.baseUrl}`)),
-  //       FETCH_TIMEOUT_MILLIS
-  //     )
-  //     fetch(this.baseUrl, {
-  //       body: JSON.stringify({ skillExports }),
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //     }).then(response => {
-  //       return response.text().then(text => {
-  //         clearTimeout(timeout)
-  //         if (response.ok) {
-  //           resolve()
-  //         } else {
-  //           reject(new Error(
-  //             `Got status ${response.status} and response ${text} from ${
-  //               this.baseUrl}`))
-  //         }
-  //       })
-  //     })
-  //   })
+  uploadCards = (cards: Array<Card>): Promise<void> =>
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error(`Timeout from ${this.baseUrl}`)),
+        FETCH_TIMEOUT_MILLIS
+      )
+      fetch(this.baseUrl, {
+        body: JSON.stringify({ cards }),
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).then(response => {
+        return response.text().then(text => {
+          clearTimeout(timeout)
+          if (response.ok) {
+            resolve()
+          } else {
+            reject(new Error(
+              `Got status ${response.status} and response ${text} from ${
+                this.baseUrl}`))
+          }
+        })
+      })
+    })
 }
