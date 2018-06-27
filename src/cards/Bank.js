@@ -5,7 +5,7 @@ import type { CardUpdate } from './CardUpdate'
 import { STAGE0_NOT_READY_TO_TEST } from '../cards/Stage'
 import { STAGE1_READY_TO_TEST } from '../cards/Stage'
 import { STAGE2_WRONG } from '../cards/Stage'
-import { STAGE3_PASSED } from '../cards/Stage'
+import { STAGE3_SLOW } from '../cards/Stage'
 
 export default class Bank {
   bankModel: BankModel
@@ -143,7 +143,8 @@ export default class Bank {
           const descendantStage = descendantCard.stage
           if (descendantStage === STAGE0_NOT_READY_TO_TEST ||
             descendantStage === STAGE1_READY_TO_TEST ||
-            descendantStage === STAGE2_WRONG) {
+            descendantStage === STAGE2_WRONG ||
+            descendantStage === STAGE3_SLOW) {
             readyToTest = false
           }
         }

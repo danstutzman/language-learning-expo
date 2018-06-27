@@ -12,8 +12,10 @@ import type { BankModel } from '../cards/BankModel'
 import type { Card } from '../cards/Card'
 import type { CardUpdate } from '../cards/CardUpdate'
 import type { GlossRow } from '../cards/GlossRow'
+import { SLOW_MILLIS } from './SlowSpeakGameScreen'
 import { STAGE2_WRONG } from '../cards/Stage'
-import { STAGE3_PASSED } from '../cards/Stage'
+import { STAGE3_SLOW } from '../cards/Stage'
+import { STAGE4_PASSED } from '../cards/Stage'
 
 type Props = {|
   bankModel: BankModel,
@@ -64,6 +66,8 @@ const styles = StyleSheet.create({
   glossTableSpanishRemembered: {
     color: 'green',
   },
+  slowAlert: {
+  }
 })
 
 export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
@@ -119,14 +123,21 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
       updateCards([{
         cardId: card.cardId,
         lastSeenAt,
-        stage: STAGE3_PASSED,
+        stage: (delay !== null && delay < SLOW_MILLIS) ?
+          STAGE4_PASSED : STAGE3_SLOW,
       }])
     } else {
-      updateCards(incorrectRows.map(glossRow => ({
-        cardId: bankModel.leafIdToLeafCardId[glossRow.leafId],
-        lastSeenAt,
-        stage: STAGE2_WRONG,
-      })))
+      updateCards(incorrectRows.map(glossRow => {
+        const cardId = bankModel.leafIdToLeafCardId[glossRow.leafId]
+        if (cardId === undefined) {
+          throw new Error(`Can't find leafCardId for leafId ${glossRow.leafId}`)
+        }
+        return {
+          cardId: bankModel.leafIdToLeafCardId[glossRow.leafId],
+          lastSeenAt,
+          stage: STAGE2_WRONG,
+        }
+      }))
     }
   }
 
@@ -155,20 +166,24 @@ export default class SpeakQuizScreen extends React.PureComponent<Props, State> {
   }
 
   render() {
+    const { delay } = this.state
     return <View style={styles.container}>
       <Text style={styles.cardEnglish}>
         {this.props.card.prompt}
       </Text>
       <View style={styles.glossTable}>
-        {this.state.delay === null
+        {delay === null
           ? <Button
             onPress={this.revealAnswer}
             title='I remember' />
           : this.renderGlossTable()}
       </View>
+
+      {delay !== null && delay >= SLOW_MILLIS && <Text>Slow</Text>}
+
       <Button
         onPress={this.onNext}
-        title={this.state.delay === 0 ? 'I forget' : 'Next card'} />
+        title={delay === 0 ? 'I forget' : 'Next card'} />
     </View>
   }
 }

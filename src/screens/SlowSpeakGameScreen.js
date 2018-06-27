@@ -12,7 +12,10 @@ import {
 import type { Card } from '../cards/Card'
 import type { CardUpdate } from '../cards/CardUpdate'
 import { STAGE2_WRONG } from '../cards/Stage'
-import { STAGE3_PASSED } from '../cards/Stage'
+import { STAGE3_SLOW } from '../cards/Stage'
+import { STAGE4_PASSED } from '../cards/Stage'
+
+export const SLOW_MILLIS = 2000
 
 const styles = StyleSheet.create({
   container: {
@@ -59,7 +62,7 @@ export type Props = {|
 export type State = {|
   newMnemonic: string | null,
   recalled: boolean,
-  recalledAtMillis: number | null,
+  delay: number | null,
 |}
 
 export default class SlowSpeakGameScreen
@@ -72,7 +75,7 @@ export default class SlowSpeakGameScreen
     this.state = {
       newMnemonic: null,
       recalled: false,
-      recalledAtMillis: null,
+      delay: null,
     }
   }
 
@@ -82,7 +85,7 @@ export default class SlowSpeakGameScreen
       this.setState({
         newMnemonic: null,
         recalled: false,
-        recalledAtMillis: null,
+        delay: null,
       })
     }
   }
@@ -109,10 +112,10 @@ export default class SlowSpeakGameScreen
   toggleRecalled = () => {
     this.speakMnemonicAndSpanish()
     this.setState(prevState => {
-      if (prevState.recalledAtMillis === null) {
+      if (prevState.delay === null) {
         return {
           recalled: true,
-          recalledAtMillis: new Date().getTime(),
+          delay: new Date().getTime() - this.timerStartedAtMillis,
         }
       } else {
         return { recalled: !prevState.recalled }
@@ -124,13 +127,17 @@ export default class SlowSpeakGameScreen
     Speech.stop()
 
     const { timerStartedAtMillis } = this
-    const { recalled, recalledAtMillis } = this.state
+    const { recalled, delay } = this.state
     const { card } = this.props
+
+    const stage = recalled ?
+      ((delay !== null && delay < SLOW_MILLIS) ? STAGE4_PASSED : STAGE3_SLOW) :
+      STAGE2_WRONG
 
     this.props.updateCards([{
       cardId: card.cardId,
       lastSeenAt: Math.floor(timerStartedAtMillis / 1000),
-      stage: recalled ? STAGE3_PASSED : STAGE2_WRONG,
+      stage,
     }])
   }
 
@@ -155,20 +162,23 @@ export default class SlowSpeakGameScreen
   }
 
   render() {
+    const { delay } = this.state
     return <View style={styles.container}>
       <Text style={styles.en}>
         {this.props.card.prompt}
       </Text>
 
-      {this.state.recalledAtMillis === null
+      {delay === null
         ? <Button onPress={this.toggleRecalled} title='I remember' />
         : <TouchableOpacity onPress={this.toggleRecalled}>
           {this.renderAnswer()}
         </TouchableOpacity>}
 
+      {delay !== null && delay >= SLOW_MILLIS && <Text>Slow</Text>}
+
       <Button
         onPress={this.pressNext}
-        title={this.state.recalledAtMillis === null ? 'I forget' : 'Next card'}
+        title={delay === null ? 'I forget' : 'Next card'}
       />
     </View>
   }
